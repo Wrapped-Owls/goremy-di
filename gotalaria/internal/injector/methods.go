@@ -7,29 +7,33 @@ import (
 	"reflect"
 )
 
-func Register[T any](injector *StdInjector, bind types.Bind[T]) {
+func Register[T any](injector types.Injector, bind types.Bind[T]) {
 	if insBind, ok := bind.(binds.InstanceBind[T]); ok {
 		if !insBind.IsFactory {
 			value, key := insBind.Generates(injector)
-			storage.Set[T](injector.storage, value, key)
+			storage.Set[T](injector.Storage(), value, key)
 			return
 		}
 	}
 
 	var typeT T
 	elementType := reflect.TypeOf(typeT)
-	injector.dynamicDependencies[elementType] = bind
+	injector.Bind(elementType, bind)
 }
 
-func Get[T any](injector *StdInjector) T {
+func Get[T any](injector types.Injector) T {
 	var result T
 	elementType := reflect.TypeOf(result)
 
-	if bind, ok := injector.dynamicDependencies[elementType]; ok {
+	// search in dynamic injections that needed to run a given function
+	if bind, ok := injector.RetrieveBind(elementType); ok {
 		if typedBind, assertOk := bind.(types.Bind[T]); assertOk {
 			result, _ = typedBind.Generates(injector)
 			return result
 		}
 	}
+
+	// retrieve values from storage
+	result = storage.Get[T](injector.Storage())
 	return result
 }

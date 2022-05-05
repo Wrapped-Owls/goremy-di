@@ -7,11 +7,14 @@ type (
 		Get(key string) any
 		Binds() []any
 	}
-	Injector interface {
-		Storage() Storage
-	}
 	DependencyRetriever interface {
 		Get() any
 		GetNamed() any
+	}
+	Injector interface {
+		Storage() Storage
+		Bind(BindKey, any)
+		RetrieveBind(BindKey) (any, bool)
+		DependencyRetriever
 	}
 )

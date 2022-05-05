@@ -17,6 +17,19 @@ func NewStdInjector() *StdInjector {
 	}
 }
 
+func (s StdInjector) Storage() types.Storage {
+	return s.storage
+}
+
+func (s *StdInjector) Bind(key types.BindKey, value any) {
+	s.dynamicDependencies[key] = value
+}
+
+func (s StdInjector) RetrieveBind(key types.BindKey) (any, bool) {
+	result, ok := s.dynamicDependencies[key]
+	return result, ok
+}
+
 func (s StdInjector) Get() any {
 	//TODO implement me
 	panic("implement me")
