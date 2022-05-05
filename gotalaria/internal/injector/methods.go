@@ -21,7 +21,7 @@ func Register[T any](injector types.Injector, bind types.Bind[T]) {
 	injector.Bind(elementType, bind)
 }
 
-func Get[T any](injector types.Injector) T {
+func Get[T any](injector types.DependencyRetriever) T {
 	var result T
 	elementType := reflect.TypeOf(result)
 
@@ -34,6 +34,6 @@ func Get[T any](injector types.Injector) T {
 	}
 
 	// retrieve values from storage
-	result = storage.Get[T](injector.Storage())
+	result = storage.Get[T](injector)
 	return result
 }

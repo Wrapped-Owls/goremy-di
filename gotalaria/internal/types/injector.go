@@ -1,18 +1,18 @@
 package types
 
 type (
-	valuesGetter interface {
+	ValuesGetter interface {
 		Get(key string) any
 		Binds() []any
 	}
 	Storage interface {
 		Set(value any)
 		SetNamed(key string, value any)
-		valuesGetter
+		ValuesGetter
 	}
 	DependencyRetriever interface {
 		RetrieveBind(BindKey) (any, bool)
-		valuesGetter
+		ValuesGetter
 	}
 	Injector interface {
 		Storage() Storage

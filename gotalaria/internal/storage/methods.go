@@ -15,7 +15,7 @@ func Set[T any](dStorage types.Storage, value T, keys ...string) {
 	dStorage.Set(value)
 }
 
-func Get[T any](dStorage types.Storage, keys ...string) T {
+func Get[T any](dStorage types.ValuesGetter, keys ...string) T {
 	var key string
 	if len(keys) > 0 {
 		key = keys[0]
