@@ -7,10 +7,14 @@ import (
 	"reflect"
 )
 
-func Register[T any](injector types.Injector, bind types.Bind[T]) {
+func Register[T any](injector types.Injector, bind types.Bind[T], keys ...string) {
+	var key string
+	if len(keys) > 0 {
+		key = keys[0]
+	}
 	if insBind, ok := bind.(binds.InstanceBind[T]); ok {
 		if !insBind.IsFactory {
-			value, key := insBind.Generates(injector)
+			value, _ := insBind.Generates(injector)
 			storage.Set[T](injector.Storage(), value, key)
 			return
 		}
@@ -18,22 +22,44 @@ func Register[T any](injector types.Injector, bind types.Bind[T]) {
 
 	var typeT T
 	elementType := reflect.TypeOf(typeT)
-	injector.Bind(elementType, bind)
+
+	if len(key) > 0 {
+		injector.BindNamed(key, elementType, bind)
+	} else {
+		injector.Bind(elementType, bind)
+	}
 }
 
-func Get[T any](injector types.DependencyRetriever) T {
-	var result T
+func Get[T any](injector types.DependencyRetriever, keys ...string) T {
+	var (
+		key    string
+		result T
+	)
+
+	if len(keys) > 0 {
+		key = keys[0]
+	}
 	elementType := reflect.TypeOf(result)
 
+	var (
+		bind any
+		ok   bool
+	)
+
+	if len(key) > 0 {
+		bind, ok = injector.RetrieveNamedBind(key, elementType)
+	} else {
+		bind, ok = injector.RetrieveBind(elementType)
+	}
+
 	// search in dynamic injections that needed to run a given function
-	if bind, ok := injector.RetrieveBind(elementType); ok {
+	if ok {
 		if typedBind, assertOk := bind.(types.Bind[T]); assertOk {
 			result, _ = typedBind.Generates(injector)
 			return result
 		}
 	}
-
 	// retrieve values from storage
-	result = storage.Get[T](injector)
+	result = storage.Get[T](injector, key)
 	return result
 }

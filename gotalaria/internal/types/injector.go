@@ -12,11 +12,13 @@ type (
 	}
 	DependencyRetriever interface {
 		RetrieveBind(BindKey) (any, bool)
+		RetrieveNamedBind(name string, bType BindKey) (any, bool)
 		ValuesGetter
 	}
 	Injector interface {
 		Storage() Storage
 		Bind(BindKey, any)
+		BindNamed(name string, bType BindKey, value any)
 		DependencyRetriever
 	}
 )
