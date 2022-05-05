@@ -14,7 +14,7 @@ func Register[T any](injector types.Injector, bind types.Bind[T], keys ...string
 	}
 	if insBind, ok := bind.(binds.InstanceBind[T]); ok {
 		if !insBind.IsFactory {
-			value, _ := insBind.Generates(injector)
+			value := insBind.Generates(injector)
 			storage.Set[T](injector.Storage(), value, key)
 			return
 		}
@@ -55,7 +55,7 @@ func Get[T any](injector types.DependencyRetriever, keys ...string) T {
 	// search in dynamic injections that needed to run a given function
 	if ok {
 		if typedBind, assertOk := bind.(types.Bind[T]); assertOk {
-			result, _ = typedBind.Generates(injector)
+			result = typedBind.Generates(injector)
 			return result
 		}
 	}

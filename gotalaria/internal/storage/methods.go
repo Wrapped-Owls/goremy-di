@@ -1,6 +1,9 @@
 package storage
 
-import "gotalaria/internal/types"
+import (
+	"gotalaria/internal/types"
+	"gotalaria/internal/utils"
+)
 
 func Set[T any](dStorage types.Storage, value T, keys ...string) {
 	var key string
@@ -17,8 +20,7 @@ func Set[T any](dStorage types.Storage, value T, keys ...string) {
 
 func Get[T any](dStorage types.ValuesGetter, keys ...string) T {
 	var (
-		key           string
-		defaultResult T
+		key string
 	)
 
 	if len(keys) > 0 {
@@ -32,7 +34,7 @@ func Get[T any](dStorage types.ValuesGetter, keys ...string) T {
 				return element
 			}
 		}
-		return defaultResult
+		return utils.Default[T]()
 	}
 
 	// search in unsorted binds
@@ -42,5 +44,5 @@ func Get[T any](dStorage types.ValuesGetter, keys ...string) T {
 		}
 	}
 
-	return defaultResult
+	return utils.Default[T]()
 }
