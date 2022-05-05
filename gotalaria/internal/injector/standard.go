@@ -10,7 +10,7 @@ type StdInjector struct {
 	storage             *storage.DepsStorage
 }
 
-func NewStdInjector() *StdInjector {
+func New() *StdInjector {
 	return &StdInjector{
 		dynamicDependencies: map[types.BindKey]any{},
 		storage:             storage.NewDepsStorage(),
@@ -30,12 +30,10 @@ func (s StdInjector) RetrieveBind(key types.BindKey) (any, bool) {
 	return result, ok
 }
 
-func (s StdInjector) Get() any {
-	//TODO implement me
-	panic("implement me")
+func (s StdInjector) Get(key string) any {
+	return s.Storage().Get(key)
 }
 
-func (s StdInjector) GetNamed() any {
-	//TODO implement me
-	panic("implement me")
+func (s StdInjector) Binds() []any {
+	return s.Storage().Binds()
 }
