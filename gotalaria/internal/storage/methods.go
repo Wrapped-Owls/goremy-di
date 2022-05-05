@@ -16,7 +16,11 @@ func Set[T any](dStorage types.Storage, value T, keys ...string) {
 }
 
 func Get[T any](dStorage types.ValuesGetter, keys ...string) T {
-	var key string
+	var (
+		key           string
+		defaultResult T
+	)
+
 	if len(keys) > 0 {
 		key = keys[0]
 	}
@@ -28,6 +32,7 @@ func Get[T any](dStorage types.ValuesGetter, keys ...string) T {
 				return element
 			}
 		}
+		return defaultResult
 	}
 
 	// search in unsorted binds
@@ -37,6 +42,5 @@ func Get[T any](dStorage types.ValuesGetter, keys ...string) T {
 		}
 	}
 
-	var defaultResult T
 	return defaultResult
 }
