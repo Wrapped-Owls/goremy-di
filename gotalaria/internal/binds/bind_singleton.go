@@ -4,7 +4,6 @@ import "sync"
 
 type SingletonBind[T any] struct {
 	dependency T
-	key        string
 	mutex      sync.Mutex
 }
 
