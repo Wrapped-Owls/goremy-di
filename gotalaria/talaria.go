@@ -1,0 +1,5 @@
+package gotalaria
+
+func NewInjector() {
+
+}
