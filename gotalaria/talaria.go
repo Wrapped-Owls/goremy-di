@@ -5,24 +5,34 @@ import (
 	"gotalaria/internal/types"
 )
 
-func NewInjector() types.Injector {
+type (
+	DependencyRetriever = types.DependencyRetriever
+	Injector            = types.Injector
+
+	// Bind is directly copy from types.Bind
+	Bind[T any] interface {
+		Generates(DependencyRetriever) T
+	}
+)
+
+func NewInjector() Injector {
 	return injector.New()
 }
 
-func Register[T any](i types.Injector, bind types.Bind[T], keys ...string) {
+func Register[T any](i Injector, bind types.Bind[T], keys ...string) {
 	injector.Register[T](i, bind, keys...)
 }
 
-func RegisterInstance[T any](i types.Injector, value T, keys ...string) {
+func RegisterInstance[T any](i Injector, value T, keys ...string) {
 	injector.Register[T](
 		i,
-		Instance[T](func(types.DependencyRetriever) T {
+		Instance[T](func(DependencyRetriever) T {
 			return value
 		}),
 		keys...,
 	)
 }
 
-func Get[T any](i types.DependencyRetriever, keys ...string) T {
+func Get[T any](i DependencyRetriever, keys ...string) T {
 	return injector.Get[T](i, keys...)
 }
