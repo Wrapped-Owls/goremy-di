@@ -19,6 +19,10 @@ func Register[T any](injector types.Injector, bind types.Bind[T], keys ...string
 			storage.Set[T](injector.Storage(), value, key)
 			return
 		}
+	} else if sglBind, assertOk := bind.(*binds.SingletonBind[T]); assertOk {
+		if !sglBind.IsLazy {
+			sglBind.BuildDependency(injector)
+		}
 	}
 
 	var typeT T
