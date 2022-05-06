@@ -8,6 +8,7 @@ import (
 )
 
 func Register[T any](injector types.Injector, bind types.Bind[T], keys ...string) {
+	// TODO: Register with key alongside with its type
 	var key string
 	if len(keys) > 0 {
 		key = keys[0]
