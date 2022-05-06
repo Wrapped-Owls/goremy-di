@@ -11,6 +11,7 @@ type (
 		dynamicDependencies bindsMap
 		namedDynamic        map[string]bindsMap
 		storage             *storage.DepsStorage
+		// TODO: Add allowOverride
 	}
 )
 
