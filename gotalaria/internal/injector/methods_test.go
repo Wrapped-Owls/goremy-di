@@ -6,113 +6,107 @@ import (
 	"testing"
 )
 
-// TestRegister__Instance verify if when registering an instance, it is only generated once
-func TestGenerateBind__Instance(t *testing.T) {
-	const expected = "avocado"
-	counter := 0
-	insBind := binds.Instance[string](func(retriever types.DependencyRetriever) string {
-		counter++
-		return expected
-	})
-
-	i := New()
-	Register[string](i, insBind)
-	for index := 0; index < 11; index++ {
-		result := Get[string](i)
-		if result != expected {
-			t.Error("Generated instance is incorrect")
-		}
-	}
-	if counter > 1 {
-		t.Errorf("Instance bind generated %d times. Expected 1", counter)
-	}
-}
-
-func TestGenerateBind__Factory(t *testing.T) {
+// TestGenerateBind__InstanceFactory verify if when registering an instance, it is only generated once
+func TestGenerateBind__InstanceFactory(t *testing.T) {
 	const (
-		expectedString      = "avocado"
-		expectedGenerations = 11
+		expectedString  = "avocado"
+		totalExecutions = 11
 	)
-	counter := 0
-	insBind := binds.Factory[string](func(retriever types.DependencyRetriever) string {
-		counter++
-		return expectedString
-	})
 
-	i := New()
-	Register[string](i, insBind)
-	for index := 0; index < expectedGenerations; index++ {
-		result := Get[string](i)
-		if result != expectedString {
-			t.Error("Generated instance is incorrect")
-		}
+	cases := []struct {
+		name                string
+		expectedGenerations int
+		bindGenerator       func(types.Binder[string]) types.Bind[string]
+	}{
+		{
+			name:                "instance",
+			expectedGenerations: 1,
+			bindGenerator:       binds.Instance[string],
+		},
+		{
+			name:                "factory",
+			expectedGenerations: totalExecutions,
+			bindGenerator:       binds.Factory[string],
+		},
 	}
-	if counter != expectedGenerations {
-		t.Errorf("Instance bind generated %d times. Expected %d", counter, expectedGenerations)
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			counter := 0
+			insBind := c.bindGenerator(func(retriever types.DependencyRetriever) string {
+				counter++
+				return expectedString
+			})
+
+			i := New()
+			Register[string](i, insBind)
+			for index := 0; index < totalExecutions; index++ {
+				result := Get[string](i)
+				if result != expectedString {
+					t.Error("Generated instance is incorrect")
+				}
+			}
+			if counter != c.expectedGenerations {
+				t.Errorf("Instance bind generated %d times. Expected %d", counter, c.expectedGenerations)
+			}
+		})
 	}
 }
 
 func TestRegister__Singleton(t *testing.T) {
 	const totalGetsExecuted = 11
 
-	var (
-		invocations = 0
-		instance    = "testing singleton"
-	)
-	sgtBind := binds.Singleton[*string](func(retriever types.DependencyRetriever) *string {
-		invocations++
-		return &instance
-	})
-
-	i := New()
-	if invocations != 0 {
-		t.Error("Singleton was generated before register")
-	}
-	for index := 0; index < 11; index++ {
-		Register[*string](i, sgtBind)
-		if invocations != 1 {
-			t.Error("Singleton generated more than once")
-			t.FailNow()
-		}
-	}
-
-	for index := 0; index < totalGetsExecuted; index++ {
-		result := Get[*string](i)
-		if result != &instance {
-			t.Errorf("Singleton is not working as singleton")
-		}
-		if invocations != 1 {
-			t.Errorf("Singleton generated %d times", invocations)
-		}
-	}
-}
-
-func TestRegister__LazySingleton(t *testing.T) {
-	var (
-		invocations = 0
-		instance    = "lazy singleton"
-	)
-	sgtBind := binds.LazySingleton[*string](func(retriever types.DependencyRetriever) *string {
-		invocations++
-		return &instance
-	})
-
-	i := New()
-	if invocations != 0 {
-		t.Error("Singleton was generated before register")
-	}
-	for index := 0; index < 11; index++ {
-		Register[*string](i, sgtBind)
-		if invocations != 0 {
-			t.Errorf("Singleton was generated when should not. Received %d, Expected %d", invocations, 0)
-			t.FailNow()
-		}
+	cases := []struct {
+		name                string
+		expected            string
+		registerGenerations int
+		bindGenerator       func(types.Binder[*string]) types.Bind[*string]
+	}{
+		{
+			name:                "singleton",
+			expected:            "here we go",
+			registerGenerations: 1,
+			bindGenerator:       binds.Singleton[*string],
+		},
+		{
+			name:                "lazy singleton",
+			expected:            "JUST BE SURE TO LAZY",
+			registerGenerations: 0,
+			bindGenerator:       binds.LazySingleton[*string],
+		},
 	}
 
-	result := Get[*string](i)
-	if result != &instance {
-		t.Errorf("Singleton is not working as singleton")
-	} else if invocations != 1 {
-		t.Errorf("Singleton generated %d times", invocations)
+	for _, bindCase := range cases {
+		t.Run(bindCase.expected, func(t *testing.T) {
+			var (
+				invocations = 0
+			)
+			sgtBind := bindCase.bindGenerator(func(retriever types.DependencyRetriever) *string {
+				invocations++
+				return &bindCase.expected
+			})
+
+			i := New()
+			if invocations != 0 {
+				t.Error("Singleton was generated before register")
+			}
+			for index := 0; index < 11; index++ {
+				Register[*string](i, sgtBind)
+				if invocations != bindCase.registerGenerations {
+					t.Errorf("Singleton %d times. Expected %d", invocations, bindCase.registerGenerations)
+					t.FailNow()
+				}
+			}
+
+			for index := 0; index < totalGetsExecuted; index++ {
+				result := Get[*string](i)
+				if result != &bindCase.expected {
+					t.Errorf("Singleton is not working as singleton")
+				}
+				if invocations != 1 {
+					t.Errorf("Singleton generated %d times", invocations)
+				}
+			}
+		})
 	}
 }
