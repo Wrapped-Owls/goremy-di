@@ -7,7 +7,7 @@ import (
 )
 
 // TestGenerateBind__InstanceFactory verify if when registering an instance, it is only generated once
-func TestGenerateBind__InstanceFactory(t *testing.T) {
+func TestGenerateBind__InstanceFactory(testObj *testing.T) {
 	const (
 		expectedString  = "avocado"
 		totalExecutions = 11
@@ -19,19 +19,19 @@ func TestGenerateBind__InstanceFactory(t *testing.T) {
 		bindGenerator       func(types.Binder[string]) types.Bind[string]
 	}{
 		{
-			name:                "instance",
+			name:                "INSTANCE",
 			expectedGenerations: 1,
 			bindGenerator:       binds.Instance[string],
 		},
 		{
-			name:                "factory",
+			name:                "FACTORY",
 			expectedGenerations: totalExecutions,
 			bindGenerator:       binds.Factory[string],
 		},
 	}
 
 	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
+		testObj.Run(c.name, func(t *testing.T) {
 			counter := 0
 			insBind := c.bindGenerator(func(retriever types.DependencyRetriever) string {
 				counter++
@@ -46,6 +46,7 @@ func TestGenerateBind__InstanceFactory(t *testing.T) {
 					t.Error("Generated instance is incorrect")
 				}
 			}
+
 			if counter != c.expectedGenerations {
 				t.Errorf("Instance bind generated %d times. Expected %d", counter, c.expectedGenerations)
 			}
@@ -53,7 +54,7 @@ func TestGenerateBind__InstanceFactory(t *testing.T) {
 	}
 }
 
-func TestRegister__Singleton(t *testing.T) {
+func TestRegister__Singleton(testObj *testing.T) {
 	const totalGetsExecuted = 11
 
 	cases := []struct {
@@ -63,13 +64,13 @@ func TestRegister__Singleton(t *testing.T) {
 		bindGenerator       func(types.Binder[*string]) types.Bind[*string]
 	}{
 		{
-			name:                "singleton",
+			name:                "SINGLETON",
 			expected:            "here we go",
 			registerGenerations: 1,
 			bindGenerator:       binds.Singleton[*string],
 		},
 		{
-			name:                "lazy singleton",
+			name:                "LAZY_SINGLETON",
 			expected:            "JUST BE SURE TO LAZY",
 			registerGenerations: 0,
 			bindGenerator:       binds.LazySingleton[*string],
@@ -77,7 +78,7 @@ func TestRegister__Singleton(t *testing.T) {
 	}
 
 	for _, bindCase := range cases {
-		t.Run(bindCase.expected, func(t *testing.T) {
+		testObj.Run(bindCase.name, func(t *testing.T) {
 			var (
 				invocations = 0
 			)
