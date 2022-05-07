@@ -11,6 +11,7 @@ type (
 		dynamicDependencies bindsMap
 		namedDynamic        map[string]bindsMap
 		storage             *storage.DepsStorage
+
 		// TODO: Add allowOverride
 
 		// TODO: Create method to init child injectors with same access

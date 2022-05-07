@@ -20,7 +20,7 @@ func Register[T any](injector types.Injector, bind types.Bind[T], keys ...string
 			return
 		}
 	} else if sglBind, assertOk := bind.(*binds.SingletonBind[T]); assertOk {
-		if !sglBind.IsLazy {
+		if !sglBind.IsLazy && sglBind.ShouldGenerate() {
 			sglBind.BuildDependency(injector)
 		}
 	}
