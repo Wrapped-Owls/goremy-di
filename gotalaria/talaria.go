@@ -16,7 +16,7 @@ type (
 )
 
 func NewInjector() Injector {
-	return injector.New()
+	return injector.New(false)
 }
 
 func Register[T any](i Injector, bind types.Bind[T], keys ...string) {

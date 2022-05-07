@@ -6,6 +6,7 @@ type (
 		Binds() []any
 	}
 	Storage interface {
+		AllowOverride(bool)
 		Set(value any)
 		SetNamed(key string, value any)
 		ValuesGetter

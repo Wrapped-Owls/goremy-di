@@ -3,6 +3,7 @@ package injector
 import (
 	"gotalaria/internal/storage"
 	"gotalaria/internal/types"
+	"gotalaria/internal/utils"
 )
 
 type (
@@ -11,18 +12,18 @@ type (
 		dynamicDependencies bindsMap
 		namedDynamic        map[string]bindsMap
 		storage             *storage.DepsStorage
-
-		// TODO: Add allowOverride
+		allowOverride       bool
 
 		// TODO: Create method to init child injectors with same access
 	}
 )
 
-func New() *StdInjector {
+func New(canOverride bool) *StdInjector {
 	return &StdInjector{
+		allowOverride:       canOverride,
 		dynamicDependencies: bindsMap{},
 		namedDynamic:        map[string]bindsMap{},
-		storage:             storage.NewDepsStorage(),
+		storage:             storage.NewDepsStorage(canOverride),
 	}
 }
 
@@ -31,6 +32,9 @@ func (s StdInjector) Storage() types.Storage {
 }
 
 func (s *StdInjector) Bind(key types.BindKey, value any) {
+	if _, ok := s.dynamicDependencies[key]; ok && !s.allowOverride {
+		panic(utils.ErrAlreadyBound)
+	}
 	s.dynamicDependencies[key] = value
 }
 
@@ -42,6 +46,9 @@ func (s *StdInjector) BindNamed(name string, bType types.BindKey, value any) {
 		namedBinds = bindsMap{}
 	}
 
+	if _, ok := namedBinds[bType]; ok && !s.allowOverride {
+		panic(utils.ErrAlreadyBound)
+	}
 	namedBinds[bType] = value
 	s.namedDynamic[name] = namedBinds
 }

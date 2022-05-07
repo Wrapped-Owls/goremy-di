@@ -2,15 +2,21 @@ package storage
 
 // DepsStorage holds all dependencies
 type DepsStorage struct {
-	namedBinds map[string]any
-	binds      []any
+	allowOverride bool
+	namedBinds    map[string]any
+	binds         []any
 }
 
-func NewDepsStorage() *DepsStorage {
+func NewDepsStorage(allowOverride bool) *DepsStorage {
 	return &DepsStorage{
-		namedBinds: map[string]any{},
-		binds:      make([]any, 0, 11),
+		allowOverride: allowOverride,
+		namedBinds:    map[string]any{},
+		binds:         make([]any, 0, 11),
 	}
+}
+
+func (s *DepsStorage) AllowOverride(value bool) {
+	s.allowOverride = value
 }
 
 func (s *DepsStorage) Set(value any) {
@@ -18,6 +24,9 @@ func (s *DepsStorage) Set(value any) {
 }
 
 func (s *DepsStorage) SetNamed(key string, value any) {
+	if _, ok := s.namedBinds[key]; ok && !s.allowOverride {
+		panic("override not allowed")
+	}
 	s.namedBinds[key] = value
 }
 
