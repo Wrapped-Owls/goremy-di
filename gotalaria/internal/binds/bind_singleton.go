@@ -18,12 +18,9 @@ func (b *SingletonBind[T]) BuildDependency(injector types.DependencyRetriever) {
 }
 
 func (b *SingletonBind[T]) Generates(injector types.DependencyRetriever) T {
-	b.mutex.RLock()
-	if b.dependency != nil {
-		defer b.mutex.RUnlock()
+	if !b.ShouldGenerate() {
 		return *b.dependency
 	}
-	b.mutex.RUnlock()
 
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
