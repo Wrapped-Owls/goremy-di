@@ -1,7 +1,6 @@
 package injector
 
 import (
-	"gotalaria/internal/storage"
 	"gotalaria/internal/types"
 )
 
@@ -18,8 +17,8 @@ type (
 func New(canOverride bool) *StdInjector {
 	return &StdInjector{
 		allowOverride:   canOverride,
-		bindStorage:     storage.NewElementsStorage[types.BindKey](canOverride),
-		instanceStorage: storage.NewElementsStorage[types.BindKey](canOverride),
+		bindStorage:     NewElementsStorage[types.BindKey](canOverride),
+		instanceStorage: NewElementsStorage[types.BindKey](canOverride),
 	}
 }
 

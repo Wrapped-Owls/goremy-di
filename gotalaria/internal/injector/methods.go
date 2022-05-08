@@ -2,7 +2,6 @@ package injector
 
 import (
 	"gotalaria/internal/binds"
-	"gotalaria/internal/storage"
 	"gotalaria/internal/types"
 	"gotalaria/internal/utils"
 )
@@ -15,7 +14,7 @@ func Register[T any](injector types.Injector, bind types.Bind[T], keys ...string
 	if insBind, ok := bind.(binds.InstanceBind[T]); ok {
 		if !insBind.IsFactory {
 			value := insBind.Generates(injector)
-			storage.Set[T](injector, value, key)
+			SetStorage[T](injector, value, key)
 			return
 		}
 	} else if sglBind, assertOk := bind.(*binds.SingletonBind[T]); assertOk {
@@ -62,6 +61,6 @@ func Get[T any](injector types.DependencyRetriever, keys ...string) T {
 		}
 	}
 	// retrieve values from instanceStorage
-	result := storage.Get[T](injector, key)
+	result := GetStorage[T](injector, key)
 	return result
 }

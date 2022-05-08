@@ -1,4 +1,4 @@
-package storage
+package injector
 
 import "gotalaria/internal/utils"
 

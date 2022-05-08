@@ -1,11 +1,11 @@
-package storage
+package injector
 
 import (
 	"gotalaria/internal/types"
 	"gotalaria/internal/utils"
 )
 
-func Set[T any](dStorage types.Storage[types.BindKey], value T, keys ...string) {
+func SetStorage[T any](dStorage types.Storage[types.BindKey], value T, keys ...string) {
 	var (
 		key string
 	)
@@ -20,7 +20,7 @@ func Set[T any](dStorage types.Storage[types.BindKey], value T, keys ...string) 
 	dStorage.Set(utils.GetKey[T](), value)
 }
 
-func Get[T any](dStorage types.ValuesGetter[types.BindKey], keys ...string) T {
+func GetStorage[T any](dStorage types.ValuesGetter[types.BindKey], keys ...string) T {
 	var (
 		key   string
 		value any
