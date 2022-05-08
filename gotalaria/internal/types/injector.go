@@ -1,25 +1,27 @@
 package types
 
 type (
-	ValuesGetter interface {
-		Get(key string) any
-		Binds() []any
+	ValuesSetter[T comparable] interface {
+		Set(T, any)
+		SetNamed(T, string, any)
 	}
-	Storage interface {
-		AllowOverride(bool)
-		Set(value any)
-		SetNamed(key string, value any)
-		ValuesGetter
+	ValuesGetter[T comparable] interface {
+		GetNamed(T, string) (any, bool)
+		Get(T) (any, bool)
+	}
+	Storage[T comparable] interface {
+		ValuesSetter[T]
+		ValuesGetter[T]
 	}
 	DependencyRetriever interface {
 		RetrieveBind(BindKey) (any, bool)
-		RetrieveNamedBind(name string, bType BindKey) (any, bool)
-		ValuesGetter
+		RetrieveNamedBind(string, BindKey) (any, bool)
+		ValuesGetter[BindKey]
 	}
 	Injector interface {
-		Storage() Storage
 		Bind(BindKey, any)
-		BindNamed(name string, bType BindKey, value any)
+		BindNamed(string, BindKey, any)
+		ValuesSetter[BindKey]
 		DependencyRetriever
 	}
 )

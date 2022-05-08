@@ -4,11 +4,10 @@ import (
 	"gotalaria/internal/binds"
 	"gotalaria/internal/storage"
 	"gotalaria/internal/types"
-	"reflect"
+	"gotalaria/internal/utils"
 )
 
 func Register[T any](injector types.Injector, bind types.Bind[T], keys ...string) {
-	// TODO: Register with key alongside with its type
 	var key string
 	if len(keys) > 0 {
 		key = keys[0]
@@ -16,7 +15,7 @@ func Register[T any](injector types.Injector, bind types.Bind[T], keys ...string
 	if insBind, ok := bind.(binds.InstanceBind[T]); ok {
 		if !insBind.IsFactory {
 			value := insBind.Generates(injector)
-			storage.Set[T](injector.Storage(), value, key)
+			storage.Set[T](injector, value, key)
 			return
 		}
 	} else if sglBind, assertOk := bind.(*binds.SingletonBind[T]); assertOk {
@@ -25,8 +24,7 @@ func Register[T any](injector types.Injector, bind types.Bind[T], keys ...string
 		}
 	}
 
-	var typeT T
-	elementType := reflect.TypeOf(typeT)
+	elementType := utils.GetKey[T]()
 
 	if len(key) > 0 {
 		injector.BindNamed(key, elementType, bind)
@@ -37,34 +35,33 @@ func Register[T any](injector types.Injector, bind types.Bind[T], keys ...string
 
 func Get[T any](injector types.DependencyRetriever, keys ...string) T {
 	var (
-		key    string
-		result T
+		key string
 	)
 
 	if len(keys) > 0 {
 		key = keys[0]
 	}
-	elementType := reflect.TypeOf(result)
+	elementType := utils.GetKey[T]()
 
 	var (
 		bind any
 		ok   bool
 	)
 
+	// search in dynamic injections that needed to run a given function
 	if len(key) > 0 {
 		bind, ok = injector.RetrieveNamedBind(key, elementType)
 	} else {
 		bind, ok = injector.RetrieveBind(elementType)
 	}
 
-	// search in dynamic injections that needed to run a given function
 	if ok {
 		if typedBind, assertOk := bind.(types.Bind[T]); assertOk {
-			result = typedBind.Generates(injector)
+			result := typedBind.Generates(injector)
 			return result
 		}
 	}
 	// retrieve values from instanceStorage
-	result = storage.Get[T](injector, key)
+	result := storage.Get[T](injector, key)
 	return result
 }
