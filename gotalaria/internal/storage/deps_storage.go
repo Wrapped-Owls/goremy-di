@@ -2,16 +2,16 @@ package storage
 
 // DepsStorage holds all dependencies
 type DepsStorage struct {
-	allowOverride bool
-	namedBinds    map[string]any
-	binds         []any
+	allowOverride  bool
+	namedInstances map[string]any
+	instances      []any
 }
 
 func NewDepsStorage(allowOverride bool) *DepsStorage {
 	return &DepsStorage{
-		allowOverride: allowOverride,
-		namedBinds:    map[string]any{},
-		binds:         make([]any, 0, 11),
+		allowOverride:  allowOverride,
+		namedInstances: map[string]any{},
+		instances:      make([]any, 0, 11),
 	}
 }
 
@@ -20,21 +20,22 @@ func (s *DepsStorage) AllowOverride(value bool) {
 }
 
 func (s *DepsStorage) Set(value any) {
-	s.binds = append(s.binds, value)
+	// Change signature to receive the bType here
+	s.instances = append(s.instances, value)
 }
 
 func (s *DepsStorage) SetNamed(key string, value any) {
-	if _, ok := s.namedBinds[key]; ok && !s.allowOverride {
+	if _, ok := s.namedInstances[key]; ok && !s.allowOverride {
 		panic("override not allowed")
 	}
-	s.namedBinds[key] = value
+	s.namedInstances[key] = value
 }
 
 func (s DepsStorage) Get(key string) any {
-	result, _ := s.namedBinds[key]
+	result, _ := s.namedInstances[key]
 	return result
 }
 
 func (s DepsStorage) Binds() []any {
-	return s.binds
+	return s.instances
 }

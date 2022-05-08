@@ -11,7 +11,7 @@ type (
 	StdInjector struct {
 		dynamicDependencies bindsMap
 		namedDynamic        map[string]bindsMap
-		storage             *storage.DepsStorage
+		instanceStorage     *storage.DepsStorage
 		allowOverride       bool
 
 		// TODO: Create method to init child injectors with same access
@@ -23,12 +23,12 @@ func New(canOverride bool) *StdInjector {
 		allowOverride:       canOverride,
 		dynamicDependencies: bindsMap{},
 		namedDynamic:        map[string]bindsMap{},
-		storage:             storage.NewDepsStorage(canOverride),
+		instanceStorage:     storage.NewDepsStorage(canOverride),
 	}
 }
 
 func (s StdInjector) Storage() types.Storage {
-	return s.storage
+	return s.instanceStorage
 }
 
 func (s *StdInjector) Bind(key types.BindKey, value any) {

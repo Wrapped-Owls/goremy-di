@@ -27,7 +27,7 @@ func Get[T any](dStorage types.ValuesGetter, keys ...string) T {
 		key = keys[0]
 	}
 
-	// search in named binds
+	// search in named instances
 	if len(key) > 0 {
 		if value := dStorage.Get(key); value != nil {
 			if element, assertOk := value.(T); assertOk {
@@ -37,7 +37,7 @@ func Get[T any](dStorage types.ValuesGetter, keys ...string) T {
 		return utils.Default[T]()
 	}
 
-	// search in unsorted binds
+	// search in unsorted instances
 	for _, bind := range dStorage.Binds() {
 		if result, ok := bind.(T); ok {
 			return result

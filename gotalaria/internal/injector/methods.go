@@ -64,7 +64,7 @@ func Get[T any](injector types.DependencyRetriever, keys ...string) T {
 			return result
 		}
 	}
-	// retrieve values from storage
+	// retrieve values from instanceStorage
 	result = storage.Get[T](injector, key)
 	return result
 }
