@@ -5,44 +5,43 @@ import (
 	"gotalaria/internal/utils"
 )
 
-func Set[T any](dStorage types.Storage, value T, keys ...string) {
-	var key string
+func Set[T any](dStorage types.Storage[types.BindKey], value T, keys ...string) {
+	var (
+		key string
+	)
 	if len(keys) > 0 {
 		key = keys[0]
 	}
 
 	if len(key) > 0 {
-		dStorage.SetNamed(key, value)
+		dStorage.SetNamed(utils.GetKey[T](), key, value)
 		return
 	}
-	dStorage.Set(value)
+	dStorage.Set(utils.GetKey[T](), value)
 }
 
-func Get[T any](dStorage types.ValuesGetter, keys ...string) T {
+func Get[T any](dStorage types.ValuesGetter[types.BindKey], keys ...string) T {
 	var (
-		key string
+		key   string
+		value any
+		ok    bool
 	)
 
 	if len(keys) > 0 {
 		key = keys[0]
 	}
 
-	// search in named instances
+	// search in named elements
 	if len(key) > 0 {
-		if value := dStorage.Get(key); value != nil {
-			if element, assertOk := value.(T); assertOk {
-				return element
-			}
-		}
-		return utils.Default[T]()
+		value, ok = dStorage.GetNamed(utils.GetKey[T](), key)
+	} else {
+		value, ok = dStorage.Get(utils.GetKey[T]())
 	}
 
-	// search in unsorted instances
-	for _, bind := range dStorage.Binds() {
-		if result, ok := bind.(T); ok {
-			return result
+	if ok {
+		if element, assertOk := value.(T); assertOk {
+			return element
 		}
 	}
-
 	return utils.Default[T]()
 }

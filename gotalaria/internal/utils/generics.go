@@ -2,13 +2,22 @@ package utils
 
 import (
 	"fmt"
+	"gotalaria/internal/types"
 	"reflect"
 )
 
+func GetKey[T any]() types.BindKey {
+	return TypeName[T]()
+}
+
 func TypeName[T any]() string {
-	var typeT T
-	elementType := reflect.TypeOf(typeT)
+	elementType := GetType[T]()
 	return fmt.Sprintf("%s/%s", elementType.PkgPath(), elementType.Name())
+}
+
+func GetType[T any]() reflect.Type {
+	var typeT T
+	return reflect.TypeOf(typeT)
 }
 
 func Default[T any]() T {
