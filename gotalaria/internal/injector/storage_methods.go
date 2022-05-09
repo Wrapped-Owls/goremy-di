@@ -15,9 +15,9 @@ func SetStorage[T any](dStorage types.Storage[types.BindKey], value T, keys ...s
 
 	if len(key) > 0 {
 		dStorage.SetNamed(utils.GetKey[T](), key, value)
-		return
+	} else {
+		dStorage.Set(utils.GetKey[T](), value)
 	}
-	dStorage.Set(utils.GetKey[T](), value)
 }
 
 func GetStorage[T any](dStorage types.ValuesGetter[types.BindKey], keys ...string) T {

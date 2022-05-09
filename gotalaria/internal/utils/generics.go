@@ -17,7 +17,12 @@ func TypeName[T any]() string {
 
 func GetType[T any]() reflect.Type {
 	var typeT T
-	return reflect.TypeOf(typeT)
+	foundType := reflect.TypeOf(typeT)
+	if foundType == nil {
+		// T is an interface
+		foundType = reflect.TypeOf(&typeT)
+	}
+	return foundType
 }
 
 func Default[T any]() T {
