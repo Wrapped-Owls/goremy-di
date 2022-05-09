@@ -1,7 +1,7 @@
 package injector
 
 import (
-	"gotalaria/internal/types"
+	"github.com/wrapped-owls/fitpiece/gotalaria/internal/types"
 )
 
 type (

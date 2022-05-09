@@ -1,6 +1,6 @@
 package binds
 
-import "gotalaria/internal/types"
+import "github.com/wrapped-owls/fitpiece/gotalaria/internal/types"
 
 func Singleton[T any](binder types.Binder[T]) types.Bind[T] {
 	return &SingletonBind[T]{

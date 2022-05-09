@@ -1,7 +1,7 @@
 package binds
 
 import (
-	"gotalaria/internal/types"
+	"github.com/wrapped-owls/fitpiece/gotalaria/internal/types"
 	"sync"
 	"testing"
 )

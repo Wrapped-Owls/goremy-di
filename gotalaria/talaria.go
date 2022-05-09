@@ -1,8 +1,8 @@
 package gotalaria
 
 import (
-	"gotalaria/internal/injector"
-	"gotalaria/internal/types"
+	"github.com/wrapped-owls/fitpiece/gotalaria/internal/injector"
+	"github.com/wrapped-owls/fitpiece/gotalaria/internal/types"
 )
 
 type (

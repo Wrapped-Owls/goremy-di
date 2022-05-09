@@ -1,6 +1,6 @@
 package injector
 
-import "gotalaria/internal/utils"
+import "github.com/wrapped-owls/fitpiece/gotalaria/internal/utils"
 
 // ElementsStorage holds all dependencies
 type (

@@ -1,9 +1,9 @@
 package injector
 
 import (
-	"gotalaria/internal/binds"
-	"gotalaria/internal/types"
-	"gotalaria/internal/utils"
+	"github.com/wrapped-owls/fitpiece/gotalaria/internal/binds"
+	"github.com/wrapped-owls/fitpiece/gotalaria/internal/types"
+	"github.com/wrapped-owls/fitpiece/gotalaria/internal/utils"
 )
 
 func Register[T any](injector types.Injector, bind types.Bind[T], keys ...string) {

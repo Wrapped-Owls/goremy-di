@@ -1,8 +1,8 @@
 package injector
 
 import (
-	"gotalaria/internal/binds"
-	"gotalaria/internal/types"
+	"github.com/wrapped-owls/fitpiece/gotalaria/internal/binds"
+	"github.com/wrapped-owls/fitpiece/gotalaria/internal/types"
 	"testing"
 )
 

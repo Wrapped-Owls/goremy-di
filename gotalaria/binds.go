@@ -1,8 +1,8 @@
 package gotalaria
 
 import (
-	"gotalaria/internal/binds"
-	"gotalaria/internal/types"
+	"github.com/wrapped-owls/fitpiece/gotalaria/internal/binds"
+	"github.com/wrapped-owls/fitpiece/gotalaria/internal/types"
 )
 
 func Singleton[T any](binder types.Binder[T]) types.Bind[T] {
