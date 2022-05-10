@@ -12,6 +12,9 @@ func GetKey[T any]() types.BindKey {
 
 func TypeName[T any]() string {
 	elementType := GetType[T]()
+	if elementType == nil {
+		panic(ErrImpossibleIdentifyType)
+	}
 	return fmt.Sprintf("%s/%s", elementType.PkgPath(), elementType.Name())
 }
 
