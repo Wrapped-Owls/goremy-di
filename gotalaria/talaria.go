@@ -20,6 +20,9 @@ func NewInjector() Injector {
 }
 
 func Register[T any](i Injector, bind types.Bind[T], keys ...string) {
+	if i == nil {
+		i = globalInjector()
+	}
 	injector.Register[T](i, bind, keys...)
 }
 
@@ -27,7 +30,7 @@ func Register[T any](i Injector, bind types.Bind[T], keys ...string) {
 //
 // Receives: Injector (required); value (required); key (optional)
 func RegisterInstance[T any](i Injector, value T, keys ...string) {
-	injector.Register[T](
+	Register[T](
 		i,
 		Instance[T](func(DependencyRetriever) T {
 			return value
@@ -40,7 +43,7 @@ func RegisterInstance[T any](i Injector, value T, keys ...string) {
 //
 // Receives: Injector (required); value (required); key (optional)
 func RegisterSingleton[T any](i Injector, value T, keys ...string) {
-	injector.Register[T](
+	Register[T](
 		i,
 		Singleton[T](func(DependencyRetriever) T {
 			return value
@@ -50,5 +53,8 @@ func RegisterSingleton[T any](i Injector, value T, keys ...string) {
 }
 
 func Get[T any](i DependencyRetriever, keys ...string) T {
+	if i == nil {
+		i = globalInjector()
+	}
 	return injector.Get[T](i, keys...)
 }
