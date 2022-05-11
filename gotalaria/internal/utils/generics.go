@@ -12,9 +12,6 @@ func GetKey[T any](generifyInterface bool) types.BindKey {
 }
 
 // TypeName returns a string that defines the name of the given generic type.
-//
-// TODO: Create a typeNameInterface that generates the name based on interface methods signature,
-// TODO: so it can be used without importing interfaces (add a flag for it)
 func TypeName[T any](generifyInterface bool) string {
 	elementType, isInterface := GetType[T]()
 	if elementType == nil {
