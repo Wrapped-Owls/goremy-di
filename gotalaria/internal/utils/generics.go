@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/wrapped-owls/fitpiece/gotalaria/internal/types"
 	"reflect"
+	"strings"
 )
 
 func GetKey[T any]() types.BindKey {
@@ -15,9 +16,26 @@ func GetKey[T any]() types.BindKey {
 // TODO: Create a typeNameInterface that generates the name based on interface methods signature,
 // TODO: so it can be used without importing interfaces (add a flag for it)
 func TypeName[T any]() string {
-	elementType, _ := GetType[T]()
+	elementType, isInterface := GetType[T]()
 	if elementType == nil {
 		panic(ErrImpossibleIdentifyType)
+	}
+
+	if isInterface {
+		var builder strings.Builder
+		builder.WriteString("interface { ")
+		for i := 0; i < elementType.NumMethod(); i++ {
+			if i > 0 {
+				builder.WriteString("; ")
+			}
+			builder.WriteString(
+				fmt.Sprintf(
+					"%s %s", elementType.Method(i).Name, elementType.Method(i).Type,
+				),
+			)
+		}
+		builder.WriteString(" }")
+		return builder.String()
 	}
 	return fmt.Sprintf("%s/%s{###}%s", elementType.PkgPath(), elementType.Name(), fmt.Sprint(elementType))
 }
