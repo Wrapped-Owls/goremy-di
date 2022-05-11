@@ -6,14 +6,15 @@ import (
 
 type (
 	StdInjector struct {
-		allowOverride   bool
-		parentInjector  types.DependencyRetriever
-		bindStorage     types.Storage[types.BindKey]
-		instanceStorage types.Storage[types.BindKey]
+		allowOverride     bool
+		generifyInterface bool
+		parentInjector    types.DependencyRetriever
+		bindStorage       types.Storage[types.BindKey]
+		instanceStorage   types.Storage[types.BindKey]
 	}
 )
 
-func New(canOverride bool, parent ...types.Injector) *StdInjector {
+func New(canOverride bool, generifyInterface bool, parent ...types.Injector) *StdInjector {
 	var parentInjector types.Injector
 	if len(parent) > 0 {
 		parentInjector = parent[0]
@@ -21,8 +22,8 @@ func New(canOverride bool, parent ...types.Injector) *StdInjector {
 	return &StdInjector{
 		allowOverride:   canOverride,
 		parentInjector:  parentInjector,
-		bindStorage:     NewElementsStorage[types.BindKey](canOverride),
-		instanceStorage: NewElementsStorage[types.BindKey](canOverride),
+		bindStorage:     NewElementsStorage[types.BindKey](canOverride, generifyInterface),
+		instanceStorage: NewElementsStorage[types.BindKey](canOverride, generifyInterface),
 	}
 }
 
@@ -32,7 +33,11 @@ func (s *StdInjector) SubInjector(overrides ...bool) types.Injector {
 		canOverride = overrides[0]
 	}
 
-	return New(canOverride, s)
+	return New(canOverride, s.generifyInterface, s)
+}
+
+func (s StdInjector) ShouldGenerifyInterface() bool {
+	return s.generifyInterface
 }
 
 func (s *StdInjector) Bind(key types.BindKey, value any) {

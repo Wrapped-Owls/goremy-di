@@ -14,9 +14,9 @@ func SetStorage[T any](dStorage types.Storage[types.BindKey], value T, keys ...s
 	}
 
 	if len(key) > 0 {
-		dStorage.SetNamed(utils.GetKey[T](), key, value)
+		dStorage.SetNamed(utils.GetKey[T](dStorage.ShouldGenerifyInterface()), key, value)
 	} else {
-		dStorage.Set(utils.GetKey[T](), value)
+		dStorage.Set(utils.GetKey[T](dStorage.ShouldGenerifyInterface()), value)
 	}
 }
 
@@ -33,9 +33,9 @@ func GetStorage[T any](dStorage types.ValuesGetter[types.BindKey], keys ...strin
 
 	// search in named elements
 	if len(key) > 0 {
-		value, ok = dStorage.GetNamed(utils.GetKey[T](), key)
+		value, ok = dStorage.GetNamed(utils.GetKey[T](dStorage.ShouldGenerifyInterface()), key)
 	} else {
-		value, ok = dStorage.Get(utils.GetKey[T]())
+		value, ok = dStorage.Get(utils.GetKey[T](dStorage.ShouldGenerifyInterface()))
 	}
 
 	if ok {

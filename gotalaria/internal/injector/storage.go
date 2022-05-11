@@ -6,18 +6,24 @@ import "github.com/wrapped-owls/talaria-di/gotalaria/internal/utils"
 type (
 	genericAnyMap[T comparable]   map[T]any
 	ElementsStorage[T comparable] struct {
-		allowOverride bool
-		namedElements map[string]genericAnyMap[T]
-		elements      genericAnyMap[T]
+		allowOverride     bool
+		generifyInterface bool
+		namedElements     map[string]genericAnyMap[T]
+		elements          genericAnyMap[T]
 	}
 )
 
-func NewElementsStorage[T comparable](allowOverride bool) *ElementsStorage[T] {
+func NewElementsStorage[T comparable](allowOverride bool, generifyInterface bool) *ElementsStorage[T] {
 	return &ElementsStorage[T]{
-		allowOverride: allowOverride,
-		namedElements: map[string]genericAnyMap[T]{},
-		elements:      genericAnyMap[T]{},
+		allowOverride:     allowOverride,
+		generifyInterface: generifyInterface,
+		namedElements:     map[string]genericAnyMap[T]{},
+		elements:          genericAnyMap[T]{},
 	}
+}
+
+func (s ElementsStorage[T]) ShouldGenerifyInterface() bool {
+	return s.generifyInterface
 }
 
 func (s *ElementsStorage[T]) Set(key T, value any) {

@@ -16,7 +16,7 @@ type (
 )
 
 func NewInjector() Injector {
-	return injector.New(false)
+	return injector.New(false, false)
 }
 
 // Register must be called first, because the library doesn't support registering dependencies while get at same time.

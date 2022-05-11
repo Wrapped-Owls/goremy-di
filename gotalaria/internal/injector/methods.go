@@ -6,33 +6,33 @@ import (
 	"github.com/wrapped-owls/talaria-di/gotalaria/internal/utils"
 )
 
-func Register[T any](injector types.Injector, bind types.Bind[T], keys ...string) {
+func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) {
 	var key string
 	if len(keys) > 0 {
 		key = keys[0]
 	}
 	if insBind, ok := bind.(binds.InstanceBind[T]); ok {
 		if !insBind.IsFactory {
-			value := insBind.Generates(injector)
-			SetStorage[T](injector, value, key)
+			value := insBind.Generates(ij)
+			SetStorage[T](ij, value, key)
 			return
 		}
 	} else if sglBind, assertOk := bind.(*binds.SingletonBind[T]); assertOk {
 		if !sglBind.IsLazy && sglBind.ShouldGenerate() {
-			sglBind.BuildDependency(injector)
+			sglBind.BuildDependency(ij)
 		}
 	}
 
-	elementType := utils.GetKey[T]()
+	elementType := utils.GetKey[T](ij.ShouldGenerifyInterface())
 
 	if len(key) > 0 {
-		injector.BindNamed(key, elementType, bind)
+		ij.BindNamed(key, elementType, bind)
 	} else {
-		injector.Bind(elementType, bind)
+		ij.Bind(elementType, bind)
 	}
 }
 
-func Get[T any](injector types.DependencyRetriever, keys ...string) T {
+func Get[T any](retriever types.DependencyRetriever, keys ...string) T {
 	var (
 		key string
 	)
@@ -40,7 +40,7 @@ func Get[T any](injector types.DependencyRetriever, keys ...string) T {
 	if len(keys) > 0 {
 		key = keys[0]
 	}
-	elementType := utils.GetKey[T]()
+	elementType := utils.GetKey[T](retriever.ShouldGenerifyInterface())
 
 	var (
 		bind any
@@ -49,18 +49,18 @@ func Get[T any](injector types.DependencyRetriever, keys ...string) T {
 
 	// search in dynamic injections that needed to run a given function
 	if len(key) > 0 {
-		bind, ok = injector.RetrieveNamedBind(key, elementType)
+		bind, ok = retriever.RetrieveNamedBind(key, elementType)
 	} else {
-		bind, ok = injector.RetrieveBind(elementType)
+		bind, ok = retriever.RetrieveBind(elementType)
 	}
 
 	if ok {
 		if typedBind, assertOk := bind.(types.Bind[T]); assertOk {
-			result := typedBind.Generates(injector)
+			result := typedBind.Generates(retriever)
 			return result
 		}
 	}
 	// retrieve values from instanceStorage
-	result := GetStorage[T](injector, key)
+	result := GetStorage[T](retriever, key)
 	return result
 }

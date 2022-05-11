@@ -4,10 +4,12 @@ type (
 	ValuesSetter[T comparable] interface {
 		Set(T, any)
 		SetNamed(T, string, any)
+		ShouldGenerifyInterface() bool
 	}
 	ValuesGetter[T comparable] interface {
 		GetNamed(T, string) (any, bool)
 		Get(T) (any, bool)
+		ShouldGenerifyInterface() bool
 	}
 	Storage[T comparable] interface {
 		ValuesSetter[T]

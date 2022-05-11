@@ -7,21 +7,21 @@ import (
 	"strings"
 )
 
-func GetKey[T any]() types.BindKey {
-	return TypeName[T]()
+func GetKey[T any](generifyInterface bool) types.BindKey {
+	return TypeName[T](generifyInterface)
 }
 
 // TypeName returns a string that defines the name of the given generic type.
 //
 // TODO: Create a typeNameInterface that generates the name based on interface methods signature,
 // TODO: so it can be used without importing interfaces (add a flag for it)
-func TypeName[T any]() string {
+func TypeName[T any](generifyInterface bool) string {
 	elementType, isInterface := GetType[T]()
 	if elementType == nil {
 		panic(ErrImpossibleIdentifyType)
 	}
 
-	if isInterface {
+	if generifyInterface && isInterface {
 		var builder strings.Builder
 		builder.WriteString("interface { ")
 		for i := 0; i < elementType.NumMethod(); i++ {
