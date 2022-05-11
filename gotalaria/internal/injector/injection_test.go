@@ -8,7 +8,7 @@ import (
 )
 
 func TestInjection__GetNoRegistered(t *testing.T) {
-	ij := New(false)
+	ij := New(false, false)
 
 	if strResult := Get[string](ij); len(strResult) != 0 {
 		t.Errorf("string result is not the default, received: `%s`", strResult)
@@ -43,7 +43,7 @@ func TestInjection__GetStructImplementInterface(t *testing.T) {
 	type universalAnswer interface {
 		String() string
 	}
-	ij := New(false)
+	ij := New(false, true)
 
 	Register(ij, binds.Instance(
 		func(retriever types.DependencyRetriever) universalAnswer {
@@ -76,7 +76,7 @@ func TestInjection__RegisterSameKeyDifferentType(t *testing.T) {
 		expectedInt = 42
 	)
 
-	ij := New(false)
+	ij := New(false, false)
 	Register(
 		ij,
 		binds.Instance(func(retriever types.DependencyRetriever) string {
@@ -118,7 +118,7 @@ func TestInjection__RetrieveSameTypeDifferentKey(t *testing.T) {
 		},
 	)
 
-	ij := New(true)
+	ij := New(true, false)
 	Register(
 		ij,
 		binds.Instance(func(retriever types.DependencyRetriever) string {
@@ -158,7 +158,7 @@ func TestInjection__RegisterEqualInterfaces(t *testing.T) {
 		{sound: "woof woof"},
 	}
 
-	ij := New(true)
+	ij := New(true, false)
 	Register(
 		ij,
 		binds.Instance(func(retriever types.DependencyRetriever) spk1 {

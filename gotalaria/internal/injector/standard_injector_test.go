@@ -9,7 +9,7 @@ import (
 
 func TestStdInjector_SubInjector(t *testing.T) {
 	const strFirstHalf = "the counter is at"
-	parent := New(false)
+	parent := New(false, false)
 	subInjector := parent.SubInjector(false)
 
 	var counter uint8 = 0
@@ -33,7 +33,7 @@ func TestStdInjector_SubInjector(t *testing.T) {
 
 func TestStdInjector_SubInjector__OverrideParent(t *testing.T) {
 	const strFirstHalf = "The totally value of it is"
-	parent := New(false)
+	parent := New(false, false)
 	subInjector := parent.SubInjector(false)
 
 	Register[uint8](parent, binds.Factory(func(retriever types.DependencyRetriever) uint8 {

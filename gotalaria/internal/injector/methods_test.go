@@ -38,7 +38,7 @@ func TestGenerateBind__InstanceFactory(testObj *testing.T) {
 				return expectedString
 			})
 
-			i := New(true)
+			i := New(true, false)
 			Register[string](i, insBind)
 			for index := 0; index < totalExecutions; index++ {
 				result := Get[string](i)
@@ -87,7 +87,7 @@ func TestRegister__Singleton(testObj *testing.T) {
 				return &bindCase.expected
 			})
 
-			i := New(true)
+			i := New(true, false)
 			if invocations != 0 {
 				t.Error("Singleton was generated before register")
 			}

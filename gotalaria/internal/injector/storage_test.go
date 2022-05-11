@@ -19,7 +19,7 @@ func TestElementsStorage_Set(t *testing.T) {
 		}
 	}()
 
-	stg := NewElementsStorage[string](true)
+	stg := NewElementsStorage[string](true, false)
 	stg.Set("value", 7)
 	checkpoints++
 	stg.Set("value", 11)
@@ -32,7 +32,7 @@ func TestElementsStorage_Set(t *testing.T) {
 func TestElementsStorage_Set__Override(t *testing.T) {
 	testCases := generateStorageTestCases()
 
-	stg := NewElementsStorage[string](false)
+	stg := NewElementsStorage[string](false, false)
 	for _, toTest := range testCases {
 		t.Run(toTest.name, func(t *testing.T) {
 			var checkpoints uint8
