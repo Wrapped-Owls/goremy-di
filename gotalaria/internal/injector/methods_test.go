@@ -1,9 +1,10 @@
 package injector
 
 import (
+	"testing"
+
 	"github.com/wrapped-owls/talaria-di/gotalaria/internal/binds"
 	"github.com/wrapped-owls/talaria-di/gotalaria/internal/types"
-	"testing"
 )
 
 // TestGenerateBind__InstanceFactory verify if when registering an instance, it is only generated once
@@ -39,7 +40,7 @@ func TestGenerateBind__InstanceFactory(testObj *testing.T) {
 			})
 
 			i := New(true, false)
-			Register[string](i, insBind)
+			Register(i, insBind)
 			for index := 0; index < totalExecutions; index++ {
 				result := Get[string](i)
 				if result != expectedString {
@@ -92,7 +93,7 @@ func TestRegister__Singleton(testObj *testing.T) {
 				t.Error("Singleton was generated before register")
 			}
 			for index := 0; index < 11; index++ {
-				Register[*string](i, sgtBind)
+				Register(i, sgtBind)
 				if invocations != bindCase.registerGenerations {
 					t.Errorf("Singleton %d times. Expected %d", invocations, bindCase.registerGenerations)
 					t.FailNow()

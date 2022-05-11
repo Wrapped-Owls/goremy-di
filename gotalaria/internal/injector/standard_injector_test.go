@@ -2,9 +2,10 @@ package injector
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/wrapped-owls/talaria-di/gotalaria/internal/binds"
 	"github.com/wrapped-owls/talaria-di/gotalaria/internal/types"
-	"testing"
 )
 
 func TestStdInjector_SubInjector(t *testing.T) {
@@ -13,12 +14,12 @@ func TestStdInjector_SubInjector(t *testing.T) {
 	subInjector := parent.SubInjector(false)
 
 	var counter uint8 = 0
-	Register[uint8](parent, binds.Factory(func(retriever types.DependencyRetriever) uint8 {
+	Register(parent, binds.Factory(func(retriever types.DependencyRetriever) uint8 {
 		counter++
 		return counter
 	}))
 
-	Register[string](subInjector, binds.Factory(func(retriever types.DependencyRetriever) string {
+	Register(subInjector, binds.Factory(func(retriever types.DependencyRetriever) string {
 		return fmt.Sprintf("%s %d", strFirstHalf, Get[uint8](retriever))
 	}))
 
@@ -36,11 +37,11 @@ func TestStdInjector_SubInjector__OverrideParent(t *testing.T) {
 	parent := New(false, false)
 	subInjector := parent.SubInjector(false)
 
-	Register[uint8](parent, binds.Factory(func(retriever types.DependencyRetriever) uint8 {
+	Register(parent, binds.Factory(func(retriever types.DependencyRetriever) uint8 {
 		return 101
 	}))
 
-	Register[string](subInjector, binds.Factory(func(retriever types.DependencyRetriever) string {
+	Register(subInjector, binds.Factory(func(retriever types.DependencyRetriever) string {
 		return fmt.Sprintf("%s %d", strFirstHalf, Get[uint8](retriever))
 	}))
 
@@ -51,7 +52,7 @@ func TestStdInjector_SubInjector__OverrideParent(t *testing.T) {
 	}
 
 	// Register a new uint8 to override parent
-	Register[uint8](subInjector, binds.Singleton(func(retriever types.DependencyRetriever) uint8 {
+	Register(subInjector, binds.Singleton(func(retriever types.DependencyRetriever) uint8 {
 		return 42
 	}))
 

@@ -14,7 +14,7 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) {
 	if insBind, ok := bind.(binds.InstanceBind[T]); ok {
 		if !insBind.IsFactory {
 			value := insBind.Generates(ij)
-			SetStorage[T](ij, value, key)
+			SetStorage(ij, value, key)
 			return
 		}
 	} else if sglBind, assertOk := bind.(*binds.SingletonBind[T]); assertOk {
