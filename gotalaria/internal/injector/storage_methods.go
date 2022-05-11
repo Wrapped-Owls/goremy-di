@@ -1,8 +1,8 @@
 package injector
 
 import (
-	"github.com/wrapped-owls/fitpiece/gotalaria/internal/types"
-	"github.com/wrapped-owls/fitpiece/gotalaria/internal/utils"
+	"github.com/wrapped-owls/talaria-di/gotalaria/internal/types"
+	"github.com/wrapped-owls/talaria-di/gotalaria/internal/utils"
 )
 
 func SetStorage[T any](dStorage types.Storage[types.BindKey], value T, keys ...string) {

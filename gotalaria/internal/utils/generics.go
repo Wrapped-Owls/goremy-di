@@ -2,7 +2,7 @@ package utils
 
 import (
 	"fmt"
-	"github.com/wrapped-owls/fitpiece/gotalaria/internal/types"
+	"github.com/wrapped-owls/talaria-di/gotalaria/internal/types"
 	"reflect"
 	"strings"
 )
