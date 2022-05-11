@@ -19,6 +19,8 @@ func NewInjector() Injector {
 	return injector.New(false)
 }
 
+// Register must be called first, because the library doesn't support registering dependencies while get at same time.
+// This is not supported in multithreading applications because it does not have race protection
 func Register[T any](i Injector, bind types.Bind[T], keys ...string) {
 	if i == nil {
 		i = globalInjector()
