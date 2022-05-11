@@ -3,6 +3,7 @@ package injector
 import (
 	"github.com/wrapped-owls/fitpiece/gotalaria/internal/binds"
 	"github.com/wrapped-owls/fitpiece/gotalaria/internal/types"
+	"math"
 	"testing"
 )
 
@@ -131,4 +132,62 @@ func TestInjection__RetrieveSameTypeDifferentKey(t *testing.T) {
 	if result != resultParts[0]+resultParts[1] {
 		t.Errorf("injection result not work properly: Received: `%s`", result)
 	}
+}
+
+type speakerImpl struct {
+	sound string
+}
+
+func (s speakerImpl) speak() string {
+	return s.sound
+}
+
+func TestInjection__RegisterEqualInterfaces(t *testing.T) {
+	type (
+		spk1 interface {
+			speak() string
+		}
+		spk2 interface {
+			spk1
+		}
+	)
+
+	const storageKey = "same-key"
+	elements := [...]speakerImpl{
+		{sound: "meow"},
+		{sound: "woof woof"},
+	}
+
+	ij := New(true)
+	Register(
+		ij,
+		binds.Instance(func(retriever types.DependencyRetriever) spk1 {
+			return elements[0]
+		}),
+		storageKey,
+	)
+	Register(
+		ij,
+		binds.Instance(func(retriever types.DependencyRetriever) spk2 {
+			return elements[1]
+		}),
+		storageKey,
+	)
+
+	// Start to retrieve the injected objects
+	results := [...]spk1{
+		Get[spk1](ij, storageKey),
+		Get[spk2](ij, storageKey),
+	}
+
+	if results[0] == nil || results[1] == nil {
+		t.Error("Failed to retrieve injected objects thought interfaces")
+		t.FailNow()
+	}
+	for index := 0; index < int(math.Min(float64(len(results)), float64(len(elements)))); index++ {
+		if results[index].speak() != elements[index].speak() {
+			t.Error("element got by interface is not performing correctly")
+		}
+	}
+
 }
