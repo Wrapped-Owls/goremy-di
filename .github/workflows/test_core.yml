@@ -1,0 +1,38 @@
+name: Test Go-Talaria
+
+on:
+  push:
+    branches:
+      - $default-branch
+      - develop
+    paths:
+      - 'gotalaria/**'
+      - '.github/workflows/test_core.yml'
+  pull_request:
+    branches:
+      - $default-branch
+      - develop
+    paths:
+      - 'gotalaria/**'
+      - '.github/workflows/test_core.yml'
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version:
+          - 1.18.x
+        platform:
+          - ubuntu-latest
+          - windows-latest
+    runs-on: '${{ matrix.platform }}'
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '${{ matrix.go-version }}'
+
+      - name: Test `gotalaria`
+        run: cd ./gotalaria && go test -v -race ./...
