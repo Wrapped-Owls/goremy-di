@@ -1,4 +1,4 @@
-package main
+package core
 
 type ToysRepository interface {
 	Save(name string) error
