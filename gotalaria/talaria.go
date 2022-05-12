@@ -16,20 +16,20 @@ type (
 
 	// Config defines needed configuration to instantiate a new injector
 	Config struct {
-		canOverride        bool
-		generifyInterfaces bool
+		CanOverride        bool
+		GenerifyInterfaces bool
 	}
 )
 
 func NewInjector(configs ...Config) Injector {
 	cfg := Config{
-		canOverride:        false,
-		generifyInterfaces: true,
+		CanOverride:        false,
+		GenerifyInterfaces: true,
 	}
 	if len(configs) > 0 {
 		cfg = configs[0]
 	}
-	return injector.New(cfg.canOverride, cfg.generifyInterfaces)
+	return injector.New(cfg.CanOverride, cfg.GenerifyInterfaces)
 }
 
 // Register must be called first, because the library doesn't support registering dependencies while get at same time.
