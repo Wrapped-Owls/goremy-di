@@ -1,4 +1,4 @@
 github.com/mattn/go-sqlite3 v1.14.12 h1:TJ1bhYJPV44phC+IMu1u2K/i5RriLTPe+yc68XDJ1Z0=
 github.com/mattn/go-sqlite3 v1.14.12/go.mod h1:NyWgC/yNuGj7Q9rpYnZvas74GogHl5/Z4A/KQRfk6bU=
-github.com/wrapped-owls/talaria-di/gotalaria v0.0.0-20220511234353-1541e7de1c11 h1:Ea6glyOd8/Ra8U67r784NtprgDLNVsHHQ1hNCaMU2oI=
-github.com/wrapped-owls/talaria-di/gotalaria v0.0.0-20220511234353-1541e7de1c11/go.mod h1:nZUFlUamrdm6MHhiGb3djpYzb/hPEusFsjEoHibMiQY=
+github.com/wrapped-owls/talaria-di/gotalaria v0.0.0-20220512042835-9a793a1397d9 h1:x7UsPrXvcE3yFPo/PNT/UsopNC7id3SJbu6qpde6bgs=
+github.com/wrapped-owls/talaria-di/gotalaria v0.0.0-20220512042835-9a793a1397d9/go.mod h1:nZUFlUamrdm6MHhiGb3djpYzb/hPEusFsjEoHibMiQY=
