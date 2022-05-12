@@ -1,0 +1,40 @@
+name: Test Go-Talaria
+
+on:
+  push:
+    branches:
+      - $default-branch
+      - develop
+    paths:
+      - 'gotalaria/**'
+      - 'examples/**'
+      - '.github/workflows/build_examples.yml'
+  pull_request:
+    branches:
+      - $default-branch
+      - develop
+    paths:
+      - 'gotalaria/**'
+      - 'examples/**'
+      - '.github/workflows/build_examples.yml'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        go-version:
+          - 1.18.x
+        platform:
+          - ubuntu-latest
+          - windows-latest
+    runs-on: '${{ matrix.platform }}'
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '${{ matrix.go-version }}'
+
+      - name: Build examples
+        run: cd ./examples && go build -v ./...
