@@ -13,10 +13,23 @@ type (
 	Bind[T any] interface {
 		Generates(DependencyRetriever) T
 	}
+
+	// Config defines needed configuration to instantiate a new injector
+	Config struct {
+		canOverride        bool
+		generifyInterfaces bool
+	}
 )
 
-func NewInjector() Injector {
-	return injector.New(false, false)
+func NewInjector(configs ...Config) Injector {
+	cfg := Config{
+		canOverride:        false,
+		generifyInterfaces: true,
+	}
+	if len(configs) > 0 {
+		cfg = configs[0]
+	}
+	return injector.New(cfg.canOverride, cfg.generifyInterfaces)
 }
 
 // Register must be called first, because the library doesn't support registering dependencies while get at same time.
