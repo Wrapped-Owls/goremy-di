@@ -1,8 +1,8 @@
-package gotalaria
+package remy
 
 import (
-	"github.com/wrapped-owls/talaria-di/gotalaria/internal/injector"
-	"github.com/wrapped-owls/talaria-di/gotalaria/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/internal/injector"
+	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 )
 
 type (

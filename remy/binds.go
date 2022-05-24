@@ -1,8 +1,8 @@
-package gotalaria
+package remy
 
 import (
-	"github.com/wrapped-owls/talaria-di/gotalaria/internal/binds"
-	"github.com/wrapped-owls/talaria-di/gotalaria/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
+	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 )
 
 // Instance generates a bind that will be registered as a single instance during bind register in the Injector.

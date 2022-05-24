@@ -1,4 +1,4 @@
-package gotalaria
+package remy
 
 import (
 	"sync"

@@ -1,8 +1,8 @@
 package injector
 
 import (
-	"github.com/wrapped-owls/talaria-di/gotalaria/internal/binds"
-	"github.com/wrapped-owls/talaria-di/gotalaria/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
+	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"math"
 	"testing"
 )

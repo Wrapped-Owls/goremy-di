@@ -3,8 +3,8 @@ package injector
 import (
 	"testing"
 
-	"github.com/wrapped-owls/talaria-di/gotalaria/internal/binds"
-	"github.com/wrapped-owls/talaria-di/gotalaria/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
+	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 )
 
 // TestGenerateBind__InstanceFactory verify if when registering an instance, it is only generated once

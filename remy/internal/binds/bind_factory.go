@@ -1,6 +1,6 @@
 package binds
 
-import "github.com/wrapped-owls/talaria-di/gotalaria/internal/types"
+import "github.com/wrapped-owls/goremy-di/remy/internal/types"
 
 type InstanceBind[T any] struct {
 	// key allows to fetch a dependency directly if it's exists.

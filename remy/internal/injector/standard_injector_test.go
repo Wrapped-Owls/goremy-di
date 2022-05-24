@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/wrapped-owls/talaria-di/gotalaria/internal/binds"
-	"github.com/wrapped-owls/talaria-di/gotalaria/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
+	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 )
 
 func TestStdInjector_SubInjector(t *testing.T) {

@@ -1,6 +1,6 @@
 package injector
 
-import "github.com/wrapped-owls/talaria-di/gotalaria/internal/utils"
+import "github.com/wrapped-owls/goremy-di/remy/internal/utils"
 
 // ElementsStorage holds all dependencies
 type (

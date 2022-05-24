@@ -4,6 +4,7 @@ type (
 	ValuesSetter[T comparable] interface {
 		Set(T, any)
 		SetNamed(T, string, any)
+		// FIXME: Add this line again when problem solved in Goland: ShouldGenerifyInterface() bool
 	}
 	ValuesGetter[T comparable] interface {
 		GetNamed(T, string) (any, bool)

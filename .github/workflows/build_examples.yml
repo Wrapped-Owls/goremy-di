@@ -6,7 +6,7 @@ on:
       - $default-branch
       - develop
     paths:
-      - 'gotalaria/**'
+      - 'goremy/**'
       - 'examples/**'
       - '.github/workflows/build_examples.yml'
   pull_request:
@@ -14,7 +14,7 @@ on:
       - $default-branch
       - develop
     paths:
-      - 'gotalaria/**'
+      - 'goremy/**'
       - 'examples/**'
       - '.github/workflows/build_examples.yml'
 
