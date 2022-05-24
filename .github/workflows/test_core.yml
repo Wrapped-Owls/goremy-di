@@ -6,14 +6,14 @@ on:
       - $default-branch
       - develop
     paths:
-      - 'goremy/**'
+      - 'remy/**'
       - '.github/workflows/test_core.yml'
   pull_request:
     branches:
       - $default-branch
       - develop
     paths:
-      - 'goremy/**'
+      - 'remy/**'
       - '.github/workflows/test_core.yml'
 
 jobs:
@@ -34,5 +34,5 @@ jobs:
         with:
           go-version: '${{ matrix.go-version }}'
 
-      - name: Test `goremy`
-        run: cd ./goremy && go test -v -race ./...
+      - name: Test `remy`
+        run: cd ./remy && go test -v -race ./...
