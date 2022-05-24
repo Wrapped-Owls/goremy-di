@@ -1,15 +1,17 @@
-# Talaria
+# Remy
 
 A package that helps in creation of golang dependency injections
 
 ## About
 
-The Talaria of Mercury (Latin: tālāria) are winged sandals, a symbol of the Greek messenger god Hermes (Roman equivalent
-Mercury).
+The main job of a dependency-injection package is help to provide objects, instances, closures to a caller, by avoiding
+a depth graph in parameter pass. Knowing this, and using culinary as inspiration, we thought that a DI (dependency
+injection) package is like a `Sous chef` in a cuisine, so we take decided to reference the best `Sous chef` we know: "
+Remy"!
 
 ### Inspiration
 
-This package is heavily inpired
+This package is heavily inspired
 by [Modular Dependency Injection](https://modular.flutterando.com.br/docs/flutter_modular/dependency-injection) module
 
 ## Instance registration
