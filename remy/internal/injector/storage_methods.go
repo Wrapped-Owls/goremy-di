@@ -5,7 +5,7 @@ import (
 	"github.com/wrapped-owls/goremy-di/remy/internal/utils"
 )
 
-func SetStorage[T any](dStorage types.Storage[types.BindKey], value T, keys ...string) {
+func SetStorage[T any](dStorage types.ValuesSetter[types.BindKey], value T, keys ...string) {
 	var (
 		key string
 	)

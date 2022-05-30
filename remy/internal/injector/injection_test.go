@@ -186,8 +186,10 @@ func TestInjection__RegisterEqualInterfaces(t *testing.T) {
 	}
 	for index := 0; index < int(math.Min(float64(len(results)), float64(len(elements)))); index++ {
 		if results[index].speak() != elements[index].speak() {
-			t.Error("element got by interface is not performing correctly")
+			t.Errorf(
+				"element got by interface is not performing correctly: [%d] `%s` != `%s`",
+				index, results[index].speak(), elements[index].speak(),
+			)
 		}
 	}
-
 }

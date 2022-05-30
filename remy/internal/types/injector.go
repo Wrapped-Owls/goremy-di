@@ -1,15 +1,18 @@
 package types
 
 type (
+	CheckGenerify interface {
+		ShouldGenerifyInterface() bool
+	}
 	ValuesSetter[T comparable] interface {
 		Set(T, any)
 		SetNamed(T, string, any)
-		// FIXME: Add this line again when problem solved in Goland: ShouldGenerifyInterface() bool
+		CheckGenerify
 	}
 	ValuesGetter[T comparable] interface {
 		GetNamed(T, string) (any, bool)
 		Get(T) (any, bool)
-		ShouldGenerifyInterface() bool
+		CheckGenerify
 	}
 	Storage[T comparable] interface {
 		ValuesSetter[T]
