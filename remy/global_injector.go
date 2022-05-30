@@ -27,3 +27,8 @@ func globalInjector() Injector {
 	}
 	return __globalInjector
 }
+
+// SetGlobalInjector receives a custom injector and saves it to be used as a global injector
+func SetGlobalInjector(i Injector) {
+	__globalInjector = i
+}
