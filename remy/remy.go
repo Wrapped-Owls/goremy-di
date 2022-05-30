@@ -16,8 +16,17 @@ type (
 
 	// Config defines needed configuration to instantiate a new injector
 	Config struct {
-		ParentInjector     Injector
-		CanOverride        bool
+		// ParentInjector defines an Injector that will be used as a parent one, which will make possible to access it's
+		// registered binds.
+		ParentInjector Injector
+
+		// CanOverride defines if a bind can be overridden if it is registered twice.
+		CanOverride bool
+
+		// GenerifyInterfaces defines the method to check for interface binds.
+		// If this parameter is true, then an interface that is defined in two different packages,
+		// but has the same signature methods, will generate the same key. If is false, all interfaces will generate
+		// a different key.
 		GenerifyInterfaces bool
 	}
 )
@@ -72,6 +81,9 @@ func RegisterSingleton[T any](i Injector, value T, keys ...string) {
 	)
 }
 
+// Get directly access a retriever and returns the type that was bound in it.
+//
+// Receives: DependencyRetriever (required); key (optional)
 func Get[T any](i DependencyRetriever, keys ...string) T {
 	if i == nil {
 		i = globalInjector()
