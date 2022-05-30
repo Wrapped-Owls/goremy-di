@@ -16,6 +16,7 @@ type (
 
 	// Config defines needed configuration to instantiate a new injector
 	Config struct {
+		ParentInjector     Injector
 		CanOverride        bool
 		GenerifyInterfaces bool
 	}
@@ -28,6 +29,10 @@ func NewInjector(configs ...Config) Injector {
 	}
 	if len(configs) > 0 {
 		cfg = configs[0]
+	}
+
+	if cfg.ParentInjector != nil {
+		return injector.New(cfg.CanOverride, cfg.GenerifyInterfaces, cfg.ParentInjector)
 	}
 	return injector.New(cfg.CanOverride, cfg.GenerifyInterfaces)
 }
