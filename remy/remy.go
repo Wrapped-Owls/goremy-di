@@ -8,6 +8,7 @@ import (
 type (
 	DependencyRetriever = types.DependencyRetriever
 	Injector            = types.Injector
+	InstancePairAny     = types.InstancePair[any]
 
 	// Bind is directly copy from types.Bind
 	Bind[T any] interface {
@@ -89,4 +90,24 @@ func Get[T any](i DependencyRetriever, keys ...string) T {
 		i = globalInjector()
 	}
 	return injector.Get[T](i, keys...)
+}
+
+// GetGen creates a sub-injector and access the retriever to generate and return a Factory bind
+//
+// Receives: Injector (required); []InstancePairAny (required); key (optional)
+func GetGen[T any](ij Injector, elements []InstancePairAny, keys ...string) T {
+	if ij == nil {
+		ij = globalInjector()
+	}
+	return injector.GetGen[T](ij, elements, keys...)
+}
+
+// GetGenFunc creates a sub-injector and access the retriever to generate and return a Factory bind
+//
+// Receives: Injector (required); func(Injector) (required); key (optional)
+func GetGenFunc[T any](ij types.Injector, binder func(Injector), keys ...string) T {
+	if ij == nil {
+		ij = globalInjector()
+	}
+	return injector.GetGenFunc[T](ij, binder, keys...)
 }
