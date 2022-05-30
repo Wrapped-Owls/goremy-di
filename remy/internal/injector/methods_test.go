@@ -1,6 +1,7 @@
 package injector
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
@@ -110,5 +111,59 @@ func TestRegister__Singleton(testObj *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestGetGen(t *testing.T) {
+	const expected = "I love Go, yes this is true, as the answer 42"
+
+	i := New(true, false)
+	Register(
+		i, binds.Factory(func(ij types.DependencyRetriever) string {
+			return fmt.Sprintf(
+				"I love %s, yes this is %v, as the answer %d",
+				Get[string](ij, "lang"), Get[bool](ij), Get[uint8](ij),
+			)
+		}),
+	)
+
+	// register a bool bind to check if it will be replaced during parameter passing
+	Register(
+		i, binds.Instance(func(ij types.DependencyRetriever) bool {
+			return false
+		}),
+	)
+
+	result := GetGen[string](
+		i,
+		[]types.InstancePair[any]{
+			{
+				Value: uint8(42),
+			},
+			{
+				Value: "Go",
+				Key:   "lang",
+			},
+			{
+				Value: true,
+			},
+		},
+	)
+
+	if result != expected {
+		t.Errorf(
+			"The direct params was not injected correctly.\nExpected: `%s`\nReceived: `%s`",
+			expected, result,
+		)
+		t.FailNow()
+	}
+
+	// Check if the binds doesn't exist after do the GetGen
+	uintResult := Get[uint8](i)
+	boolResult := Get[bool](i)
+	strResult := Get[string](i, "lang")
+
+	if uintResult != 0 || boolResult || len(strResult) > 0 {
+		t.Error("Parameter injection values override the original injector")
 	}
 }

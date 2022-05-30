@@ -8,12 +8,17 @@ import (
 )
 
 func GetKey[T any](generifyInterface bool) types.BindKey {
-	return TypeName[T](generifyInterface)
+	elementType, isInterface := GetType[T]()
+	return TypeName(generifyInterface, elementType, isInterface)
+}
+
+func GetElemKey(element any, generifyInterface bool) types.BindKey {
+	elementType, isInterface := GetElemType(element)
+	return TypeName(generifyInterface, elementType, isInterface)
 }
 
 // TypeName returns a string that defines the name of the given generic type.
-func TypeName[T any](generifyInterface bool) string {
-	elementType, isInterface := GetType[T]()
+func TypeName(generifyInterface bool, elementType reflect.Type, isInterface bool) string {
 	if elementType == nil {
 		panic(ErrImpossibleIdentifyType)
 	}
@@ -35,6 +40,14 @@ func TypeName[T any](generifyInterface bool) string {
 		return builder.String()
 	}
 	return fmt.Sprintf("%s/%s{###}%s", elementType.PkgPath(), elementType.Name(), fmt.Sprint(elementType))
+}
+
+func GetElemType(element any) (foundType reflect.Type, isInterface bool) {
+	foundType = reflect.TypeOf(element)
+	if foundType == nil {
+		panic(ErrImpossibleIdentifyType)
+	}
+	return
 }
 
 func GetType[T any]() (foundType reflect.Type, isInterface bool) {

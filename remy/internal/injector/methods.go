@@ -64,3 +64,22 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) T {
 	result := GetStorage[T](retriever, key)
 	return result
 }
+
+func GetGen[T any](ij types.Injector, elements []types.InstancePair[any], keys ...string) T {
+	subInjector := New(false, ij.ShouldGenerifyInterface(), ij)
+	for _, element := range elements {
+		bindKey := utils.GetElemKey(element.Value, subInjector.ShouldGenerifyInterface())
+		if len(element.Key) > 0 {
+			subInjector.SetNamed(bindKey, element.Key, element.Value)
+		}
+		subInjector.Set(bindKey, element.Value)
+	}
+
+	return Get[T](subInjector, keys...)
+}
+
+func GetGenFunc[T any](ij types.Injector, binder func(injector types.Injector), keys ...string) T {
+	subInjector := New(false, ij.ShouldGenerifyInterface(), ij)
+	binder(subInjector)
+	return Get[T](subInjector, keys...)
+}
