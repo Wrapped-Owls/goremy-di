@@ -97,7 +97,6 @@ calling the Get function:
 package main
 
 func init() {
-	log.Println("Registering repositories")
 	remy.Register(
 		core.Injector,
 		remy.Factory(func(retriever remy.DependencyRetriever) core.GenericRepository {
@@ -119,5 +118,95 @@ func main() {
 	if _, err := dbConn.Exec("CREATE TABLE programming_languages(id INTEGER, name VARCHAR(60))"); err != nil {
 		log.Fatalln(err)
 	}
+}
+```
+
+#### Passing parameters to bind injector
+
+Sometimes you may want to generate a bind that must receive some additional arguments in the `Binder` function, but
+these arguments are variables and depend on the caller. So you may think that the solution for this is to dynamically
+during the program runtime, call the `Register[T]` function and register these parameters, but this thought is wrong,
+because the bind registration is not _concurrent_ safe. This means that while the register of a single _string_, another
+thread can register the same element, and then the bind will retrieve the values in a wrong way.
+
+This works by creating automatically a sub-injector that will be used to add instance binds that will be used to
+generate the factory bind requested.
+
+**REMINDER:** It only works with the `Factory` bind.
+
+Currently, exists two ways to do this, by using an array of `InstancePair` or by using a function and registering the
+values directly in it.
+
+Using as example a factory bind registered in the init function:
+
+```go
+package main
+
+func init() {
+	remy.Register(
+		nil, remy.Factory(func(ij remy.DependencyRetriever) string {
+			return fmt.Sprintf(
+				"I love %s, yes this is %v, as the answer %d",
+				remy.Get[string](ij, "lang"), remy.Get[bool](ij), remy.Get[uint8](ij),
+			)
+		}),
+	)
+}
+```
+
+The requested values can be passed by two forms:
+
+##### Using InstancePair array
+
+With this method is not possible to register correctly interfaces, so in case the factory binds requests an interface
+value, is better to use the other method.
+
+```go
+package main
+
+import "log"
+
+func main() {
+	result := remy.GetGen[string](
+		ij,
+		[]remy.InstancePair[any]{
+			{
+				Value: uint8(42),
+			},
+			{
+				Value: "Go",
+				Key:   "lang",
+			},
+			{
+				Value: true,
+			},
+		},
+	)
+
+	log.Println(result)
+}
+```
+
+##### Using callback to register the values
+
+```go
+package main
+
+func main() {
+	remy.GetGenFunc[string](i, func(ij remy.Injector) {
+		remy.Register(ij, remy.Instance(func(retriever remy.DependencyRetriever) uint8 {
+			return 42
+		}))
+		remy.Register(
+			ij,
+			remy.Instance(func(retriever remy.DependencyRetriever) string {
+				return "Go"
+			}),
+			"lang",
+		)
+		remy.Register(ij, remy.Instance(func(retriever remy.DependencyRetriever) bool {
+			return true
+		}))
+	})
 }
 ```
