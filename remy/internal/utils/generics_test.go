@@ -15,12 +15,11 @@ func TestTypeName__Generify(t *testing.T) {
 		}
 	)
 
-	if TypeName[super](false) == TypeName[sub](false) {
+	if GetKey[super](false) == GetKey[sub](false) {
 		t.Error("type names was the same when should not generify")
 	}
 
-	if TypeName[super](true) != TypeName[sub](true) {
+	if GetKey[super](true) != GetKey[sub](true) {
 		t.Error("generified type name should be the same")
 	}
-
 }
