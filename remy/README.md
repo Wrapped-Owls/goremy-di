@@ -1,6 +1,7 @@
 # Remy
 
-To install in your Go project, you must use the 1.18 version of the language, and have the GOMODULE enable.
+To install in your Go project, you must use the 1.18 version of the language, and have the environment
+variable `GO111MODULE=on`.
 
 ```shell
 go get github.com/wrapped-owls/goremy-di
@@ -10,8 +11,38 @@ go get github.com/wrapped-owls/goremy-di
 
 All the instances and/or closures must be saved somewhere in-memory, so it will be available to be requested later in
 the program execution. When the app starts, it must register all dependencies in a given injector, which can be the
-default global injector or a custom one. This injector will hold and delegates how to instantiate an object/interface
+default global injector or a custom one. This injector will hold and delegate how to instantiate an object/interface
 requested.
+
+### The Injector
+
+Remy can generate multiple injector instances, and by default it can configure a _default_ global instance.
+To generate a new Injector instance, the function `NewInjector` must be called passing a `Config` struct, which have the
+attributes:
+
+- AllowOverride - Determines if a element bind can be override
+- GenerifyInterface - Go interfaces are not exactly unique, so when an element is registered with an interface `A` and
+  it has the same methods signatures as interface `B`, this flag will tell to remy to treat both as the same.
+- ParentInjector - Make possible to pass an existing Injector as a parent injector, so the new injector can access all
+  elements in its parent. Is good to know, that all binds registered in sub-injector can't be accessed by the parent
+  injector, it is scope safe.
+
+```go
+package core
+
+import (
+	"github.com/wrapped-owls/goremy-di/remy"
+	"log"
+)
+
+var Injector remy.Injector
+
+// create a new instance of the injector
+func init() {
+	log.Println("Initializing injector")
+	Injector = remy.NewInjector()
+}
+```
 
 ### Global Injector
 
@@ -19,9 +50,14 @@ The easiest way to `register` and `retrieve` a bind, is using the **globalInject
 drawback: To be safer in a multithreading system, during the retrieval access, it uses a RWMutex`, which make the app
 execution slower than directing accessing the injector.
 
-To use the global injector, you must set a custom one using the method `SetGlobalInjector`, or let it be created
-automatically. After choosing how the global injector will be created, you must pass a _nil_ as the `Injector` parameter
-in `Get[T]`/`Register[T]` functions.
+A global injector can be defined in two different ways, bt setting a custom one using the method `SetGlobalInjector`, or
+let it be created automatically by the **remy** package.
+
+**Curiosity tip:** To don't allocate the object in memory directly, the global injector is only generated when it is
+first accessed.
+
+To use the global injector, you must pass a _nil_ as the `Injector` parameter
+in `Get[T]`/`Register[T]`/`GetGen[T]` functions.
 
 ### Register bind elements
 
@@ -144,10 +180,10 @@ package main
 
 func init() {
 	remy.Register(
-		nil, remy.Factory(func(ij remy.DependencyRetriever) string {
+		nil, remy.Factory(func(injector remy.DependencyRetriever) string {
 			return fmt.Sprintf(
 				"I love %s, yes this is %v, as the answer %d",
-				remy.Get[string](ij, "lang"), remy.Get[bool](ij), remy.Get[uint8](ij),
+				remy.Get[string](injector, "lang"), remy.Get[bool](injector), remy.Get[uint8](injector),
 			)
 		}),
 	)
@@ -168,7 +204,7 @@ import "log"
 
 func main() {
 	result := remy.GetGen[string](
-		ij,
+		injector,
 		[]remy.InstancePair[any]{
 			{
 				Value: uint8(42),
@@ -193,7 +229,7 @@ func main() {
 package main
 
 func main() {
-	remy.GetGenFunc[string](i, func(ij remy.Injector) {
+	remy.GetGenFunc[string](injector, func(injector remy.Injector) {
 		remy.Register(ij, remy.Instance(func(retriever remy.DependencyRetriever) uint8 {
 			return 42
 		}))
