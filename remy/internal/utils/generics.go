@@ -7,18 +7,41 @@ import (
 	"strings"
 )
 
+// nilStr is the default const string representation of a nil type
+var nilStr = fmt.Sprintf("%T", nil)
+
 func GetKey[T any](generifyInterface bool) types.BindKey {
+	if !generifyInterface {
+		return TypeName[T]()
+	}
 	elementType, isInterface := GetType[T]()
-	return TypeName(generifyInterface, elementType, isInterface)
+	return TypeNameByReflect(generifyInterface, elementType, isInterface)
 }
 
 func GetElemKey(element any, generifyInterface bool) types.BindKey {
+	if !generifyInterface {
+		return TypeName(element)
+	}
 	elementType, isInterface := GetElemType(element)
-	return TypeName(generifyInterface, elementType, isInterface)
+	return TypeNameByReflect(generifyInterface, elementType, isInterface)
 }
 
-// TypeName returns a string that defines the name of the given generic type.
-func TypeName(generifyInterface bool, elementType reflect.Type, isInterface bool) string {
+func TypeName[T any](elements ...T) (name string) {
+	var value T
+	if len(elements) > 0 {
+		value = elements[0]
+	} else {
+		value = Default[T]()
+	}
+	name = fmt.Sprintf("%T", value)
+	if name == nilStr {
+		name = fmt.Sprintf("%T", &value)
+	}
+	return
+}
+
+// TypeNameByReflect returns a string that defines the name of the given generic type.
+func TypeNameByReflect(generifyInterface bool, elementType reflect.Type, isInterface bool) string {
 	if elementType == nil {
 		panic(ErrImpossibleIdentifyType)
 	}
