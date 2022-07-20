@@ -23,3 +23,11 @@ func TestTypeName__Generify(t *testing.T) {
 		t.Error("generified type name should be the same")
 	}
 }
+
+func TestTypeName__SameStructWithDifferentPackage(t *testing.T) {
+	type T testing.T
+
+	if GetKey[T](false) == GetKey[testing.T](false) {
+		t.Error("type names was the same, when it should be different, because of different packages")
+	}
+}

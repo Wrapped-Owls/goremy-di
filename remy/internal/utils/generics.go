@@ -30,9 +30,8 @@ func TypeName[T any](elements ...T) (name string) {
 	var value T
 	if len(elements) > 0 {
 		value = elements[0]
-	} else {
-		value = Default[T]()
 	}
+
 	name = fmt.Sprintf("%T", value)
 	if name == nilStr {
 		name = fmt.Sprintf("%T", &value)
