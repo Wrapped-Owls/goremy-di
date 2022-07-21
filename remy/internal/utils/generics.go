@@ -10,7 +10,7 @@ var nilStr = fmt.Sprintf("%T", nil)
 func interfaceTypeName[T any](shouldGenerify bool, element T) (name string) {
 	if shouldGenerify {
 		if elementType, isInterface := GetElemType(element); isInterface {
-			return buildDuckInterfaceType(elementType)
+			return buildDuckInterfaceType(elementType.Elem())
 		}
 	}
 	name = fmt.Sprintf("%T", element)
