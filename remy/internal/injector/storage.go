@@ -1,28 +1,31 @@
 package injector
 
-import "github.com/wrapped-owls/goremy-di/remy/internal/utils"
+import (
+	"github.com/wrapped-owls/goremy-di/remy/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/internal/utils"
+)
 
 // ElementsStorage holds all dependencies
 type (
 	genericAnyMap[T comparable]   map[T]any
 	ElementsStorage[T comparable] struct {
 		allowOverride     bool
-		generifyInterface bool
+		generifyInterface types.ReflectionOptions
 		namedElements     map[string]genericAnyMap[T]
 		elements          genericAnyMap[T]
 	}
 )
 
-func NewElementsStorage[T comparable](allowOverride bool, generifyInterface bool) *ElementsStorage[T] {
+func NewElementsStorage[T comparable](allowOverride bool, reflectionOptions types.ReflectionOptions) *ElementsStorage[T] {
 	return &ElementsStorage[T]{
 		allowOverride:     allowOverride,
-		generifyInterface: generifyInterface,
+		generifyInterface: reflectionOptions,
 		namedElements:     map[string]genericAnyMap[T]{},
 		elements:          genericAnyMap[T]{},
 	}
 }
 
-func (s ElementsStorage[T]) ShouldGenerifyInterface() bool {
+func (s ElementsStorage[T]) ReflectOpts() types.ReflectionOptions {
 	return s.generifyInterface
 }
 

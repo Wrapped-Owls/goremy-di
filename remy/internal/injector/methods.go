@@ -23,7 +23,7 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) {
 		}
 	}
 
-	elementType := utils.GetKey[T](ij.ShouldGenerifyInterface())
+	elementType := utils.GetKey[T](ij.ReflectOpts())
 
 	if len(key) > 0 {
 		ij.BindNamed(key, elementType, bind)
@@ -40,7 +40,7 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) T {
 	if len(keys) > 0 {
 		key = keys[0]
 	}
-	elementType := utils.GetKey[T](retriever.ShouldGenerifyInterface())
+	elementType := utils.GetKey[T](retriever.ReflectOpts())
 
 	var (
 		bind any
@@ -66,9 +66,9 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) T {
 }
 
 func GetGen[T any](ij types.Injector, elements []types.InstancePair[any], keys ...string) T {
-	subInjector := New(false, ij.ShouldGenerifyInterface(), ij)
+	subInjector := New(false, ij.ReflectOpts(), ij)
 	for _, element := range elements {
-		bindKey := utils.GetElemKey(element.Value, subInjector.ShouldGenerifyInterface())
+		bindKey := utils.GetElemKey(element.Value, subInjector.ReflectOpts())
 		if len(element.Key) > 0 {
 			subInjector.SetNamed(bindKey, element.Key, element.Value)
 		}
@@ -79,7 +79,7 @@ func GetGen[T any](ij types.Injector, elements []types.InstancePair[any], keys .
 }
 
 func GetGenFunc[T any](ij types.Injector, binder func(injector types.Injector), keys ...string) T {
-	subInjector := New(false, ij.ShouldGenerifyInterface(), ij)
+	subInjector := New(false, ij.ReflectOpts(), ij)
 	binder(subInjector)
 	return Get[T](subInjector, keys...)
 }

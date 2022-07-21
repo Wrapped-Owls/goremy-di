@@ -29,6 +29,12 @@ type (
 		// but has the same signature methods, will generate the same key. If is false, all interfaces will generate
 		// a different key.
 		GenerifyInterfaces bool
+
+		// UseReflectionType defines the injector to use reflection when saving and retrieving types.
+		// This parameter is useful when you want to use types with different modules but the same name and package names.
+		//
+		// Optional, default is false.
+		UseReflectionType bool
 	}
 )
 
@@ -41,10 +47,14 @@ func NewInjector(configs ...Config) Injector {
 		cfg = configs[0]
 	}
 
-	if cfg.ParentInjector != nil {
-		return injector.New(cfg.CanOverride, cfg.GenerifyInterfaces, cfg.ParentInjector)
+	reflectOpts := types.ReflectionOptions{
+		GenerifyInterface: cfg.GenerifyInterfaces,
+		UseReflectionType: cfg.UseReflectionType,
 	}
-	return injector.New(cfg.CanOverride, cfg.GenerifyInterfaces)
+	if cfg.ParentInjector != nil {
+		return injector.New(cfg.CanOverride, reflectOpts, cfg.ParentInjector)
+	}
+	return injector.New(cfg.CanOverride, reflectOpts)
 }
 
 // Register must be called first, because the library doesn't support registering dependencies while get at same time.

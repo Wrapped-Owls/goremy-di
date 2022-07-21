@@ -7,4 +7,9 @@ type (
 		Value T
 		Key   string
 	}
+
+	ReflectionOptions struct {
+		GenerifyInterface bool
+		UseReflectionType bool
+	}
 )

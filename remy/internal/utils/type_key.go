@@ -1,13 +1,19 @@
-//go:build !reflect
-
 package utils
 
 import "github.com/wrapped-owls/goremy-di/remy/internal/types"
 
-func GetKey[T any](generifyInterface bool) types.BindKey {
-	return TypeName[T](generifyInterface)
+func GetKey[T any](options types.ReflectionOptions) types.BindKey {
+	if options.UseReflectionType {
+		elementType, isInterface := GetType[T]()
+		return TypeNameByReflect(options.GenerifyInterface, elementType, isInterface)
+	}
+	return TypeName[T](options.GenerifyInterface)
 }
 
-func GetElemKey(element any, generifyInterface bool) types.BindKey {
-	return TypeName(generifyInterface, element)
+func GetElemKey(element any, options types.ReflectionOptions) types.BindKey {
+	if options.UseReflectionType {
+		elementType, isInterface := GetElemType(element)
+		return TypeNameByReflect(options.GenerifyInterface, elementType, isInterface)
+	}
+	return TypeName(options.GenerifyInterface, element)
 }
