@@ -1,6 +1,11 @@
 package utils
 
-import "testing"
+import (
+	aTypes "github.com/wrapped-owls/goremy-di/remy/internal/testelem/a/testtypes"
+	bTypes "github.com/wrapped-owls/goremy-di/remy/internal/testelem/b/testtypes"
+	"github.com/wrapped-owls/goremy-di/remy/internal/types"
+	"testing"
+)
 
 func TestTypeName__Generify(t *testing.T) {
 	type (
@@ -15,23 +20,25 @@ func TestTypeName__Generify(t *testing.T) {
 		}
 	)
 
-	if GetKey[super](false) == GetKey[sub](false) {
+	options := types.ReflectionOptions{}
+	if GetKey[super](options) == GetKey[sub](options) {
 		t.Error("type names was the same when should not generify")
 	}
 
-	if GetKey[super](true) != GetKey[sub](true) {
+	options = types.ReflectionOptions{GenerifyInterface: true}
+	if GetKey[super](options) != GetKey[sub](options) {
 		t.Error("generified type name should be the same")
 	}
 }
 
 func TestTypeName__SameStructWithDifferentPackage(t *testing.T) {
-	type T testing.T
-
-	if GetKey[T](false) == GetKey[testing.T](false) {
+	options := types.ReflectionOptions{UseReflectionType: true}
+	if GetKey[aTypes.Syringe](options) == GetKey[bTypes.Syringe](options) {
 		t.Error("type names was the same, when it should be different, because of different packages")
 	}
 
-	if GetElemKey(t, false) != GetKey[*testing.T](false) {
+	options = types.ReflectionOptions{UseReflectionType: true}
+	if GetElemKey(t, options) != GetKey[*testing.T](options) {
 		t.Error("element type should be the same from type and object")
 	}
 }
