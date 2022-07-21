@@ -36,7 +36,7 @@ func (s *StdInjector) SubInjector(overrides ...bool) types.Injector {
 	return New(canOverride, s.reflectOpts, s)
 }
 
-func (s StdInjector) ShouldGenerifyInterface() types.ReflectionOptions {
+func (s StdInjector) ReflectOpts() types.ReflectionOptions {
 	return s.reflectOpts
 }
 
