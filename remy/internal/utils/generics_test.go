@@ -30,4 +30,8 @@ func TestTypeName__SameStructWithDifferentPackage(t *testing.T) {
 	if GetKey[T](false) == GetKey[testing.T](false) {
 		t.Error("type names was the same, when it should be different, because of different packages")
 	}
+
+	if GetElemKey(t, false) != GetKey[*testing.T](false) {
+		t.Error("element type should be the same from type and object")
+	}
 }

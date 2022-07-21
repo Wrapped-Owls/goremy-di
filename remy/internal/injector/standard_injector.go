@@ -48,20 +48,20 @@ func (s *StdInjector) BindNamed(name string, bType types.BindKey, value any) {
 	s.bindStorage.SetNamed(bType, name, value)
 }
 
-func (s StdInjector) RetrieveBind(key types.BindKey) (any, bool) {
-	result, ok := s.bindStorage.Get(key)
+func (s StdInjector) RetrieveBind(key types.BindKey) (result any, ok bool) {
+	result, ok = s.bindStorage.Get(key)
 	if !ok && s.parentInjector != nil {
-		return s.parentInjector.RetrieveBind(key)
+		result, ok = s.parentInjector.RetrieveBind(key)
 	}
-	return result, ok
+	return
 }
 
-func (s StdInjector) RetrieveNamedBind(name string, bType types.BindKey) (any, bool) {
-	result, ok := s.bindStorage.GetNamed(bType, name)
+func (s StdInjector) RetrieveNamedBind(name string, bType types.BindKey) (result any, ok bool) {
+	result, ok = s.bindStorage.GetNamed(bType, name)
 	if !ok && s.parentInjector != nil {
-		return s.parentInjector.RetrieveNamedBind(bType, name)
+		result, ok = s.parentInjector.RetrieveNamedBind(bType, name)
 	}
-	return result, ok
+	return
 }
 
 func (s *StdInjector) Set(key types.BindKey, value any) {
@@ -72,18 +72,18 @@ func (s *StdInjector) SetNamed(elementType types.BindKey, name string, value any
 	s.instanceStorage.SetNamed(elementType, name, value)
 }
 
-func (s StdInjector) GetNamed(bindKey types.BindKey, name string) (any, bool) {
-	result, ok := s.instanceStorage.GetNamed(bindKey, name)
+func (s StdInjector) GetNamed(bindKey types.BindKey, name string) (result any, ok bool) {
+	result, ok = s.instanceStorage.GetNamed(bindKey, name)
 	if !ok && s.parentInjector != nil {
-		return s.parentInjector.GetNamed(bindKey, name)
+		result, ok = s.parentInjector.GetNamed(bindKey, name)
 	}
-	return result, ok
+	return
 }
 
-func (s StdInjector) Get(bindKey types.BindKey) (any, bool) {
-	result, ok := s.instanceStorage.Get(bindKey)
+func (s StdInjector) Get(bindKey types.BindKey) (result any, ok bool) {
+	result, ok = s.instanceStorage.Get(bindKey)
 	if !ok && s.parentInjector != nil {
-		return s.parentInjector.Get(bindKey)
+		result, ok = s.parentInjector.Get(bindKey)
 	}
-	return result, ok
+	return
 }
