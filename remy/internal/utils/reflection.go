@@ -35,10 +35,12 @@ func TypeNameByReflect(generifyInterface bool, elementType reflect.Type, isInter
 	return fmt.Sprintf("%s/%s{###}%s", elementType.PkgPath(), elementType.Name(), fmt.Sprint(elementType))
 }
 
-func GetElemType(element any) (foundType reflect.Type, isInterface bool) {
+func GetElemType[T any](element T) (foundType reflect.Type, isInterface bool) {
 	foundType = reflect.TypeOf(element)
 	if foundType == nil {
-		panic(ErrImpossibleIdentifyType)
+		// element is an interface
+		isInterface = true
+		foundType = reflect.TypeOf(&element)
 	}
 	return
 }

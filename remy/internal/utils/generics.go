@@ -2,29 +2,25 @@ package utils
 
 import (
 	"fmt"
-	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 )
 
 // nilStr is the default const string representation of a nil type
 var nilStr = fmt.Sprintf("%T", nil)
 
-func GetKey[T any](generifyInterface bool) types.BindKey {
-	if !generifyInterface {
-		return TypeName[T]()
+func interfaceTypeName[T any](shouldGenerify bool, element T) (name string) {
+	if shouldGenerify {
+		if elementType, isInterface := GetElemType(element); isInterface {
+			return buildDuckInterfaceType(elementType)
+		}
 	}
-	elementType, isInterface := GetType[T]()
-	return TypeNameByReflect(generifyInterface, elementType, isInterface)
+	name = fmt.Sprintf("%T", element)
+	if name == nilStr {
+		name = fmt.Sprintf("%T", &element)
+	}
+	return
 }
 
-func GetElemKey(element any, generifyInterface bool) types.BindKey {
-	if !generifyInterface {
-		return TypeName(element)
-	}
-	elementType, isInterface := GetElemType(element)
-	return TypeNameByReflect(generifyInterface, elementType, isInterface)
-}
-
-func TypeName[T any](elements ...T) (name string) {
+func TypeName[T any](shouldGenerify bool, elements ...T) (name string) {
 	var value T
 	if len(elements) > 0 {
 		value = elements[0]
@@ -32,7 +28,7 @@ func TypeName[T any](elements ...T) (name string) {
 
 	name = fmt.Sprintf("%T", value)
 	if name == nilStr {
-		name = fmt.Sprintf("%T", &value)
+		name = interfaceTypeName(shouldGenerify, value)
 	}
 	return
 }
