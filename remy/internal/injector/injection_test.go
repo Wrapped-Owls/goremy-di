@@ -10,6 +10,12 @@ import (
 func TestInjection__GetNoRegistered(t *testing.T) {
 	ij := New(false, types.ReflectionOptions{})
 
+	// Verify if an error is returned when trying to retrieve a non-registered object
+	if _, err := Get[string](ij); err == nil {
+		t.Errorf("no error was returned when trying to retrieve a non-registered object")
+	}
+
+	// Check the return for other injection types
 	if strResult := TryGet[string](ij); len(strResult) != 0 {
 		t.Errorf("string result is not the default, received: `%s`", strResult)
 	}
