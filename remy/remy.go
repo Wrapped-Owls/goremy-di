@@ -99,6 +99,17 @@ func Get[T any](i DependencyRetriever, keys ...string) T {
 	if i == nil {
 		i = globalInjector()
 	}
+	return injector.TryGet[T](i, keys...)
+}
+
+// DoGet directly access a retriever and returns the type that was bound in it.
+// Additionally, it returns an error which indicates if the bind was found or not.
+//
+// Receives: DependencyRetriever (required); key (optional)
+func DoGet[T any](i DependencyRetriever, keys ...string) (T, error) {
+	if i == nil {
+		i = globalInjector()
+	}
 	return injector.Get[T](i, keys...)
 }
 
@@ -109,6 +120,17 @@ func GetGen[T any](ij Injector, elements []InstancePairAny, keys ...string) T {
 	if ij == nil {
 		ij = globalInjector()
 	}
+	return injector.TryGetGen[T](ij, elements, keys...)
+}
+
+// DoGetGen creates a sub-injector and access the retriever to generate and return a Factory bind
+// Additionally, it returns an error which indicates if the bind was found or not.
+//
+// Receives: Injector (required); []InstancePairAny (required); key (optional)
+func DoGetGen[T any](ij Injector, elements []InstancePairAny, keys ...string) (T, error) {
+	if ij == nil {
+		ij = globalInjector()
+	}
 	return injector.GetGen[T](ij, elements, keys...)
 }
 
@@ -116,6 +138,17 @@ func GetGen[T any](ij Injector, elements []InstancePairAny, keys ...string) T {
 //
 // Receives: Injector (required); func(Injector) (required); key (optional)
 func GetGenFunc[T any](ij types.Injector, binder func(Injector), keys ...string) T {
+	if ij == nil {
+		ij = globalInjector()
+	}
+	return injector.TryGetGenFunc[T](ij, binder, keys...)
+}
+
+// DoGetGenFunc creates a sub-injector and access the retriever to generate and return a Factory bind
+// Additionally, it returns an error which indicates if the bind was found or not.
+//
+// Receives: Injector (required); func(Injector) (required); key (optional)
+func DoGetGenFunc[T any](ij types.Injector, binder func(Injector), keys ...string) (T, error) {
 	if ij == nil {
 		ij = globalInjector()
 	}

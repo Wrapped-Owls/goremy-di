@@ -20,7 +20,7 @@ func SetStorage[T any](dStorage types.ValuesSetter[types.BindKey], value T, keys
 	}
 }
 
-func GetStorage[T any](dStorage types.ValuesGetter[types.BindKey], keys ...string) T {
+func GetStorage[T any](dStorage types.ValuesGetter[types.BindKey], keys ...string) (T, error) {
 	var (
 		key   string
 		value any
@@ -40,8 +40,8 @@ func GetStorage[T any](dStorage types.ValuesGetter[types.BindKey], keys ...strin
 
 	if err == nil {
 		if element, assertOk := value.(T); assertOk {
-			return element
+			return element, nil
 		}
 	}
-	return utils.Default[T]()
+	return utils.Default[T](), err
 }

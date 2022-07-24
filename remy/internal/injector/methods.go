@@ -32,7 +32,7 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) {
 	}
 }
 
-func Get[T any](retriever types.DependencyRetriever, keys ...string) T {
+func Get[T any](retriever types.DependencyRetriever, keys ...string) (T, error) {
 	var (
 		key string
 	)
@@ -57,15 +57,19 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) T {
 	if err == nil {
 		if typedBind, assertOk := bind.(types.Bind[T]); assertOk {
 			result := typedBind.Generates(retriever)
-			return result
+			return result, nil
 		}
 	}
 	// retrieve values from instanceStorage
-	result := GetStorage[T](retriever, key)
-	return result
+	return GetStorage[T](retriever, key)
 }
 
-func GetGen[T any](ij types.Injector, elements []types.InstancePair[any], keys ...string) T {
+func TryGet[T any](retriever types.DependencyRetriever, keys ...string) (result T) {
+	result, _ = Get[T](retriever, keys...)
+	return
+}
+
+func GetGen[T any](ij types.Injector, elements []types.InstancePair[any], keys ...string) (T, error) {
 	subInjector := New(false, ij.ReflectOpts(), ij)
 	for _, element := range elements {
 		bindKey := utils.GetElemKey(element.Value, subInjector.ReflectOpts())
@@ -78,8 +82,18 @@ func GetGen[T any](ij types.Injector, elements []types.InstancePair[any], keys .
 	return Get[T](subInjector, keys...)
 }
 
-func GetGenFunc[T any](ij types.Injector, binder func(injector types.Injector), keys ...string) T {
+func TryGetGen[T any](ij types.Injector, elements []types.InstancePair[any], keys ...string) (result T) {
+	result, _ = GetGen[T](ij, elements, keys...)
+	return
+}
+
+func GetGenFunc[T any](ij types.Injector, binder func(injector types.Injector), keys ...string) (T, error) {
 	subInjector := New(false, ij.ReflectOpts(), ij)
 	binder(subInjector)
 	return Get[T](subInjector, keys...)
+}
+
+func TryGetGenFunc[T any](ij types.Injector, binder func(injector types.Injector), keys ...string) (result T) {
+	result, _ = GetGenFunc[T](ij, binder, keys...)
+	return
 }

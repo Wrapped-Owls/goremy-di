@@ -43,9 +43,12 @@ func TestGenerateBind__InstanceFactory(testObj *testing.T) {
 			i := New(true, types.ReflectionOptions{})
 			Register(i, insBind)
 			for index := 0; index < totalExecutions; index++ {
-				result := Get[string](i)
+				result, err := Get[string](i)
 				if result != expectedString {
 					t.Error("Generated instance is incorrect")
+				}
+				if err != nil {
+					t.Error(err)
 				}
 			}
 
@@ -102,7 +105,10 @@ func TestRegister__Singleton(testObj *testing.T) {
 			}
 
 			for index := 0; index < totalGetsExecuted; index++ {
-				result := Get[*string](i)
+				result, err := Get[*string](i)
+				if err != nil {
+					t.Error(err)
+				}
 				if result != &bindCase.expected {
 					t.Errorf("Singleton is not working as singleton")
 				}
@@ -124,7 +130,7 @@ func TestGetGen(t *testing.T) {
 		{
 			name: "GetGen[string]",
 			getGenCallback: func(ij types.Injector) string {
-				return GetGen[string](
+				return TryGetGen[string](
 					ij,
 					[]types.InstancePair[any]{
 						{
@@ -144,7 +150,7 @@ func TestGetGen(t *testing.T) {
 		{
 			name: "GetGenFunc[string]",
 			getGenCallback: func(i types.Injector) string {
-				return GetGenFunc[string](i, func(ij types.Injector) {
+				return TryGetGenFunc[string](i, func(ij types.Injector) {
 					Register(ij, binds.Instance(func(retriever types.DependencyRetriever) uint8 {
 						return 42
 					}))
@@ -169,7 +175,7 @@ func TestGetGen(t *testing.T) {
 			i, binds.Factory(func(ij types.DependencyRetriever) string {
 				return fmt.Sprintf(
 					"I love %s, yes this is %v, as the answer %d",
-					Get[string](ij, "lang"), Get[bool](ij), Get[uint8](ij),
+					TryGet[string](ij, "lang"), TryGet[bool](ij), TryGet[uint8](ij),
 				)
 			}),
 		)
@@ -192,9 +198,9 @@ func TestGetGen(t *testing.T) {
 			}
 
 			// Check if the binds doesn't exist after do the GetGen
-			uintResult := Get[uint8](i)
-			boolResult := Get[bool](i)
-			strResult := Get[string](i, "lang")
+			uintResult := TryGet[uint8](i)
+			boolResult := TryGet[bool](i)
+			strResult := TryGet[string](i, "lang")
 
 			if uintResult != 0 || boolResult || len(strResult) > 0 {
 				t.Error("Parameter injection values override the original injector")
