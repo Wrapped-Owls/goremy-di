@@ -24,7 +24,18 @@ func buildDuckInterfaceType(elementType reflect.Type) string {
 }
 
 // TypeNameByReflect returns a string that defines the name of the given generic type.
-func TypeNameByReflect(generifyInterface bool, elementType reflect.Type, isInterface bool) string {
+func TypeNameByReflect[T any](generifyInterface bool, elements ...T) string {
+	var (
+		elementType reflect.Type
+		isInterface bool
+		value       T
+	)
+	if len(elements) > 0 {
+		value = elements[0]
+		elementType, isInterface = GetElemType(value)
+	} else {
+		elementType, isInterface = GetType[T]()
+	}
 	if elementType == nil {
 		panic(ErrImpossibleIdentifyType)
 	}
@@ -32,7 +43,15 @@ func TypeNameByReflect(generifyInterface bool, elementType reflect.Type, isInter
 	if generifyInterface && isInterface {
 		return buildDuckInterfaceType(elementType)
 	}
-	return fmt.Sprintf("%s/%s{###}%s", elementType.PkgPath(), elementType.Name(), fmt.Sprint(elementType))
+
+	name := fmt.Sprintf("%s/%s{###}%s", elementType.PkgPath(), elementType.Name(), fmt.Sprint(elementType))
+	if !isInterface {
+		// check if is a pointer
+		if reflect.ValueOf(value).Kind() == reflect.Ptr {
+			name = fmt.Sprintf("pointer_&%s", name)
+		}
+	}
+	return name
 }
 
 func GetElemType[T any](element T) (foundType reflect.Type, isInterface bool) {

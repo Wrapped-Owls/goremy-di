@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"strings"
 )
 
 // nilStr is the default const string representation of a nil type
@@ -29,6 +30,8 @@ func TypeName[T any](shouldGenerify bool, elements ...T) (name string) {
 	name = fmt.Sprintf("%T", value)
 	if name == nilStr {
 		name = interfaceTypeName(shouldGenerify, value)
+	} else if strings.HasPrefix(name, "*") {
+		name = fmt.Sprintf("pointer_&%s", name)
 	}
 	return
 }
