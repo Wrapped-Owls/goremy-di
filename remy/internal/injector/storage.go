@@ -9,24 +9,24 @@ import (
 type (
 	genericAnyMap[T comparable]   map[T]any
 	ElementsStorage[T comparable] struct {
-		allowOverride     bool
-		generifyInterface types.ReflectionOptions
-		namedElements     map[string]genericAnyMap[T]
-		elements          genericAnyMap[T]
+		allowOverride bool
+		reflectOpts   types.ReflectionOptions
+		namedElements map[string]genericAnyMap[T]
+		elements      genericAnyMap[T]
 	}
 )
 
 func NewElementsStorage[T comparable](allowOverride bool, reflectionOptions types.ReflectionOptions) *ElementsStorage[T] {
 	return &ElementsStorage[T]{
-		allowOverride:     allowOverride,
-		generifyInterface: reflectionOptions,
-		namedElements:     map[string]genericAnyMap[T]{},
-		elements:          genericAnyMap[T]{},
+		allowOverride: allowOverride,
+		reflectOpts:   reflectionOptions,
+		namedElements: map[string]genericAnyMap[T]{},
+		elements:      genericAnyMap[T]{},
 	}
 }
 
 func (s ElementsStorage[T]) ReflectOpts() types.ReflectionOptions {
-	return s.generifyInterface
+	return s.reflectOpts
 }
 
 func (s *ElementsStorage[T]) Set(key T, value any) {
