@@ -44,17 +44,17 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) T {
 
 	var (
 		bind any
-		ok   bool
+		err  error
 	)
 
 	// search in dynamic injections that needed to run a given function
 	if len(key) > 0 {
-		bind, ok = retriever.RetrieveNamedBind(key, elementType)
+		bind, err = retriever.RetrieveNamedBind(key, elementType)
 	} else {
-		bind, ok = retriever.RetrieveBind(elementType)
+		bind, err = retriever.RetrieveBind(elementType)
 	}
 
-	if ok {
+	if err == nil {
 		if typedBind, assertOk := bind.(types.Bind[T]); assertOk {
 			result := typedBind.Generates(retriever)
 			return result

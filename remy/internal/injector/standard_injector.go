@@ -2,6 +2,7 @@ package injector
 
 import (
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/internal/utils"
 )
 
 type (
@@ -48,18 +49,22 @@ func (s *StdInjector) BindNamed(name string, bType types.BindKey, value any) {
 	s.bindStorage.SetNamed(bType, name, value)
 }
 
-func (s StdInjector) RetrieveBind(key types.BindKey) (result any, ok bool) {
-	result, ok = s.bindStorage.Get(key)
-	if !ok && s.parentInjector != nil {
-		result, ok = s.parentInjector.RetrieveBind(key)
+func (s StdInjector) RetrieveBind(key types.BindKey) (result any, err error) {
+	if result, err = s.bindStorage.Get(key); err != nil && s.parentInjector != nil {
+		result, err = s.parentInjector.RetrieveBind(key)
+		if err != nil {
+			err = utils.ErrNoElementFoundInsideOrParent
+		}
 	}
 	return
 }
 
-func (s StdInjector) RetrieveNamedBind(name string, bType types.BindKey) (result any, ok bool) {
-	result, ok = s.bindStorage.GetNamed(bType, name)
-	if !ok && s.parentInjector != nil {
-		result, ok = s.parentInjector.RetrieveNamedBind(bType, name)
+func (s StdInjector) RetrieveNamedBind(name string, bType types.BindKey) (result any, err error) {
+	if result, err = s.bindStorage.GetNamed(bType, name); err != nil && s.parentInjector != nil {
+		result, err = s.parentInjector.RetrieveNamedBind(bType, name)
+		if err != nil {
+			err = utils.ErrNoElementFoundInsideOrParent
+		}
 	}
 	return
 }
@@ -72,18 +77,22 @@ func (s *StdInjector) SetNamed(elementType types.BindKey, name string, value any
 	s.instanceStorage.SetNamed(elementType, name, value)
 }
 
-func (s StdInjector) GetNamed(bindKey types.BindKey, name string) (result any, ok bool) {
-	result, ok = s.instanceStorage.GetNamed(bindKey, name)
-	if !ok && s.parentInjector != nil {
-		result, ok = s.parentInjector.GetNamed(bindKey, name)
+func (s StdInjector) GetNamed(bindKey types.BindKey, name string) (result any, err error) {
+	if result, err = s.instanceStorage.GetNamed(bindKey, name); err != nil && s.parentInjector != nil {
+		result, err = s.parentInjector.GetNamed(bindKey, name)
+		if err != nil {
+			err = utils.ErrNoElementFoundInsideOrParent
+		}
 	}
 	return
 }
 
-func (s StdInjector) Get(bindKey types.BindKey) (result any, ok bool) {
-	result, ok = s.instanceStorage.Get(bindKey)
-	if !ok && s.parentInjector != nil {
-		result, ok = s.parentInjector.Get(bindKey)
+func (s StdInjector) Get(bindKey types.BindKey) (result any, err error) {
+	if result, err = s.instanceStorage.Get(bindKey); err != nil && s.parentInjector != nil {
+		result, err = s.parentInjector.Get(bindKey)
+		if err != nil {
+			err = utils.ErrNoElementFoundInsideOrParent
+		}
 	}
 	return
 }

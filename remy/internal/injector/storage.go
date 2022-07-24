@@ -51,15 +51,21 @@ func (s *ElementsStorage[T]) SetNamed(elementType T, name string, value any) {
 	s.namedElements[name] = namedBinds
 }
 
-func (s ElementsStorage[T]) GetNamed(elementType T, name string) (any, bool) {
+func (s ElementsStorage[T]) GetNamed(elementType T, name string) (result any, err error) {
 	if elementMap, ok := s.namedElements[name]; ok && elementMap != nil {
-		result, subOk := elementMap[elementType]
-		return result, subOk
+		result, ok = elementMap[elementType]
+		if !ok {
+			err = utils.ErrElementNotRegistered
+		}
+		return
 	}
-	return nil, false
+	return nil, utils.ErrElementNotRegistered
 }
 
-func (s ElementsStorage[T]) Get(key T) (any, bool) {
-	result, ok := s.elements[key]
-	return result, ok
+func (s ElementsStorage[T]) Get(key T) (result any, err error) {
+	var ok bool
+	if result, ok = s.elements[key]; !ok {
+		err = utils.ErrElementNotRegistered
+	}
+	return
 }

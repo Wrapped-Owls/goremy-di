@@ -24,7 +24,7 @@ func GetStorage[T any](dStorage types.ValuesGetter[types.BindKey], keys ...strin
 	var (
 		key   string
 		value any
-		ok    bool
+		err   error
 	)
 
 	if len(keys) > 0 {
@@ -33,12 +33,12 @@ func GetStorage[T any](dStorage types.ValuesGetter[types.BindKey], keys ...strin
 
 	// search in named elements
 	if len(key) > 0 {
-		value, ok = dStorage.GetNamed(utils.GetKey[T](dStorage.ReflectOpts()), key)
+		value, err = dStorage.GetNamed(utils.GetKey[T](dStorage.ReflectOpts()), key)
 	} else {
-		value, ok = dStorage.Get(utils.GetKey[T](dStorage.ReflectOpts()))
+		value, err = dStorage.Get(utils.GetKey[T](dStorage.ReflectOpts()))
 	}
 
-	if ok {
+	if err == nil {
 		if element, assertOk := value.(T); assertOk {
 			return element
 		}

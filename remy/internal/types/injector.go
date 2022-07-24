@@ -10,8 +10,8 @@ type (
 		CheckReflectionOptions
 	}
 	ValuesGetter[T comparable] interface {
-		GetNamed(T, string) (any, bool)
-		Get(T) (any, bool)
+		GetNamed(T, string) (any, error)
+		Get(T) (any, error)
 		CheckReflectionOptions
 	}
 	Storage[T comparable] interface {
@@ -19,8 +19,8 @@ type (
 		ValuesGetter[T]
 	}
 	DependencyRetriever interface {
-		RetrieveBind(BindKey) (any, bool)
-		RetrieveNamedBind(string, BindKey) (any, bool)
+		RetrieveBind(BindKey) (any, error)
+		RetrieveNamedBind(string, BindKey) (any, error)
 		ValuesGetter[BindKey]
 	}
 	Injector interface {
