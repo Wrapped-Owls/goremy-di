@@ -1,25 +1,29 @@
 package utils
 
-import "testing"
+import (
+	"testing"
+)
 
-func TestTypeName__Generify(t *testing.T) {
-	type (
-		super interface {
-			a() bool
-			b() string
-			c(int) float32
-			d(string) struct{ name string }
-		}
-		sub interface {
-			super
-		}
-	)
-
-	if GetKey[super](false) == GetKey[sub](false) {
-		t.Error("type names was the same when should not generify")
+func TestTypeName__DifferPointerFromInterface(t *testing.T) {
+	type testInterface interface {
+		a() bool
 	}
 
-	if GetKey[super](true) != GetKey[sub](true) {
-		t.Error("generified type name should be the same")
+	interfaceTypeResult := TypeName[testInterface](false)
+	pointerTypeResult := TypeName[*testInterface](false)
+	if interfaceTypeResult == pointerTypeResult {
+		t.Error("type names was the same, when it should be different, because of different pointer")
+	}
+}
+
+func TestTypeNameByReflect__DifferPointerFromInterface(t *testing.T) {
+	type testInterface interface {
+		a() bool
+	}
+
+	interfaceTypeResult := TypeNameByReflect[testInterface](false)
+	pointerTypeResult := TypeNameByReflect[*testInterface](false)
+	if interfaceTypeResult == pointerTypeResult {
+		t.Error("type names was the same, when it should be different, because of different pointer")
 	}
 }

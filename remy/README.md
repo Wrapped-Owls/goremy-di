@@ -23,6 +23,8 @@ attributes:
 - AllowOverride - Determines if a element bind can be override
 - GenerifyInterface - Go interfaces are not exactly unique, so when an element is registered with an interface `A` and
   it has the same methods signatures as interface `B`, this flag will tell to remy to treat both as the same.
+- UseReflectionType - Use reflection to get the type of the object/interface. This is useful when your program has a
+  type with the same package and type name from another module or subpackage.
 - ParentInjector - Make possible to pass an existing Injector as a parent injector, so the new injector can access all
   elements in its parent. Is good to know, that all binds registered in sub-injector can't be accessed by the parent
   injector, it is scope safe.
@@ -168,7 +170,7 @@ thread can register the same element, and then the bind will retrieve the values
 This works by creating automatically a sub-injector that will be used to add instance binds that will be used to
 generate the factory bind requested.
 
-**REMINDER:** It only works with the `Factory` bind.
+**REMINDER:** It only works with the `Factory` and `LazySingleton` binds.
 
 Currently, exists two ways to do this, by using an array of `InstancePair` or by using a function and registering the
 values directly in it.

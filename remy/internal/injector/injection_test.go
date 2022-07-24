@@ -8,21 +8,27 @@ import (
 )
 
 func TestInjection__GetNoRegistered(t *testing.T) {
-	ij := New(false, false)
+	ij := New(false, types.ReflectionOptions{})
 
-	if strResult := Get[string](ij); len(strResult) != 0 {
+	// Verify if an error is returned when trying to retrieve a non-registered object
+	if _, err := Get[string](ij); err == nil {
+		t.Errorf("no error was returned when trying to retrieve a non-registered object")
+	}
+
+	// Check the return for other injection types
+	if strResult := TryGet[string](ij); len(strResult) != 0 {
 		t.Errorf("string result is not the default, received: `%s`", strResult)
 	}
-	if intResult := Get[int](ij); intResult != 0 {
+	if intResult := TryGet[int](ij); intResult != 0 {
 		t.Errorf("int result is not the default, received: %d", intResult)
 	}
-	if pointerResult := Get[*bool](ij); pointerResult != nil {
+	if pointerResult := TryGet[*bool](ij); pointerResult != nil {
 		t.Error("pointer received is not null")
 	}
-	if interfaceResult := Get[interface{ a() string }](ij); interfaceResult != nil {
+	if interfaceResult := TryGet[interface{ a() string }](ij); interfaceResult != nil {
 		t.Error("interface result is not nil")
 	}
-	if structResult := Get[struct{ element string }](ij); len(structResult.element) != 0 {
+	if structResult := TryGet[struct{ element string }](ij); len(structResult.element) != 0 {
 		t.Error("default struct is not created correctly")
 	}
 }
@@ -43,7 +49,7 @@ func TestInjection__GetStructImplementInterface(t *testing.T) {
 	type universalAnswer interface {
 		String() string
 	}
-	ij := New(false, true)
+	ij := New(false, types.ReflectionOptions{GenerifyInterface: true})
 
 	Register(ij, binds.Instance(
 		func(retriever types.DependencyRetriever) universalAnswer {
@@ -57,14 +63,14 @@ func TestInjection__GetStructImplementInterface(t *testing.T) {
 		},
 	))
 
-	result := Get[universalAnswer](ij)
+	result := TryGet[universalAnswer](ij)
 	if result != &expected[0] {
 		t.Errorf("element injected is different than the provided. Received %p", result)
 	} else if result.String() != expected[0].value {
 		t.Errorf("element was reseted. Expected: `%s`; Received: `%s`", expected[0].value, result.String())
 	}
 
-	structResult := Get[guide](ij)
+	structResult := TryGet[guide](ij)
 	if structResult.String() != expected[1].value {
 		t.Errorf("element was reseted. Expected: `%s`; Received: `%s`", expected[1].value, structResult.String())
 	}
@@ -76,7 +82,7 @@ func TestInjection__RegisterSameKeyDifferentType(t *testing.T) {
 		expectedInt = 42
 	)
 
-	ij := New(false, false)
+	ij := New(false, types.ReflectionOptions{})
 	Register(
 		ij,
 		binds.Instance(func(retriever types.DependencyRetriever) string {
@@ -92,8 +98,8 @@ func TestInjection__RegisterSameKeyDifferentType(t *testing.T) {
 		"truth",
 	)
 
-	strResult := Get[string](ij, "truth")
-	intResult := Get[int](ij, "truth")
+	strResult := TryGet[string](ij, "truth")
+	intResult := TryGet[int](ij, "truth")
 
 	if strResult != expectedStr {
 		t.Errorf("string injection should not be overrided. Received: `%s`. Expected: `%s`", strResult, expectedStr)
@@ -113,12 +119,12 @@ func TestInjection__RetrieveSameTypeDifferentKey(t *testing.T) {
 	)
 	a := binds.Instance(
 		func(ij types.DependencyRetriever) string {
-			language := Get[string](ij, "lang")
+			language := TryGet[string](ij, "lang")
 			return resultParts[0] + language
 		},
 	)
 
-	ij := New(true, false)
+	ij := New(true, types.ReflectionOptions{})
 	Register(
 		ij,
 		binds.Instance(func(retriever types.DependencyRetriever) string {
@@ -127,7 +133,7 @@ func TestInjection__RetrieveSameTypeDifferentKey(t *testing.T) {
 		"lang",
 	)
 	Register(ij, a)
-	result := Get[string](ij)
+	result := TryGet[string](ij)
 
 	if result != resultParts[0]+resultParts[1] {
 		t.Errorf("injection result not work properly: Received: `%s`", result)
@@ -158,7 +164,7 @@ func TestInjection__RegisterEqualInterfaces(t *testing.T) {
 		{sound: "woof woof"},
 	}
 
-	ij := New(true, false)
+	ij := New(true, types.ReflectionOptions{})
 	Register(
 		ij,
 		binds.Instance(func(retriever types.DependencyRetriever) spk1 {
@@ -176,8 +182,8 @@ func TestInjection__RegisterEqualInterfaces(t *testing.T) {
 
 	// Start to retrieve the injected objects
 	results := [...]spk1{
-		Get[spk1](ij, storageKey),
-		Get[spk2](ij, storageKey),
+		TryGet[spk1](ij, storageKey),
+		TryGet[spk2](ij, storageKey),
 	}
 
 	if results[0] == nil || results[1] == nil {

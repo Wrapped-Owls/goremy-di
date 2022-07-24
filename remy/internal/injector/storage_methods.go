@@ -14,17 +14,17 @@ func SetStorage[T any](dStorage types.ValuesSetter[types.BindKey], value T, keys
 	}
 
 	if len(key) > 0 {
-		dStorage.SetNamed(utils.GetKey[T](dStorage.ShouldGenerifyInterface()), key, value)
+		dStorage.SetNamed(utils.GetKey[T](dStorage.ReflectOpts()), key, value)
 	} else {
-		dStorage.Set(utils.GetKey[T](dStorage.ShouldGenerifyInterface()), value)
+		dStorage.Set(utils.GetKey[T](dStorage.ReflectOpts()), value)
 	}
 }
 
-func GetStorage[T any](dStorage types.ValuesGetter[types.BindKey], keys ...string) T {
+func GetStorage[T any](dStorage types.ValuesGetter[types.BindKey], keys ...string) (T, error) {
 	var (
 		key   string
 		value any
-		ok    bool
+		err   error
 	)
 
 	if len(keys) > 0 {
@@ -33,15 +33,15 @@ func GetStorage[T any](dStorage types.ValuesGetter[types.BindKey], keys ...strin
 
 	// search in named elements
 	if len(key) > 0 {
-		value, ok = dStorage.GetNamed(utils.GetKey[T](dStorage.ShouldGenerifyInterface()), key)
+		value, err = dStorage.GetNamed(utils.GetKey[T](dStorage.ReflectOpts()), key)
 	} else {
-		value, ok = dStorage.Get(utils.GetKey[T](dStorage.ShouldGenerifyInterface()))
+		value, err = dStorage.Get(utils.GetKey[T](dStorage.ReflectOpts()))
 	}
 
-	if ok {
+	if err == nil {
 		if element, assertOk := value.(T); assertOk {
-			return element
+			return element, nil
 		}
 	}
-	return utils.Default[T]()
+	return utils.Default[T](), err
 }

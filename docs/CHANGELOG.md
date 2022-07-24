@@ -14,3 +14,14 @@
 - Allow to define a **ParentInjector** in `Injector` constructor
 - Add more documentation in public types/methods
 - Create methods `GetGen` and `GetGenFunc` to pass values dynamically
+
+## 20220721 - remy/v1.2.0
+
+- Replace default type resolution - Now it will not use the `reflect` _package by default_.
+- Add `UseReflectionType` option in `Config` struct
+- Improve tests coverage
+    - Add test to check type resolution for elements with same _type-name_ and _package-name_ from another module
+- Fix `GetElemKey` method not being able to get the type of the interface
+- Fix an error where `interface` and `pointer` of the same type were being registered as the same type
+- Create additional `"Do"` methods: **DoGet**, **DoGetGen**, **DoGetGenFunc**
+- Refactor the **Storage/Injector** retrieval to return an `error` instead of a `bool`

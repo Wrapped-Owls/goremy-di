@@ -1,26 +1,26 @@
 package types
 
 type (
-	CheckGenerify interface {
-		ShouldGenerifyInterface() bool
+	CheckReflectionOptions interface {
+		ReflectOpts() ReflectionOptions
 	}
 	ValuesSetter[T comparable] interface {
 		Set(T, any)
 		SetNamed(T, string, any)
-		CheckGenerify
+		CheckReflectionOptions
 	}
 	ValuesGetter[T comparable] interface {
-		GetNamed(T, string) (any, bool)
-		Get(T) (any, bool)
-		CheckGenerify
+		GetNamed(T, string) (any, error)
+		Get(T) (any, error)
+		CheckReflectionOptions
 	}
 	Storage[T comparable] interface {
 		ValuesSetter[T]
 		ValuesGetter[T]
 	}
 	DependencyRetriever interface {
-		RetrieveBind(BindKey) (any, bool)
-		RetrieveNamedBind(string, BindKey) (any, bool)
+		RetrieveBind(BindKey) (any, error)
+		RetrieveNamedBind(string, BindKey) (any, error)
 		ValuesGetter[BindKey]
 	}
 	Injector interface {
