@@ -3,8 +3,8 @@ package main
 import (
 	"database/sql"
 	"github.com/wrapped-owls/goremy-di/remy"
-	"github.com/wrapped-owls/talaria-di/examples/core"
-	_ "github.com/wrapped-owls/talaria-di/examples/infra"
+	"github.com/wrapped-owls/talaria-di/examples/basic/core"
+	_ "github.com/wrapped-owls/talaria-di/examples/basic/infra"
 	"log"
 )
 

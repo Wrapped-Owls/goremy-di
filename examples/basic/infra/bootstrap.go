@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/wrapped-owls/goremy-di/remy"
-	"github.com/wrapped-owls/talaria-di/examples/core"
-	"github.com/wrapped-owls/talaria-di/examples/infra/repositories"
+	"github.com/wrapped-owls/talaria-di/examples/basic/core"
+	"github.com/wrapped-owls/talaria-di/examples/basic/infra/repositories"
 	"log"
 )
 
