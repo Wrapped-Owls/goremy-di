@@ -36,5 +36,5 @@ jobs:
         with:
           go-version: '${{ matrix.go-version }}'
 
-      - name: Build examples
-        run: cd ./examples && go build -v ./...
+      - name: Build basic example
+        run: cd ./examples/basic && go build -v ./...
