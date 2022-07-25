@@ -41,7 +41,10 @@ func TestGenerateBind__InstanceFactory(testObj *testing.T) {
 			})
 
 			i := New(true, types.ReflectionOptions{})
-			Register(i, insBind)
+			if err := Register(i, insBind); err != nil {
+				t.Error(err)
+				t.FailNow()
+			}
 			for index := 0; index < totalExecutions; index++ {
 				result, err := Get[string](i)
 				if result != expectedString {
@@ -97,7 +100,9 @@ func TestRegister__Singleton(testObj *testing.T) {
 				t.Error("Singleton was generated before register")
 			}
 			for index := 0; index < 11; index++ {
-				Register(i, sgtBind)
+				if err := Register(i, sgtBind); err != nil {
+					t.Error(err)
+				}
 				if invocations != bindCase.registerGenerations {
 					t.Errorf("Singleton %d times. Expected %d", invocations, bindCase.registerGenerations)
 					t.FailNow()
@@ -151,17 +156,17 @@ func TestGetGen(t *testing.T) {
 			name: "GetGenFunc[string]",
 			getGenCallback: func(i types.Injector) string {
 				return TryGetGenFunc[string](i, func(ij types.Injector) {
-					Register(ij, binds.Instance(func(retriever types.DependencyRetriever) uint8 {
+					_ = Register(ij, binds.Instance(func(retriever types.DependencyRetriever) uint8 {
 						return 42
 					}))
-					Register(
+					_ = Register(
 						ij,
 						binds.Instance(func(retriever types.DependencyRetriever) string {
 							return "Go"
 						}),
 						"lang",
 					)
-					Register(ij, binds.Instance(func(retriever types.DependencyRetriever) bool {
+					_ = Register(ij, binds.Instance(func(retriever types.DependencyRetriever) bool {
 						return true
 					}))
 				})
@@ -171,7 +176,7 @@ func TestGetGen(t *testing.T) {
 
 	for _, tCase := range testCases {
 		i := New(true, types.ReflectionOptions{})
-		Register(
+		_ = Register(
 			i, binds.Factory(func(ij types.DependencyRetriever) string {
 				return fmt.Sprintf(
 					"I love %s, yes this is %v, as the answer %d",
@@ -181,7 +186,7 @@ func TestGetGen(t *testing.T) {
 		)
 
 		// register a bool bind to check if it will be replaced during parameter passing
-		Register(
+		_ = Register(
 			i, binds.Instance(func(ij types.DependencyRetriever) bool {
 				return false
 			}),

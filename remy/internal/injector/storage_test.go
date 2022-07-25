@@ -20,13 +20,13 @@ func TestElementsStorage_Set(t *testing.T) {
 	}()
 
 	stg := NewElementsStorage[string](true, types.ReflectionOptions{})
-	stg.Set("value", 7)
+	_ = stg.Set("value", 7)
 	checkpoints++
-	stg.Set("value", 11)
+	_ = stg.Set("value", 11)
 
-	stg.SetNamed("tools", "lang", "dart")
+	_ = stg.SetNamed("tools", "lang", "dart")
 	checkpoints++
-	stg.SetNamed("tools", "lang", "go")
+	_ = stg.SetNamed("tools", "lang", "go")
 }
 
 func TestElementsStorage_Set__Override(t *testing.T) {
@@ -69,14 +69,14 @@ func generateStorageTestCases() []struct {
 			name:   "Set Without Key",
 			values: [2]any{7, 11},
 			setterFunc: func(stg types.Storage[string], receive any) {
-				stg.Set("value", receive)
+				_ = stg.Set("value", receive)
 			},
 		},
 		{
 			name:   "Set Named",
 			values: [2]any{"go", "flutter"},
 			setterFunc: func(stg types.Storage[string], receive any) {
-				stg.SetNamed("value", "tool", receive)
+				_ = stg.SetNamed("value", "tool", receive)
 			},
 		},
 	}
