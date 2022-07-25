@@ -25,3 +25,8 @@
 - Fix an error where `interface` and `pointer` of the same type were being registered as the same type
 - Create additional `"Do"` methods: **DoGet**, **DoGetGen**, **DoGetGenFunc**
 - Refactor the **Storage/Injector** retrieval to return an `error` instead of a `bool`
+
+## 20220724 - remy/v1.2.1
+
+- Fix an error with `ReflectionOptions` not being applied to **StdInjector**
+- Rename some internal attributes in storage

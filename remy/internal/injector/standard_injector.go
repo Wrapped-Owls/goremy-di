@@ -23,6 +23,7 @@ func New(canOverride bool, reflectOpts types.ReflectionOptions, parent ...types.
 	return &StdInjector{
 		allowOverride:   canOverride,
 		parentInjector:  parentInjector,
+		reflectOpts:     reflectOpts,
 		bindStorage:     NewElementsStorage[types.BindKey](canOverride, reflectOpts),
 		instanceStorage: NewElementsStorage[types.BindKey](canOverride, reflectOpts),
 	}
