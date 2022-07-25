@@ -1,4 +1,4 @@
-name: Test Go-Talaria
+name: Test Remy
 
 on:
   push:
