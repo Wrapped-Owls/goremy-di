@@ -42,12 +42,12 @@ func (s StdInjector) ReflectOpts() types.ReflectionOptions {
 	return s.reflectOpts
 }
 
-func (s *StdInjector) Bind(key types.BindKey, value any) {
-	s.bindStorage.Set(key, value)
+func (s *StdInjector) Bind(key types.BindKey, value any) error {
+	return s.bindStorage.Set(key, value)
 }
 
-func (s *StdInjector) BindNamed(name string, bType types.BindKey, value any) {
-	s.bindStorage.SetNamed(bType, name, value)
+func (s *StdInjector) BindNamed(name string, bType types.BindKey, value any) error {
+	return s.bindStorage.SetNamed(bType, name, value)
 }
 
 func (s StdInjector) RetrieveBind(key types.BindKey) (result any, err error) {
@@ -70,12 +70,12 @@ func (s StdInjector) RetrieveNamedBind(name string, bType types.BindKey) (result
 	return
 }
 
-func (s *StdInjector) Set(key types.BindKey, value any) {
-	s.instanceStorage.Set(key, value)
+func (s *StdInjector) Set(key types.BindKey, value any) error {
+	return s.instanceStorage.Set(key, value)
 }
 
-func (s *StdInjector) SetNamed(elementType types.BindKey, name string, value any) {
-	s.instanceStorage.SetNamed(elementType, name, value)
+func (s *StdInjector) SetNamed(elementType types.BindKey, name string, value any) error {
+	return s.instanceStorage.SetNamed(elementType, name, value)
 }
 
 func (s StdInjector) GetNamed(bindKey types.BindKey, name string) (result any, err error) {

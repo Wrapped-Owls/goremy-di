@@ -1,8 +1,10 @@
 package remy
 
 import (
+	"errors"
 	"github.com/wrapped-owls/goremy-di/remy/internal/injector"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/internal/utils"
 )
 
 type (
@@ -63,7 +65,9 @@ func Register[T any](i Injector, bind types.Bind[T], keys ...string) {
 	if i == nil {
 		i = globalInjector()
 	}
-	injector.Register(i, bind, keys...)
+	if err := injector.Register(i, bind, keys...); err != nil {
+		panic(err)
+	}
 }
 
 // RegisterInstance directly generates an instance bind without needing to write it.

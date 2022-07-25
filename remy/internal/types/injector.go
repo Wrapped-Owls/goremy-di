@@ -5,8 +5,8 @@ type (
 		ReflectOpts() ReflectionOptions
 	}
 	ValuesSetter[T comparable] interface {
-		Set(T, any)
-		SetNamed(T, string, any)
+		Set(T, any) error
+		SetNamed(T, string, any) error
 		CheckReflectionOptions
 	}
 	ValuesGetter[T comparable] interface {
@@ -24,8 +24,8 @@ type (
 		ValuesGetter[BindKey]
 	}
 	Injector interface {
-		Bind(BindKey, any)
-		BindNamed(string, BindKey, any)
+		Bind(BindKey, any) error
+		BindNamed(string, BindKey, any) error
 		ValuesSetter[BindKey]
 		DependencyRetriever
 	}
