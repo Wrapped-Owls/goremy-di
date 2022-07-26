@@ -50,9 +50,9 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (T, error) 
 
 	// search in dynamic injections that needed to run a given function
 	if len(key) > 0 {
-		bind, err = retriever.RetrieveNamedBind(elementType, key)
+		bind, err = retriever.GetNamed(elementType, key)
 	} else {
-		bind, err = retriever.RetrieveBind(elementType)
+		bind, err = retriever.Get(elementType)
 	}
 
 	if err == nil {

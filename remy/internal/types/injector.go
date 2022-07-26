@@ -30,16 +30,7 @@ type (
 	}
 
 	// DependencyRetriever is the main element used to obtain registered binds/instances
-	DependencyRetriever interface {
-		// RetrieveBind searches for a cached bind with the given BindKey, and if found it, returns.
-		// This method only looks for existing binds, so instances will not be searched by it.
-		RetrieveBind(BindKey) (any, error)
-
-		// RetrieveNamedBind searches for a cached bind with the given BindKey and cacheKey, if found it, returns.
-		// This method only looks for existing binds, so instances will not be searched by it.
-		RetrieveNamedBind(BindKey, string) (any, error)
-		CheckReflectionOptions
-	}
+	DependencyRetriever = ValuesGetter[BindKey]
 
 	// Injector is the main interface that contains all needed methods to make an injector work
 	Injector interface {
