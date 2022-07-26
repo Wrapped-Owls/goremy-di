@@ -25,7 +25,7 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) erro
 	elementType := utils.GetKey[T](ij.ReflectOpts())
 
 	if len(key) > 0 {
-		return ij.BindNamed(key, elementType, bind)
+		return ij.BindNamed(elementType, key, bind)
 	}
 	return ij.Bind(elementType, bind)
 }
@@ -47,9 +47,9 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (T, error) 
 
 	// search in dynamic injections that needed to run a given function
 	if len(key) > 0 {
-		bind, err = retriever.RetrieveNamedBind(key, elementType)
+		bind, err = retriever.GetNamed(elementType, key)
 	} else {
-		bind, err = retriever.RetrieveBind(elementType)
+		bind, err = retriever.Get(elementType)
 	}
 
 	if err == nil {
@@ -58,7 +58,7 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (T, error) 
 			return result, nil
 		}
 	}
-	// retrieve values from instanceStorage
+	// retrieve values from cacheStorage
 	return GetStorage[T](retriever, key)
 }
 
@@ -72,10 +72,10 @@ func GetGen[T any](ij types.Injector, elements []types.InstancePair[any], keys .
 	for _, element := range elements {
 		bindKey := utils.GetElemKey(element.Value, subInjector.ReflectOpts())
 		if len(element.Key) > 0 {
-			if err = subInjector.SetNamed(bindKey, element.Key, element.Value); err != nil {
+			if err = subInjector.BindNamed(bindKey, element.Key, element.Value); err != nil {
 				return
 			}
-		} else if err = subInjector.Set(bindKey, element.Value); err != nil {
+		} else if err = subInjector.Bind(bindKey, element.Value); err != nil {
 			return
 		}
 	}

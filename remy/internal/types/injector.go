@@ -6,10 +6,12 @@ type (
 	}
 	ValuesSetter[T comparable] interface {
 		// Set uses the T key given to save the value.
-		Set(T, any) error
+		// If the key is already bound, it returns a boolean with value true.
+		Set(T, any) bool
 
 		// SetNamed uses the T key and cacheKey given to store the value.
-		SetNamed(T, string, any) error
+		// If the key is already bound, it returns a boolean with value true.
+		SetNamed(T, string, any) bool
 		CheckReflectionOptions
 	}
 	ValuesGetter[T comparable] interface {
@@ -35,14 +37,14 @@ type (
 
 		// RetrieveNamedBind searches for a cached bind with the given BindKey and cacheKey, if found it, returns.
 		// This method only looks for existing binds, so instances will not be searched by it.
-		RetrieveNamedBind(string, BindKey) (any, error)
+		RetrieveNamedBind(BindKey, string) (any, error)
 		ValuesGetter[BindKey]
 	}
 
 	// Injector is the main interface that contains all needed methods to make an injector work
 	Injector interface {
 		Bind(BindKey, any) error
-		BindNamed(string, BindKey, any) error
+		BindNamed(BindKey, string, any) error
 		ValuesSetter[BindKey]
 		DependencyRetriever
 	}

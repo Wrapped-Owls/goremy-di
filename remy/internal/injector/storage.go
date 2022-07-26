@@ -29,18 +29,18 @@ func (s ElementsStorage[T]) ReflectOpts() types.ReflectionOptions {
 	return s.reflectOpts
 }
 
-func (s *ElementsStorage[T]) Set(key T, value any) (err error) {
+func (s *ElementsStorage[T]) Set(key T, value any) (wasOverridden bool) {
 	if _, ok := s.elements[key]; ok {
-		err = utils.ErrAlreadyBound
 		if !s.allowOverride {
-			panic(err)
+			panic(utils.ErrAlreadyBound)
 		}
+		wasOverridden = true
 	}
 	s.elements[key] = value
 	return
 }
 
-func (s *ElementsStorage[T]) SetNamed(elementType T, name string, value any) (err error) {
+func (s *ElementsStorage[T]) SetNamed(elementType T, name string, value any) (wasOverridden bool) {
 	var namedBinds genericAnyMap[T]
 	if elementMap, ok := s.namedElements[name]; ok {
 		namedBinds = elementMap
@@ -49,10 +49,10 @@ func (s *ElementsStorage[T]) SetNamed(elementType T, name string, value any) (er
 	}
 
 	if _, ok := namedBinds[elementType]; ok {
-		err = utils.ErrAlreadyBound
 		if !s.allowOverride {
-			panic(err)
+			panic(utils.ErrAlreadyBound)
 		}
+		wasOverridden = true
 	}
 	namedBinds[elementType] = value
 	s.namedElements[name] = namedBinds

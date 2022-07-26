@@ -5,18 +5,24 @@ import (
 	"github.com/wrapped-owls/goremy-di/remy/internal/utils"
 )
 
-func SetStorage[T any](dStorage types.ValuesSetter[types.BindKey], value T, keys ...string) error {
-	var (
-		key string
-	)
+func SetStorage[T any](dStorage types.ValuesSetter[types.BindKey], value T, keys ...string) (err error) {
+	var key string
+
 	if len(keys) > 0 {
 		key = keys[0]
 	}
 
 	if len(key) > 0 {
-		return dStorage.SetNamed(utils.GetKey[T](dStorage.ReflectOpts()), key, value)
+		if dStorage.SetNamed(utils.GetKey[T](dStorage.ReflectOpts()), key, value) {
+			err = utils.ErrAlreadyBound
+		}
+		return
 	}
-	return dStorage.Set(utils.GetKey[T](dStorage.ReflectOpts()), value)
+	if dStorage.Set(utils.GetKey[T](dStorage.ReflectOpts()), value) {
+		err = utils.ErrAlreadyBound
+	}
+
+	return
 }
 
 func GetStorage[T any](dStorage types.ValuesGetter[types.BindKey], keys ...string) (T, error) {
