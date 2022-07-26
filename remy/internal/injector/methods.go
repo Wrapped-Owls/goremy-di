@@ -75,8 +75,7 @@ func GetGen[T any](ij types.Injector, elements []types.InstancePair[any], keys .
 			if err = subInjector.SetNamed(bindKey, element.Key, element.Value); err != nil {
 				return
 			}
-		}
-		if err = subInjector.Set(bindKey, element.Value); err != nil {
+		} else if err = subInjector.Set(bindKey, element.Value); err != nil {
 			return
 		}
 	}

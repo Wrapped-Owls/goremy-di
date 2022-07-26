@@ -100,9 +100,7 @@ func TestRegister__Singleton(testObj *testing.T) {
 				t.Error("Singleton was generated before register")
 			}
 			for index := 0; index < 11; index++ {
-				if err := Register(i, sgtBind); err != nil {
-					t.Error(err)
-				}
+				_ = Register(i, sgtBind)
 				if invocations != bindCase.registerGenerations {
 					t.Errorf("Singleton %d times. Expected %d", invocations, bindCase.registerGenerations)
 					t.FailNow()
@@ -122,6 +120,39 @@ func TestRegister__Singleton(testObj *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// TestRegister__overrideInstanceByBind verify if when overriding a instance
+func TestRegister__overrideInstanceByBind(t *testing.T) {
+	// Checks if panics when trying to override
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Error("Function did not panic")
+			t.FailNow()
+		}
+	}()
+	inj := New(false, types.ReflectionOptions{})
+	const (
+		expectedString   = "avocado"
+		unexpectedString = "banana"
+	)
+	_ = Register(inj, binds.Instance(func(retriever types.DependencyRetriever) string {
+		return expectedString
+	}))
+
+	if result := TryGet[string](inj); result != expectedString {
+		t.Error("Instance register is not working as expected")
+		t.FailNow()
+	}
+
+	_ = Register(inj, binds.Singleton(func(retriever types.DependencyRetriever) string {
+		return unexpectedString
+	}))
+
+	if result := TryGet[string](inj); result != expectedString {
+		t.Error("Instance bind is being overridden by singleton bind")
 	}
 }
 
