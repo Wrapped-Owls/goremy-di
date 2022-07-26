@@ -73,11 +73,3 @@ func (s StdInjector) GetNamed(bType types.BindKey, name string) (result any, err
 	}
 	return
 }
-
-func (s *StdInjector) Set(key types.BindKey, value any) bool {
-	return s.cacheStorage.Set(key, value)
-}
-
-func (s *StdInjector) SetNamed(elementType types.BindKey, name string, value any) bool {
-	return s.cacheStorage.SetNamed(elementType, name, value)
-}
