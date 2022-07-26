@@ -11,18 +11,21 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) erro
 	if len(keys) > 0 {
 		key = keys[0]
 	}
+
+	elementType := utils.GetKey[T](ij.ReflectOpts())
 	if insBind, ok := bind.(binds.InstanceBind[T]); ok {
 		if !insBind.IsFactory {
 			value := insBind.Generates(ij)
-			return SetStorage(ij, value, key)
+			if len(key) > 0 {
+				return ij.BindNamed(elementType, key, value)
+			}
+			return ij.Bind(elementType, value)
 		}
 	} else if sglBind, assertOk := bind.(*binds.SingletonBind[T]); assertOk {
 		if !sglBind.IsLazy && sglBind.ShouldGenerate() {
 			sglBind.BuildDependency(ij)
 		}
 	}
-
-	elementType := utils.GetKey[T](ij.ReflectOpts())
 
 	if len(key) > 0 {
 		return ij.BindNamed(elementType, key, bind)
@@ -47,9 +50,9 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (T, error) 
 
 	// search in dynamic injections that needed to run a given function
 	if len(key) > 0 {
-		bind, err = retriever.GetNamed(elementType, key)
+		bind, err = retriever.RetrieveNamedBind(elementType, key)
 	} else {
-		bind, err = retriever.Get(elementType)
+		bind, err = retriever.RetrieveBind(elementType)
 	}
 
 	if err == nil {
@@ -57,9 +60,12 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (T, error) 
 			result := typedBind.Generates(retriever)
 			return result, nil
 		}
+		if instanceBind, assertOk := bind.(T); assertOk {
+			return instanceBind, nil
+		}
 	}
 	// retrieve values from cacheStorage
-	return GetStorage[T](retriever, key)
+	return utils.Default[T](), err
 }
 
 func TryGet[T any](retriever types.DependencyRetriever, keys ...string) (result T) {

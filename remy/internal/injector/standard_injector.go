@@ -81,23 +81,3 @@ func (s *StdInjector) Set(key types.BindKey, value any) bool {
 func (s *StdInjector) SetNamed(elementType types.BindKey, name string, value any) bool {
 	return s.cacheStorage.SetNamed(elementType, name, value)
 }
-
-func (s StdInjector) GetNamed(bindKey types.BindKey, name string) (result any, err error) {
-	if result, err = s.cacheStorage.GetNamed(bindKey, name); err != nil && s.parentInjector != nil {
-		result, err = s.parentInjector.GetNamed(bindKey, name)
-		if err != nil {
-			err = utils.ErrNoElementFoundInsideOrParent
-		}
-	}
-	return
-}
-
-func (s StdInjector) Get(bindKey types.BindKey) (result any, err error) {
-	if result, err = s.cacheStorage.Get(bindKey); err != nil && s.parentInjector != nil {
-		result, err = s.parentInjector.Get(bindKey)
-		if err != nil {
-			err = utils.ErrNoElementFoundInsideOrParent
-		}
-	}
-	return
-}

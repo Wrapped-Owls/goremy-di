@@ -38,14 +38,13 @@ type (
 		// RetrieveNamedBind searches for a cached bind with the given BindKey and cacheKey, if found it, returns.
 		// This method only looks for existing binds, so instances will not be searched by it.
 		RetrieveNamedBind(BindKey, string) (any, error)
-		ValuesGetter[BindKey]
+		CheckReflectionOptions
 	}
 
 	// Injector is the main interface that contains all needed methods to make an injector work
 	Injector interface {
 		Bind(BindKey, any) error
 		BindNamed(BindKey, string, any) error
-		ValuesSetter[BindKey]
 		DependencyRetriever
 	}
 )
