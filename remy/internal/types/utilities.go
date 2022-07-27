@@ -1,7 +1,7 @@
 package types
 
 type (
-	BindKey = string
+	BindKey string
 
 	InstancePair[T any] struct {
 		Value T
