@@ -30,3 +30,20 @@
 
 - Fix an error with `ReflectionOptions` not being applied to **StdInjector**
 - Rename some internal attributes in storage
+
+## 20220728 - remy/v1.3.0
+
+- Improve test coverage
+- Rename some internal attributes in storage
+    - Test `SetGlobalInjector`
+    - Test most generics utilities
+- Return error on _internal register_ function
+- Add `godoc` lines to **internal.types**
+- Fix hidden error on `GetGen` function
+- Fix error with bind register
+    - Prevent overriding a same type with different type of bindings
+- Cleanup `DependencyRetriever` methods
+    - Removed unnecessary duplicate methods
+- Internal improvements
+    - Change `BindKey` type to prevent misplace errors
+    - Remove duplicate use of **storage**
