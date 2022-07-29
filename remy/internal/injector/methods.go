@@ -6,16 +6,20 @@ import (
 	"github.com/wrapped-owls/goremy-di/remy/internal/utils"
 )
 
-func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) {
+func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) error {
 	var key string
 	if len(keys) > 0 {
 		key = keys[0]
 	}
+
+	elementType := utils.GetKey[T](ij.ReflectOpts())
 	if insBind, ok := bind.(binds.InstanceBind[T]); ok {
 		if !insBind.IsFactory {
 			value := insBind.Generates(ij)
-			SetStorage(ij, value, key)
-			return
+			if len(key) > 0 {
+				return ij.BindNamed(elementType, key, value)
+			}
+			return ij.Bind(elementType, value)
 		}
 	} else if sglBind, assertOk := bind.(*binds.SingletonBind[T]); assertOk {
 		if !sglBind.IsLazy && sglBind.ShouldGenerate() {
@@ -23,13 +27,10 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) {
 		}
 	}
 
-	elementType := utils.GetKey[T](ij.ReflectOpts())
-
 	if len(key) > 0 {
-		ij.BindNamed(key, elementType, bind)
-	} else {
-		ij.Bind(elementType, bind)
+		return ij.BindNamed(elementType, key, bind)
 	}
+	return ij.Bind(elementType, bind)
 }
 
 func Get[T any](retriever types.DependencyRetriever, keys ...string) (T, error) {
@@ -49,9 +50,9 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (T, error) 
 
 	// search in dynamic injections that needed to run a given function
 	if len(key) > 0 {
-		bind, err = retriever.RetrieveNamedBind(key, elementType)
+		bind, err = retriever.GetNamed(elementType, key)
 	} else {
-		bind, err = retriever.RetrieveBind(elementType)
+		bind, err = retriever.Get(elementType)
 	}
 
 	if err == nil {
@@ -59,9 +60,12 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (T, error) 
 			result := typedBind.Generates(retriever)
 			return result, nil
 		}
+		if instanceBind, assertOk := bind.(T); assertOk {
+			return instanceBind, nil
+		}
 	}
-	// retrieve values from instanceStorage
-	return GetStorage[T](retriever, key)
+	// retrieve values from cacheStorage
+	return utils.Default[T](), err
 }
 
 func TryGet[T any](retriever types.DependencyRetriever, keys ...string) (result T) {
@@ -69,14 +73,17 @@ func TryGet[T any](retriever types.DependencyRetriever, keys ...string) (result 
 	return
 }
 
-func GetGen[T any](ij types.Injector, elements []types.InstancePair[any], keys ...string) (T, error) {
+func GetGen[T any](ij types.Injector, elements []types.InstancePair[any], keys ...string) (result T, err error) {
 	subInjector := New(false, ij.ReflectOpts(), ij)
 	for _, element := range elements {
 		bindKey := utils.GetElemKey(element.Value, subInjector.ReflectOpts())
 		if len(element.Key) > 0 {
-			subInjector.SetNamed(bindKey, element.Key, element.Value)
+			if err = subInjector.BindNamed(bindKey, element.Key, element.Value); err != nil {
+				return
+			}
+		} else if err = subInjector.Bind(bindKey, element.Value); err != nil {
+			return
 		}
-		subInjector.Set(bindKey, element.Value)
 	}
 
 	return Get[T](subInjector, keys...)

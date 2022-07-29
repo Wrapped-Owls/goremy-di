@@ -7,11 +7,10 @@ import (
 
 type (
 	StdInjector struct {
-		allowOverride   bool
-		reflectOpts     types.ReflectionOptions
-		parentInjector  types.DependencyRetriever
-		bindStorage     types.Storage[types.BindKey]
-		instanceStorage types.Storage[types.BindKey]
+		allowOverride  bool
+		reflectOpts    types.ReflectionOptions
+		parentInjector types.DependencyRetriever
+		cacheStorage   types.Storage[types.BindKey]
 	}
 )
 
@@ -21,11 +20,10 @@ func New(canOverride bool, reflectOpts types.ReflectionOptions, parent ...types.
 		parentInjector = parent[0]
 	}
 	return &StdInjector{
-		allowOverride:   canOverride,
-		parentInjector:  parentInjector,
-		reflectOpts:     reflectOpts,
-		bindStorage:     NewElementsStorage[types.BindKey](canOverride, reflectOpts),
-		instanceStorage: NewElementsStorage[types.BindKey](canOverride, reflectOpts),
+		allowOverride:  canOverride,
+		parentInjector: parentInjector,
+		reflectOpts:    reflectOpts,
+		cacheStorage:   NewElementsStorage[types.BindKey](canOverride, reflectOpts),
 	}
 }
 
@@ -42,17 +40,23 @@ func (s StdInjector) ReflectOpts() types.ReflectionOptions {
 	return s.reflectOpts
 }
 
-func (s *StdInjector) Bind(key types.BindKey, value any) {
-	s.bindStorage.Set(key, value)
+func (s *StdInjector) Bind(key types.BindKey, value any) error {
+	if s.cacheStorage.Set(key, value) {
+		return utils.ErrAlreadyBound
+	}
+	return nil
 }
 
-func (s *StdInjector) BindNamed(name string, bType types.BindKey, value any) {
-	s.bindStorage.SetNamed(bType, name, value)
+func (s *StdInjector) BindNamed(bType types.BindKey, name string, value any) error {
+	if s.cacheStorage.SetNamed(bType, name, value) {
+		return utils.ErrAlreadyBound
+	}
+	return nil
 }
 
-func (s StdInjector) RetrieveBind(key types.BindKey) (result any, err error) {
-	if result, err = s.bindStorage.Get(key); err != nil && s.parentInjector != nil {
-		result, err = s.parentInjector.RetrieveBind(key)
+func (s StdInjector) Get(key types.BindKey) (result any, err error) {
+	if result, err = s.cacheStorage.Get(key); err != nil && s.parentInjector != nil {
+		result, err = s.parentInjector.Get(key)
 		if err != nil {
 			err = utils.ErrNoElementFoundInsideOrParent
 		}
@@ -60,37 +64,9 @@ func (s StdInjector) RetrieveBind(key types.BindKey) (result any, err error) {
 	return
 }
 
-func (s StdInjector) RetrieveNamedBind(name string, bType types.BindKey) (result any, err error) {
-	if result, err = s.bindStorage.GetNamed(bType, name); err != nil && s.parentInjector != nil {
-		result, err = s.parentInjector.RetrieveNamedBind(bType, name)
-		if err != nil {
-			err = utils.ErrNoElementFoundInsideOrParent
-		}
-	}
-	return
-}
-
-func (s *StdInjector) Set(key types.BindKey, value any) {
-	s.instanceStorage.Set(key, value)
-}
-
-func (s *StdInjector) SetNamed(elementType types.BindKey, name string, value any) {
-	s.instanceStorage.SetNamed(elementType, name, value)
-}
-
-func (s StdInjector) GetNamed(bindKey types.BindKey, name string) (result any, err error) {
-	if result, err = s.instanceStorage.GetNamed(bindKey, name); err != nil && s.parentInjector != nil {
-		result, err = s.parentInjector.GetNamed(bindKey, name)
-		if err != nil {
-			err = utils.ErrNoElementFoundInsideOrParent
-		}
-	}
-	return
-}
-
-func (s StdInjector) Get(bindKey types.BindKey) (result any, err error) {
-	if result, err = s.instanceStorage.Get(bindKey); err != nil && s.parentInjector != nil {
-		result, err = s.parentInjector.Get(bindKey)
+func (s StdInjector) GetNamed(bType types.BindKey, name string) (result any, err error) {
+	if result, err = s.cacheStorage.GetNamed(bType, name); err != nil && s.parentInjector != nil {
+		result, err = s.parentInjector.GetNamed(bType, name)
 		if err != nil {
 			err = utils.ErrNoElementFoundInsideOrParent
 		}

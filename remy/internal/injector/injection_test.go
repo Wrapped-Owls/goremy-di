@@ -51,13 +51,13 @@ func TestInjection__GetStructImplementInterface(t *testing.T) {
 	}
 	ij := New(false, types.ReflectionOptions{GenerifyInterface: true})
 
-	Register(ij, binds.Instance(
+	_ = Register(ij, binds.Instance(
 		func(retriever types.DependencyRetriever) universalAnswer {
 			return &expected[0]
 		},
 	))
 	// Register again as another type, to check if it works
-	Register(ij, binds.Instance(
+	_ = Register(ij, binds.Instance(
 		func(retriever types.DependencyRetriever) guide {
 			return expected[1]
 		},
@@ -83,14 +83,14 @@ func TestInjection__RegisterSameKeyDifferentType(t *testing.T) {
 	)
 
 	ij := New(false, types.ReflectionOptions{})
-	Register(
+	_ = Register(
 		ij,
 		binds.Instance(func(retriever types.DependencyRetriever) string {
 			return expectedStr
 		}),
 		"truth",
 	)
-	Register(
+	_ = Register(
 		ij,
 		binds.Instance(func(retriever types.DependencyRetriever) int {
 			return expectedInt
@@ -125,14 +125,14 @@ func TestInjection__RetrieveSameTypeDifferentKey(t *testing.T) {
 	)
 
 	ij := New(true, types.ReflectionOptions{})
-	Register(
+	_ = Register(
 		ij,
 		binds.Instance(func(retriever types.DependencyRetriever) string {
 			return resultParts[1]
 		}),
 		"lang",
 	)
-	Register(ij, a)
+	_ = Register(ij, a)
 	result := TryGet[string](ij)
 
 	if result != resultParts[0]+resultParts[1] {
@@ -165,14 +165,14 @@ func TestInjection__RegisterEqualInterfaces(t *testing.T) {
 	}
 
 	ij := New(true, types.ReflectionOptions{})
-	Register(
+	_ = Register(
 		ij,
 		binds.Instance(func(retriever types.DependencyRetriever) spk1 {
 			return elements[0]
 		}),
 		storageKey,
 	)
-	Register(
+	_ = Register(
 		ij,
 		binds.Instance(func(retriever types.DependencyRetriever) spk2 {
 			return elements[1]

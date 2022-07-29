@@ -5,28 +5,37 @@ type (
 		ReflectOpts() ReflectionOptions
 	}
 	ValuesSetter[T comparable] interface {
-		Set(T, any)
-		SetNamed(T, string, any)
+		// Set uses the T key given to save the value.
+		// If the key is already bound, it returns a boolean with value true.
+		Set(T, any) bool
+
+		// SetNamed uses the T key and cacheKey given to store the value.
+		// If the key is already bound, it returns a boolean with value true.
+		SetNamed(T, string, any) bool
 		CheckReflectionOptions
 	}
 	ValuesGetter[T comparable] interface {
+		// GetNamed search for a named element that was cached using the T value given and a string key
 		GetNamed(T, string) (any, error)
+
+		// Get search for a named element that was cached using the T value given
 		Get(T) (any, error)
 		CheckReflectionOptions
 	}
+
+	// Storage is the main cache interface that is used by the injector to store the values
 	Storage[T comparable] interface {
 		ValuesSetter[T]
 		ValuesGetter[T]
 	}
-	DependencyRetriever interface {
-		RetrieveBind(BindKey) (any, error)
-		RetrieveNamedBind(string, BindKey) (any, error)
-		ValuesGetter[BindKey]
-	}
+
+	// DependencyRetriever is the main element used to obtain registered binds/instances
+	DependencyRetriever = ValuesGetter[BindKey]
+
+	// Injector is the main interface that contains all needed methods to make an injector work
 	Injector interface {
-		Bind(BindKey, any)
-		BindNamed(string, BindKey, any)
-		ValuesSetter[BindKey]
+		Bind(BindKey, any) error
+		BindNamed(BindKey, string, any) error
 		DependencyRetriever
 	}
 )

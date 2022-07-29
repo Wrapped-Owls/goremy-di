@@ -1,8 +1,10 @@
 package remy
 
 import (
+	"errors"
 	"github.com/wrapped-owls/goremy-di/remy/internal/injector"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/internal/utils"
 )
 
 type (
@@ -63,7 +65,23 @@ func Register[T any](i Injector, bind types.Bind[T], keys ...string) {
 	if i == nil {
 		i = globalInjector()
 	}
-	injector.Register(i, bind, keys...)
+	if err := injector.Register(i, bind, keys...); err != nil {
+		panic(err)
+	}
+}
+
+// Override works like the Register function, allowing to register a bind that was already registered.
+// It also must be called during binds setup, because
+// the library doesn't support registering dependencies while get at same time.
+//
+// This is not supported in multithreading applications because it does not have race protection
+func Override[T any](i Injector, bind types.Bind[T], keys ...string) {
+	if i == nil {
+		i = globalInjector()
+	}
+	if err := injector.Register(i, bind, keys...); err != nil && !errors.Is(err, utils.ErrAlreadyBound) {
+		panic(err)
+	}
 }
 
 // RegisterInstance directly generates an instance bind without needing to write it.
