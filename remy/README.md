@@ -283,3 +283,9 @@ func TestCycles(t *testing.T) {
 	}
 }
 ```
+
+#### Important Note
+
+When using the `CycleDetectorInjector` is important that in Binds, all _Get_ methods used call the
+given `DependencyRetriever`, if the same injector is used inside the function, as a clojure, it will not be able to
+detect cycles.
