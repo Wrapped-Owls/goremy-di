@@ -16,7 +16,7 @@ func TestCycleDetectorInjector_Register(t *testing.T) {
 	ij := NewCycleDetectorInjector(Config{CanOverride: false})
 	var cycleKey = [...]string{"lang", "tool"}
 	Register(ij, Factory(func(retriever DependencyRetriever) string {
-		return Get[string](ij, cycleKey[0]) + " is awesome"
+		return Get[string](retriever, cycleKey[0]) + " is awesome"
 	}))
 	Register(ij, Factory(func(retriever DependencyRetriever) string {
 		return "git" + Get[string](retriever)
@@ -25,7 +25,7 @@ func TestCycleDetectorInjector_Register(t *testing.T) {
 		return "Go + " + Get[string](retriever, cycleKey[1])
 	}), cycleKey[0])
 	Register(ij, Instance(func(retriever DependencyRetriever) int {
-		return len(Get[string](ij, cycleKey[0]))
+		return len(Get[string](retriever, cycleKey[0]))
 	}))
 }
 
