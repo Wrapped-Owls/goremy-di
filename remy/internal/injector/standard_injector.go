@@ -36,6 +36,10 @@ func (s *StdInjector) SubInjector(overrides ...bool) types.Injector {
 	return New(canOverride, s.reflectOpts, s)
 }
 
+func (s *StdInjector) WrapRetriever() types.Injector {
+	return nil
+}
+
 func (s StdInjector) ReflectOpts() types.ReflectionOptions {
 	return s.reflectOpts
 }

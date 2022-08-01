@@ -48,6 +48,9 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (T, error) 
 		err  error
 	)
 
+	if wrappedRetriever := retriever.WrapRetriever(); wrappedRetriever != nil {
+		retriever = wrappedRetriever
+	}
 	// search in dynamic injections that needed to run a given function
 	if len(key) > 0 {
 		bind, err = retriever.GetNamed(elementType, key)
