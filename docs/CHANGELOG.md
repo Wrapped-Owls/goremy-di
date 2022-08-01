@@ -47,3 +47,13 @@
 - Internal improvements
     - Change `BindKey` type to prevent misplace errors
     - Remove duplicate use of **storage**
+
+## 20220801 - remy/v1.4.0
+
+- Create `CycleDetectorInjector` to be used in tests
+    - Create a new error type
+    - Create a new type in internal utilities
+- Change use of unexported type to an exported in public pkg
+    - remy public functions now use `Bind[T]` instead of `types.Bind[T]`
+- Add `WrapRetriever` to **DependencyRetriever** interface
+- Add panic recover to `Do` functions

@@ -30,12 +30,16 @@ type (
 	}
 
 	// DependencyRetriever is the main element used to obtain registered binds/instances
-	DependencyRetriever = ValuesGetter[BindKey]
+	DependencyRetriever interface {
+		ValuesGetter[BindKey]
+		WrapRetriever() Injector
+	}
 
 	// Injector is the main interface that contains all needed methods to make an injector work
 	Injector interface {
 		Bind(BindKey, any) error
 		BindNamed(BindKey, string, any) error
+		SubInjector(allowOverrides ...bool) Injector
 		DependencyRetriever
 	}
 )

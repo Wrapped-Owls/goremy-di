@@ -12,4 +12,10 @@ type (
 		GenerifyInterface bool
 		UseReflectionType bool
 	}
+
+	BindDependencies[T any] map[BindKey]T
+	DependencyGraph         struct {
+		UnnamedDependency BindDependencies[bool]
+		NamedDependency   BindDependencies[map[string]bool]
+	}
 )
