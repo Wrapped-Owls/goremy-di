@@ -2,8 +2,32 @@ package remy
 
 import (
 	"fmt"
+	"github.com/wrapped-owls/goremy-di/remy/internal/utils"
 	"testing"
 )
+
+func TestCycleDetectorInjector_Register(t *testing.T) {
+	defer func() {
+		r := recover()
+		if r != nil && fmt.Sprint(r) != utils.ErrCycleDependencyDetected.Error() {
+			t.Error(r)
+		}
+	}()
+	ij := NewCycleDetectorInjector(Config{CanOverride: false})
+	var cycleKey = [...]string{"lang", "tool"}
+	Register(ij, Factory(func(retriever DependencyRetriever) string {
+		return Get[string](ij, cycleKey[0]) + " is awesome"
+	}))
+	Register(ij, Factory(func(retriever DependencyRetriever) string {
+		return "git" + Get[string](retriever)
+	}), cycleKey[1])
+	Register(ij, Factory(func(retriever DependencyRetriever) string {
+		return "Go + " + Get[string](retriever, cycleKey[1])
+	}), cycleKey[0])
+	Register(ij, Instance(func(retriever DependencyRetriever) int {
+		return len(Get[string](ij, cycleKey[0]))
+	}))
+}
 
 func TestCycleDetectorInjector_Get(t *testing.T) {
 	ij := NewCycleDetectorInjector(Config{CanOverride: true})
