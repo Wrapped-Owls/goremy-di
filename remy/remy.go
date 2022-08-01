@@ -2,6 +2,7 @@ package remy
 
 import (
 	"errors"
+	"fmt"
 	"github.com/wrapped-owls/goremy-di/remy/internal/injector"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/internal/utils"
@@ -124,7 +125,13 @@ func Get[T any](i DependencyRetriever, keys ...string) T {
 // Additionally, it returns an error which indicates if the bind was found or not.
 //
 // Receives: DependencyRetriever (required); key (optional)
-func DoGet[T any](i DependencyRetriever, keys ...string) (T, error) {
+func DoGet[T any](i DependencyRetriever, keys ...string) (result T, err error) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			err = fmt.Errorf("%v", r)
+		}
+	}()
 	if i == nil {
 		i = globalInjector()
 	}
@@ -145,7 +152,13 @@ func GetGen[T any](ij Injector, elements []InstancePairAny, keys ...string) T {
 // Additionally, it returns an error which indicates if the bind was found or not.
 //
 // Receives: Injector (required); []InstancePairAny (required); key (optional)
-func DoGetGen[T any](ij Injector, elements []InstancePairAny, keys ...string) (T, error) {
+func DoGetGen[T any](ij Injector, elements []InstancePairAny, keys ...string) (result T, err error) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			err = fmt.Errorf("%v", r)
+		}
+	}()
 	if ij == nil {
 		ij = globalInjector()
 	}
@@ -166,7 +179,13 @@ func GetGenFunc[T any](ij types.Injector, binder func(Injector), keys ...string)
 // Additionally, it returns an error which indicates if the bind was found or not.
 //
 // Receives: Injector (required); func(Injector) (required); key (optional)
-func DoGetGenFunc[T any](ij types.Injector, binder func(Injector), keys ...string) (T, error) {
+func DoGetGenFunc[T any](ij types.Injector, binder func(Injector), keys ...string) (result T, err error) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			err = fmt.Errorf("%v", r)
+		}
+	}()
 	if ij == nil {
 		ij = globalInjector()
 	}
