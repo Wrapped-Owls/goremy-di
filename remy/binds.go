@@ -12,7 +12,7 @@ import (
 //
 // It's recommended to use it only for read value injections.
 // For concurrent mutable binds is recommended to use Singleton or LazySingleton
-func Instance[T any](binder types.Binder[T]) types.Bind[T] {
+func Instance[T any](binder types.Binder[T]) Bind[T] {
 	return binds.Instance(binder)
 }
 
@@ -24,7 +24,7 @@ func Instance[T any](binder types.Binder[T]) types.Bind[T] {
 // As this bind doesn't hold any pointer and/or objects, there is no problem to use it in multiples goroutines at once.
 // Just be careful with calls of the DependencyRetriever,
 // if try to get and modify values from an Instance bind, it can end in a race-condition.
-func Factory[T any](binder types.Binder[T]) types.Bind[T] {
+func Factory[T any](binder types.Binder[T]) Bind[T] {
 	return binds.Factory(binder)
 }
 
@@ -33,7 +33,7 @@ func Factory[T any](binder types.Binder[T]) types.Bind[T] {
 // The default singleton bind will execute the types.Binder during the bind registration process.
 //
 // If you don't want to generate the bind immediately at its registration, you can use the LazySingleton bind.
-func Singleton[T any](binder types.Binder[T]) types.Bind[T] {
+func Singleton[T any](binder types.Binder[T]) Bind[T] {
 	return binds.Singleton(binder)
 }
 
@@ -41,6 +41,6 @@ func Singleton[T any](binder types.Binder[T]) types.Bind[T] {
 // bind. So, it only will generate the singleton instance on the first Get call.
 //
 // It is useful in cases that you want to instantiate heavier objects only when it's needed.
-func LazySingleton[T any](binder types.Binder[T]) types.Bind[T] {
+func LazySingleton[T any](binder types.Binder[T]) Bind[T] {
 	return binds.LazySingleton(binder)
 }

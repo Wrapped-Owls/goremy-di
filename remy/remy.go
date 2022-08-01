@@ -14,7 +14,7 @@ type (
 
 	// Bind is directly copy from types.Bind
 	Bind[T any] interface {
-		Generates(DependencyRetriever) T
+		types.Bind[T]
 	}
 
 	// Config defines needed configuration to instantiate a new injector
@@ -61,11 +61,11 @@ func NewInjector(configs ...Config) Injector {
 
 // Register must be called first, because the library doesn't support registering dependencies while get at same time.
 // This is not supported in multithreading applications because it does not have race protection
-func Register[T any](i Injector, bind types.Bind[T], keys ...string) {
+func Register[T any](i Injector, bind Bind[T], keys ...string) {
 	if i == nil {
 		i = globalInjector()
 	}
-	if err := injector.Register(i, bind, keys...); err != nil {
+	if err := injector.Register[T](i, bind, keys...); err != nil {
 		panic(err)
 	}
 }
@@ -75,11 +75,11 @@ func Register[T any](i Injector, bind types.Bind[T], keys ...string) {
 // the library doesn't support registering dependencies while get at same time.
 //
 // This is not supported in multithreading applications because it does not have race protection
-func Override[T any](i Injector, bind types.Bind[T], keys ...string) {
+func Override[T any](i Injector, bind Bind[T], keys ...string) {
 	if i == nil {
 		i = globalInjector()
 	}
-	if err := injector.Register(i, bind, keys...); err != nil && !errors.Is(err, utils.ErrAlreadyBound) {
+	if err := injector.Register[T](i, bind, keys...); err != nil && !errors.Is(err, utils.ErrAlreadyBound) {
 		panic(err)
 	}
 }
