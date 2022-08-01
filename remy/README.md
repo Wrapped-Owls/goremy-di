@@ -4,7 +4,7 @@ To install in your Go project, you must use the 1.18 version of the language, an
 variable `GO111MODULE=on`.
 
 ```shell
-go get github.com/wrapped-owls/goremy-di
+go get github.com/wrapped-owls/goremy-di/remy
 ```
 
 ## How it works
@@ -246,5 +246,40 @@ func main() {
 			return true
 		}))
 	})
+}
+```
+
+### Cycle dependencies problem
+
+As you can use the binds in a dynamic way, by generating factories that will run during runtime, it may happen to a
+bind request some other bind that depends on the first bind, this is a dependency cycle. The main problem with a cycle
+like this, is that is really hard to detect during code/compile time, and once the code is running, it can end in
+a `Stack Overflow`, which causes a panic to the program, and may be harm to it.
+
+So, to enable the possibility to test and detect for a _dependency-cycle_, you can use the `CycleDetectorInjector`,
+which can be called using the constructor **"NewCycleDetectorInjector"**. The main question during it's use is that it
+creates a wrap in the `StandardInjector`, and create an internal graph for each dependency that was requested to the
+injector. This functionality is much slower than using the `StandardInjector`, so it is only recommended to use it in
+test files, to make sure that no dependency cycle was created.
+
+```go
+
+package main
+
+import (
+	"github.com/wrapped-owls/goremy-di/remy"
+	"testing"
+)
+
+func createInjections(injector remy.Injector) {
+	// ...
+}
+
+func TestCycles(t *testing.T) {
+	ij := remy.NewCycleDetectorInjector()
+	createInjections(ij)
+	if _, err := remy.DoGet[string](ij); err != nil {
+		t.Error(err)
+	}
 }
 ```
