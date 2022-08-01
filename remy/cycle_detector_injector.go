@@ -5,29 +5,34 @@ import (
 	"github.com/wrapped-owls/goremy-di/remy/internal/utils"
 )
 
-type CycleDetectorInjector struct {
+// cycleDetectorInjector is the injector to be used in test file, to check if
+// any of the bound dependencies have a requirement cycle
+type cycleDetectorInjector struct {
 	ij              Injector
 	dependencyGraph *types.DependencyGraph
 	config          Config
 }
 
-func NewCycleDetectorInjector(configs ...Config) *CycleDetectorInjector {
+// NewCycleDetectorInjector creates a new Injector that is able to check for cycle dependencies during runtime.
+//
+// As it is much slower that the injector.StandardInjector, it is only recommended to be used in test files.
+func NewCycleDetectorInjector(configs ...Config) *cycleDetectorInjector {
 	var config Config
 	if len(configs) > 0 {
 		config = configs[0]
 	}
-	return &CycleDetectorInjector{ij: NewInjector(config), config: config}
+	return &cycleDetectorInjector{ij: NewInjector(config), config: config}
 }
 
-func (c CycleDetectorInjector) Bind(key types.BindKey, element any) error {
+func (c cycleDetectorInjector) Bind(key types.BindKey, element any) error {
 	return c.ij.Bind(key, element)
 }
 
-func (c CycleDetectorInjector) BindNamed(key types.BindKey, name string, element any) error {
+func (c cycleDetectorInjector) BindNamed(key types.BindKey, name string, element any) error {
 	return c.ij.BindNamed(key, name, element)
 }
 
-func (c CycleDetectorInjector) SubInjector(allowOverrides ...bool) types.Injector {
+func (c cycleDetectorInjector) SubInjector(allowOverrides ...bool) types.Injector {
 	var shouldOverride bool
 	if len(allowOverrides) > 0 {
 		shouldOverride = allowOverrides[0]
@@ -41,7 +46,7 @@ func (c CycleDetectorInjector) SubInjector(allowOverrides ...bool) types.Injecto
 	return inj
 }
 
-func (c CycleDetectorInjector) WrapRetriever() Injector {
+func (c cycleDetectorInjector) WrapRetriever() Injector {
 	inj := NewCycleDetectorInjector(c.config)
 	inj.ij = c.ij
 	newGraph := types.DependencyGraph{
@@ -66,7 +71,7 @@ func (c CycleDetectorInjector) WrapRetriever() Injector {
 	return inj
 }
 
-func (c CycleDetectorInjector) GetNamed(key types.BindKey, name string) (any, error) {
+func (c cycleDetectorInjector) GetNamed(key types.BindKey, name string) (any, error) {
 	if c.dependencyGraph != nil {
 		nameMap, ok := c.dependencyGraph.NamedDependency[key]
 		if !ok {
@@ -81,7 +86,7 @@ func (c CycleDetectorInjector) GetNamed(key types.BindKey, name string) (any, er
 	return c.ij.GetNamed(key, name)
 }
 
-func (c CycleDetectorInjector) Get(key types.BindKey) (any, error) {
+func (c cycleDetectorInjector) Get(key types.BindKey) (any, error) {
 	if c.dependencyGraph != nil {
 		if _, hasKey := c.dependencyGraph.UnnamedDependency[key]; hasKey {
 			panic(utils.ErrCycleDependencyDetected)
@@ -92,7 +97,7 @@ func (c CycleDetectorInjector) Get(key types.BindKey) (any, error) {
 	return c.ij.Get(key)
 }
 
-func (c CycleDetectorInjector) ReflectOpts() types.ReflectionOptions {
+func (c cycleDetectorInjector) ReflectOpts() types.ReflectionOptions {
 	return types.ReflectionOptions{
 		GenerifyInterface: c.config.GenerifyInterfaces,
 		UseReflectionType: c.config.UseReflectionType,
