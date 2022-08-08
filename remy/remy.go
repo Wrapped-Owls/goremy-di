@@ -2,6 +2,7 @@ package remy
 
 import (
 	"errors"
+	"fmt"
 	"github.com/wrapped-owls/goremy-di/remy/internal/injector"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/internal/utils"
@@ -14,7 +15,7 @@ type (
 
 	// Bind is directly copy from types.Bind
 	Bind[T any] interface {
-		Generates(DependencyRetriever) T
+		types.Bind[T]
 	}
 
 	// Config defines needed configuration to instantiate a new injector
@@ -61,11 +62,11 @@ func NewInjector(configs ...Config) Injector {
 
 // Register must be called first, because the library doesn't support registering dependencies while get at same time.
 // This is not supported in multithreading applications because it does not have race protection
-func Register[T any](i Injector, bind types.Bind[T], keys ...string) {
+func Register[T any](i Injector, bind Bind[T], keys ...string) {
 	if i == nil {
 		i = globalInjector()
 	}
-	if err := injector.Register(i, bind, keys...); err != nil {
+	if err := injector.Register[T](i, bind, keys...); err != nil {
 		panic(err)
 	}
 }
@@ -75,11 +76,11 @@ func Register[T any](i Injector, bind types.Bind[T], keys ...string) {
 // the library doesn't support registering dependencies while get at same time.
 //
 // This is not supported in multithreading applications because it does not have race protection
-func Override[T any](i Injector, bind types.Bind[T], keys ...string) {
+func Override[T any](i Injector, bind Bind[T], keys ...string) {
 	if i == nil {
 		i = globalInjector()
 	}
-	if err := injector.Register(i, bind, keys...); err != nil && !errors.Is(err, utils.ErrAlreadyBound) {
+	if err := injector.Register[T](i, bind, keys...); err != nil && !errors.Is(err, utils.ErrAlreadyBound) {
 		panic(err)
 	}
 }
@@ -124,7 +125,13 @@ func Get[T any](i DependencyRetriever, keys ...string) T {
 // Additionally, it returns an error which indicates if the bind was found or not.
 //
 // Receives: DependencyRetriever (required); key (optional)
-func DoGet[T any](i DependencyRetriever, keys ...string) (T, error) {
+func DoGet[T any](i DependencyRetriever, keys ...string) (result T, err error) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			err = fmt.Errorf("%v", r)
+		}
+	}()
 	if i == nil {
 		i = globalInjector()
 	}
@@ -145,7 +152,13 @@ func GetGen[T any](ij Injector, elements []InstancePairAny, keys ...string) T {
 // Additionally, it returns an error which indicates if the bind was found or not.
 //
 // Receives: Injector (required); []InstancePairAny (required); key (optional)
-func DoGetGen[T any](ij Injector, elements []InstancePairAny, keys ...string) (T, error) {
+func DoGetGen[T any](ij Injector, elements []InstancePairAny, keys ...string) (result T, err error) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			err = fmt.Errorf("%v", r)
+		}
+	}()
 	if ij == nil {
 		ij = globalInjector()
 	}
@@ -166,7 +179,13 @@ func GetGenFunc[T any](ij types.Injector, binder func(Injector), keys ...string)
 // Additionally, it returns an error which indicates if the bind was found or not.
 //
 // Receives: Injector (required); func(Injector) (required); key (optional)
-func DoGetGenFunc[T any](ij types.Injector, binder func(Injector), keys ...string) (T, error) {
+func DoGetGenFunc[T any](ij types.Injector, binder func(Injector), keys ...string) (result T, err error) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			err = fmt.Errorf("%v", r)
+		}
+	}()
 	if ij == nil {
 		ij = globalInjector()
 	}

@@ -13,9 +13,13 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) erro
 	}
 
 	elementType := utils.GetKey[T](ij.ReflectOpts())
+	var retriever types.DependencyRetriever = ij
+	if wrappedRetriever := retriever.WrapRetriever(); wrappedRetriever != nil {
+		retriever = wrappedRetriever
+	}
 	if insBind, ok := bind.(binds.InstanceBind[T]); ok {
 		if !insBind.IsFactory {
-			value := insBind.Generates(ij)
+			value := insBind.Generates(retriever)
 			if len(key) > 0 {
 				return ij.BindNamed(elementType, key, value)
 			}
@@ -23,7 +27,7 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) erro
 		}
 	} else if sglBind, assertOk := bind.(*binds.SingletonBind[T]); assertOk {
 		if !sglBind.IsLazy && sglBind.ShouldGenerate() {
-			sglBind.BuildDependency(ij)
+			sglBind.BuildDependency(retriever)
 		}
 	}
 
@@ -48,6 +52,9 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (T, error) 
 		err  error
 	)
 
+	if wrappedRetriever := retriever.WrapRetriever(); wrappedRetriever != nil {
+		retriever = wrappedRetriever
+	}
 	// search in dynamic injections that needed to run a given function
 	if len(key) > 0 {
 		bind, err = retriever.GetNamed(elementType, key)
