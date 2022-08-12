@@ -70,6 +70,11 @@ a `DependencyRetriever` as parameter, which can be used to get another values th
 ```go
 package main
 
+import (
+	"database/sql"
+	"github.com/wrapped-owls/goremy-di/remy"
+)
+
 // Create an instance of the database connection
 func init() {
 	remy.Register(
@@ -90,6 +95,11 @@ closure. To make it cleaner to read, we can rewrite this using the `RegisterSing
 
 ```go
 package main
+
+import (
+	"database/sql"
+	"github.com/wrapped-owls/goremy-di/remy"
+)
 
 // Create an instance of the database connection
 func init() {
@@ -134,6 +144,11 @@ calling the Get function:
 ```go
 package main
 
+import (
+	"database/sql"
+	"github.com/wrapped-owls/goremy-di/remy"
+)
+
 func init() {
 	remy.Register(
 		core.Injector,
@@ -149,6 +164,11 @@ local_ one.
 
 ```go
 package main
+
+import (
+	"database/sql"
+	"github.com/wrapped-owls/goremy-di/remy"
+)
 
 func main() {
 	// Executing create table query
@@ -180,6 +200,8 @@ Using as example a factory bind registered in the init function:
 ```go
 package main
 
+import "github.com/wrapped-owls/goremy-di/remy"
+
 func init() {
 	remy.Register(
 		nil, remy.Factory(func(injector remy.DependencyRetriever) string {
@@ -202,12 +224,15 @@ value, is better to use the other method.
 ```go
 package main
 
-import "log"
+import (
+	"github.com/wrapped-owls/goremy-di/remy"
+	"log"
+)
 
 func main() {
 	result := remy.GetGen[string](
 		injector,
-		[]remy.InstancePair[any]{
+		[]remy.InstancePairAny{
 			{
 				Value: uint8(42),
 			},
