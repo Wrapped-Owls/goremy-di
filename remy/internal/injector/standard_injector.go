@@ -14,8 +14,8 @@ type (
 	}
 )
 
-func New(canOverride bool, reflectOpts types.ReflectionOptions, parent ...types.Injector) *StdInjector {
-	var parentInjector types.Injector
+func New(canOverride bool, reflectOpts types.ReflectionOptions, parent ...types.DependencyRetriever) *StdInjector {
+	var parentInjector types.DependencyRetriever
 	if len(parent) > 0 {
 		parentInjector = parent[0]
 	}

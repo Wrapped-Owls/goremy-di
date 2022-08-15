@@ -140,8 +140,8 @@ func DoGet[T any](i DependencyRetriever, keys ...string) (result T, err error) {
 
 // GetGen creates a sub-injector and access the retriever to generate and return a Factory bind
 //
-// Receives: Injector (required); []InstancePairAny (required); key (optional)
-func GetGen[T any](ij Injector, elements []InstancePairAny, keys ...string) T {
+// Receives: DependencyRetriever (required); []InstancePairAny (required); key (optional)
+func GetGen[T any](i DependencyRetriever, elements []InstancePairAny, keys ...string) T {
 	if ij == nil {
 		ij = globalInjector()
 	}
@@ -151,8 +151,8 @@ func GetGen[T any](ij Injector, elements []InstancePairAny, keys ...string) T {
 // DoGetGen creates a sub-injector and access the retriever to generate and return a Factory bind
 // Additionally, it returns an error which indicates if the bind was found or not.
 //
-// Receives: Injector (required); []InstancePairAny (required); key (optional)
-func DoGetGen[T any](ij Injector, elements []InstancePairAny, keys ...string) (result T, err error) {
+// Receives: DependencyRetriever (required); []InstancePairAny (required); key (optional)
+func DoGetGen[T any](i DependencyRetriever, elements []InstancePairAny, keys ...string) (result T, err error) {
 	defer func() {
 		r := recover()
 		if r != nil {
@@ -167,8 +167,8 @@ func DoGetGen[T any](ij Injector, elements []InstancePairAny, keys ...string) (r
 
 // GetGenFunc creates a sub-injector and access the retriever to generate and return a Factory bind
 //
-// Receives: Injector (required); func(Injector) (required); key (optional)
-func GetGenFunc[T any](ij types.Injector, binder func(Injector), keys ...string) T {
+// Receives: DependencyRetriever (required); func(Injector) (required); key (optional)
+func GetGenFunc[T any](i DependencyRetriever, binder func(Injector), keys ...string) T {
 	if ij == nil {
 		ij = globalInjector()
 	}
@@ -178,8 +178,8 @@ func GetGenFunc[T any](ij types.Injector, binder func(Injector), keys ...string)
 // DoGetGenFunc creates a sub-injector and access the retriever to generate and return a Factory bind
 // Additionally, it returns an error which indicates if the bind was found or not.
 //
-// Receives: Injector (required); func(Injector) (required); key (optional)
-func DoGetGenFunc[T any](ij types.Injector, binder func(Injector), keys ...string) (result T, err error) {
+// Receives: DependencyRetriever (required); func(Injector) (required); key (optional)
+func DoGetGenFunc[T any](i DependencyRetriever, binder func(Injector), keys ...string) (result T, err error) {
 	defer func() {
 		r := recover()
 		if r != nil {
