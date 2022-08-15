@@ -16,7 +16,10 @@ type (
 	}
 )
 
-func NewElementsStorage[T comparable](allowOverride bool, reflectionOptions types.ReflectionOptions) *ElementsStorage[T] {
+func NewElementsStorage[T comparable](
+	allowOverride bool,
+	reflectionOptions types.ReflectionOptions,
+) *ElementsStorage[T] {
 	return &ElementsStorage[T]{
 		allowOverride: allowOverride,
 		reflectOpts:   reflectionOptions,
@@ -25,7 +28,7 @@ func NewElementsStorage[T comparable](allowOverride bool, reflectionOptions type
 	}
 }
 
-func (s ElementsStorage[T]) ReflectOpts() types.ReflectionOptions {
+func (s *ElementsStorage[T]) ReflectOpts() types.ReflectionOptions {
 	return s.reflectOpts
 }
 
@@ -59,7 +62,7 @@ func (s *ElementsStorage[T]) SetNamed(elementType T, name string, value any) (wa
 	return
 }
 
-func (s ElementsStorage[T]) GetNamed(elementType T, name string) (result any, err error) {
+func (s *ElementsStorage[T]) GetNamed(elementType T, name string) (result any, err error) {
 	if elementMap, ok := s.namedElements[name]; ok && elementMap != nil {
 		result, ok = elementMap[elementType]
 		if !ok {
@@ -70,7 +73,7 @@ func (s ElementsStorage[T]) GetNamed(elementType T, name string) (result any, er
 	return nil, utils.ErrElementNotRegistered
 }
 
-func (s ElementsStorage[T]) Get(key T) (result any, err error) {
+func (s *ElementsStorage[T]) Get(key T) (result any, err error) {
 	var ok bool
 	if result, ok = s.elements[key]; !ok {
 		err = utils.ErrElementNotRegistered

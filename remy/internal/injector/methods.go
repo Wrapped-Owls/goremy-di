@@ -13,9 +13,13 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) erro
 	}
 
 	elementType := utils.GetKey[T](ij.ReflectOpts())
+	var retriever types.DependencyRetriever = ij
+	if wrappedRetriever := retriever.WrapRetriever(); wrappedRetriever != nil {
+		retriever = wrappedRetriever
+	}
 	if insBind, ok := bind.(binds.InstanceBind[T]); ok {
 		if !insBind.IsFactory {
-			value := insBind.Generates(ij)
+			value := insBind.Generates(retriever)
 			if len(key) > 0 {
 				return ij.BindNamed(elementType, key, value)
 			}
@@ -23,7 +27,7 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) erro
 		}
 	} else if sglBind, assertOk := bind.(*binds.SingletonBind[T]); assertOk {
 		if !sglBind.IsLazy && sglBind.ShouldGenerate() {
-			sglBind.BuildDependency(ij)
+			sglBind.BuildDependency(retriever)
 		}
 	}
 
@@ -48,6 +52,9 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (T, error) 
 		err  error
 	)
 
+	if wrappedRetriever := retriever.WrapRetriever(); wrappedRetriever != nil {
+		retriever = wrappedRetriever
+	}
 	// search in dynamic injections that needed to run a given function
 	if len(key) > 0 {
 		bind, err = retriever.GetNamed(elementType, key)
@@ -73,8 +80,10 @@ func TryGet[T any](retriever types.DependencyRetriever, keys ...string) (result 
 	return
 }
 
-func GetGen[T any](ij types.Injector, elements []types.InstancePair[any], keys ...string) (result T, err error) {
-	subInjector := New(false, ij.ReflectOpts(), ij)
+func GetGen[T any](retriever types.DependencyRetriever, elements []types.InstancePair[any], keys ...string) (
+	result T, err error,
+) {
+	subInjector := New(false, retriever.ReflectOpts(), retriever)
 	for _, element := range elements {
 		bindKey := utils.GetElemKey(element.Value, subInjector.ReflectOpts())
 		if len(element.Key) > 0 {
@@ -89,18 +98,26 @@ func GetGen[T any](ij types.Injector, elements []types.InstancePair[any], keys .
 	return Get[T](subInjector, keys...)
 }
 
-func TryGetGen[T any](ij types.Injector, elements []types.InstancePair[any], keys ...string) (result T) {
-	result, _ = GetGen[T](ij, elements, keys...)
+func TryGetGen[T any](
+	retriever types.DependencyRetriever, elements []types.InstancePair[any], keys ...string,
+) (result T) {
+	result, _ = GetGen[T](retriever, elements, keys...)
 	return
 }
 
-func GetGenFunc[T any](ij types.Injector, binder func(injector types.Injector), keys ...string) (T, error) {
-	subInjector := New(false, ij.ReflectOpts(), ij)
+func GetGenFunc[T any](retriever types.DependencyRetriever, binder func(injector types.Injector), keys ...string) (
+	T, error,
+) {
+	subInjector := New(false, retriever.ReflectOpts(), retriever)
 	binder(subInjector)
 	return Get[T](subInjector, keys...)
 }
 
-func TryGetGenFunc[T any](ij types.Injector, binder func(injector types.Injector), keys ...string) (result T) {
-	result, _ = GetGenFunc[T](ij, binder, keys...)
+func TryGetGenFunc[T any](
+	retriever types.DependencyRetriever,
+	binder func(injector types.Injector),
+	keys ...string,
+) (result T) {
+	result, _ = GetGenFunc[T](retriever, binder, keys...)
 	return
 }
