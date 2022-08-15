@@ -20,7 +20,7 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) erro
 	if insBind, ok := bind.(binds.InstanceBind[T]); ok {
 		if !insBind.IsFactory {
 			value := insBind.Generates(retriever)
-			if len(key) > 0 {
+			if key != "" {
 				return ij.BindNamed(elementType, key, value)
 			}
 			return ij.Bind(elementType, value)
@@ -31,7 +31,7 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) erro
 		}
 	}
 
-	if len(key) > 0 {
+	if key != "" {
 		return ij.BindNamed(elementType, key, bind)
 	}
 	return ij.Bind(elementType, bind)
@@ -56,7 +56,7 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (T, error) 
 		retriever = wrappedRetriever
 	}
 	// search in dynamic injections that needed to run a given function
-	if len(key) > 0 {
+	if key != "" {
 		bind, err = retriever.GetNamed(elementType, key)
 	} else {
 		bind, err = retriever.Get(elementType)
@@ -86,7 +86,7 @@ func GetGen[T any](retriever types.DependencyRetriever, elements []types.Instanc
 	subInjector := New(false, retriever.ReflectOpts(), retriever)
 	for _, element := range elements {
 		bindKey := utils.GetElemKey(element.Value, subInjector.ReflectOpts())
-		if len(element.Key) > 0 {
+		if element.Key != "" {
 			if err = subInjector.BindNamed(bindKey, element.Key, element.Value); err != nil {
 				return
 			}
