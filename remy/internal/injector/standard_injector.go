@@ -40,7 +40,7 @@ func (s *StdInjector) WrapRetriever() types.Injector {
 	return nil
 }
 
-func (s StdInjector) ReflectOpts() types.ReflectionOptions {
+func (s *StdInjector) ReflectOpts() types.ReflectionOptions {
 	return s.reflectOpts
 }
 
@@ -58,7 +58,7 @@ func (s *StdInjector) BindNamed(bType types.BindKey, name string, value any) err
 	return nil
 }
 
-func (s StdInjector) Get(key types.BindKey) (result any, err error) {
+func (s *StdInjector) Get(key types.BindKey) (result any, err error) {
 	if result, err = s.cacheStorage.Get(key); err != nil && s.parentInjector != nil {
 		result, err = s.parentInjector.Get(key)
 		if err != nil {
@@ -68,7 +68,7 @@ func (s StdInjector) Get(key types.BindKey) (result any, err error) {
 	return
 }
 
-func (s StdInjector) GetNamed(bType types.BindKey, name string) (result any, err error) {
+func (s *StdInjector) GetNamed(bType types.BindKey, name string) (result any, err error) {
 	if result, err = s.cacheStorage.GetNamed(bType, name); err != nil && s.parentInjector != nil {
 		result, err = s.parentInjector.GetNamed(bType, name)
 		if err != nil {
