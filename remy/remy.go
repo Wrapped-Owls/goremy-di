@@ -63,10 +63,7 @@ func NewInjector(configs ...Config) Injector {
 // Register must be called first, because the library doesn't support registering dependencies while get at same time.
 // This is not supported in multithreading applications because it does not have race protection
 func Register[T any](i Injector, bind Bind[T], keys ...string) {
-	if i == nil {
-		i = globalInjector()
-	}
-	if err := injector.Register[T](i, bind, keys...); err != nil {
+	if err := injector.Register[T](mustInjector(i), bind, keys...); err != nil {
 		panic(err)
 	}
 }
@@ -77,10 +74,9 @@ func Register[T any](i Injector, bind Bind[T], keys ...string) {
 //
 // This is not supported in multithreading applications because it does not have race protection
 func Override[T any](i Injector, bind Bind[T], keys ...string) {
-	if i == nil {
-		i = globalInjector()
-	}
-	if err := injector.Register[T](i, bind, keys...); err != nil && !errors.Is(err, utils.ErrAlreadyBound) {
+	if err := injector.Register[T](mustInjector(i), bind, keys...); err != nil && !errors.Is(
+		err, utils.ErrAlreadyBound,
+	) {
 		panic(err)
 	}
 }
@@ -90,10 +86,12 @@ func Override[T any](i Injector, bind Bind[T], keys ...string) {
 // Receives: Injector (required); value (required); key (optional)
 func RegisterInstance[T any](i Injector, value T, keys ...string) {
 	Register(
-		i,
-		Instance(func(DependencyRetriever) T {
-			return value
-		}),
+		mustInjector(i),
+		Instance(
+			func(DependencyRetriever) T {
+				return value
+			},
+		),
 		keys...,
 	)
 }
@@ -103,10 +101,12 @@ func RegisterInstance[T any](i Injector, value T, keys ...string) {
 // Receives: Injector (required); value (required); key (optional)
 func RegisterSingleton[T any](i Injector, value T, keys ...string) {
 	Register(
-		i,
-		Singleton(func(DependencyRetriever) T {
-			return value
-		}),
+		mustInjector(i),
+		Singleton(
+			func(DependencyRetriever) T {
+				return value
+			},
+		),
 		keys...,
 	)
 }
@@ -115,10 +115,7 @@ func RegisterSingleton[T any](i Injector, value T, keys ...string) {
 //
 // Receives: DependencyRetriever (required); key (optional)
 func Get[T any](i DependencyRetriever, keys ...string) T {
-	if i == nil {
-		i = globalInjector()
-	}
-	return injector.TryGet[T](i, keys...)
+	return injector.TryGet[T](mustRetriever(i), keys...)
 }
 
 // DoGet directly access a retriever and returns the type that was bound in it.
@@ -132,20 +129,15 @@ func DoGet[T any](i DependencyRetriever, keys ...string) (result T, err error) {
 			err = fmt.Errorf("%v", r)
 		}
 	}()
-	if i == nil {
-		i = globalInjector()
-	}
-	return injector.Get[T](i, keys...)
+
+	return injector.Get[T](mustRetriever(i), keys...)
 }
 
 // GetGen creates a sub-injector and access the retriever to generate and return a Factory bind
 //
 // Receives: DependencyRetriever (required); []InstancePairAny (required); key (optional)
 func GetGen[T any](i DependencyRetriever, elements []InstancePairAny, keys ...string) T {
-	if ij == nil {
-		ij = globalInjector()
-	}
-	return injector.TryGetGen[T](ij, elements, keys...)
+	return injector.TryGetGen[T](mustRetriever(i), elements, keys...)
 }
 
 // DoGetGen creates a sub-injector and access the retriever to generate and return a Factory bind
@@ -159,20 +151,15 @@ func DoGetGen[T any](i DependencyRetriever, elements []InstancePairAny, keys ...
 			err = fmt.Errorf("%v", r)
 		}
 	}()
-	if ij == nil {
-		ij = globalInjector()
-	}
-	return injector.GetGen[T](ij, elements, keys...)
+
+	return injector.GetGen[T](mustRetriever(i), elements, keys...)
 }
 
 // GetGenFunc creates a sub-injector and access the retriever to generate and return a Factory bind
 //
 // Receives: DependencyRetriever (required); func(Injector) (required); key (optional)
 func GetGenFunc[T any](i DependencyRetriever, binder func(Injector), keys ...string) T {
-	if ij == nil {
-		ij = globalInjector()
-	}
-	return injector.TryGetGenFunc[T](ij, binder, keys...)
+	return injector.TryGetGenFunc[T](mustRetriever(i), binder, keys...)
 }
 
 // DoGetGenFunc creates a sub-injector and access the retriever to generate and return a Factory bind
@@ -186,8 +173,6 @@ func DoGetGenFunc[T any](i DependencyRetriever, binder func(Injector), keys ...s
 			err = fmt.Errorf("%v", r)
 		}
 	}()
-	if ij == nil {
-		ij = globalInjector()
-	}
-	return injector.GetGenFunc[T](ij, binder, keys...)
+
+	return injector.GetGenFunc[T](mustRetriever(i), binder, keys...)
 }
