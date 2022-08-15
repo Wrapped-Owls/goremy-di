@@ -22,7 +22,7 @@ func main() {
 
 	names := []string{
 		"Teddy",
-		"Teddybear",
+		"Teddy-bear",
 		"Spider-Man",
 	}
 
