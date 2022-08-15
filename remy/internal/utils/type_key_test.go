@@ -1,9 +1,9 @@
 package utils
 
 import (
-	aTypes "github.com/wrapped-owls/goremy-di/remy/internal/testelem/a/testtypes"
-	bTypes "github.com/wrapped-owls/goremy-di/remy/internal/testelem/b/testtypes"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
+	aTypes "github.com/wrapped-owls/goremy-di/remy/test/fixtures/a/testtypes"
+	bTypes "github.com/wrapped-owls/goremy-di/remy/test/fixtures/b/testtypes"
 	"testing"
 )
 
