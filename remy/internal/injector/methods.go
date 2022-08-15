@@ -3,7 +3,7 @@ package injector
 import (
 	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
-	"github.com/wrapped-owls/goremy-di/remy/internal/utils"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 )
 
 func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) error {

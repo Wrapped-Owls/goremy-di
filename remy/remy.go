@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/wrapped-owls/goremy-di/remy/internal/injector"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
-	"github.com/wrapped-owls/goremy-di/remy/internal/utils"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 )
 
 type (
