@@ -57,3 +57,6 @@
     - remy public functions now use `Bind[T]` instead of `types.Bind[T]`
 - Add `WrapRetriever` to **DependencyRetriever** interface
 - Add panic recover to `Do` functions
+- Remove `sync.RWMutex` from **globalInjector**
+- Swap type `Injector` by `DependencyRetriever` in **Get** methods
+- Boost performance by using pointer receiver in _Injector/Storage_ methods
