@@ -2,7 +2,7 @@ package remy
 
 import (
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
-	"github.com/wrapped-owls/goremy-di/remy/internal/utils"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 )
 
 // cycleDetectorInjector is the injector to be used in test file, to check if

@@ -21,7 +21,9 @@ manufactures them on demand or in single-instance form(singleton). This 'registr
 
 There are a few ways to build a Bind to register object instances:
 
-- _Bind.singleton_: Build an instance only once when the module starts.
-- _Bind.lazySingleton_: Build an instance only once when prompted.
+- _Bind.singleton_: Build an instance only once at the bind registration.
+- _Bind.lazySingleton_: Build an instance only once when element is retrieved at first time.
 - _Bind.factory_: Build an instance on demand.
-- _Bind.instance_: Adds an existing instance.
+- _Bind.instance_: Adds an existing instance as it is.
+
+Other information about binds, functions and injectors can be found easily at [spec](./docs/SPEC.md)

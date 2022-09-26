@@ -60,3 +60,13 @@
 - Remove `sync.RWMutex` from **globalInjector**
 - Swap type `Injector` by `DependencyRetriever` in **Get** methods
 - Boost performance by using pointer receiver in _Injector/Storage_ methods
+
+## 20220926 - remy/v1.5.0
+
+- Move package **utils** from `internal` to `pkg`
+- Swap all string length comparison with empty string check
+- Add `BindKey` & `ReflectOptions` to public API
+- Add tests for `func` type
+- Update README/SPEC markdown
+- Add an error to `Get` method
+- Create an example to know how to get logs from Injector
