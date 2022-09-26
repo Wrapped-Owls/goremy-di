@@ -3,6 +3,7 @@ package remy
 import (
 	"errors"
 	"fmt"
+
 	"github.com/wrapped-owls/goremy-di/remy/internal/injector"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
@@ -12,6 +13,13 @@ type (
 	DependencyRetriever = types.DependencyRetriever
 	Injector            = types.Injector
 	InstancePairAny     = types.InstancePair[any]
+
+	// BindKey is the internal type used to generate all type keys, and used to retrieve all types from the injector.
+	// Is not supposed to use directly without the remy library, as this remove the main use of the remy-generics methods
+	BindKey = types.BindKey
+
+	// ReflectionOptions All options internally used to know how and when to use the `reflect` package
+	ReflectionOptions = types.ReflectionOptions
 
 	// Bind is directly copy from types.Bind
 	Bind[T any] interface {
