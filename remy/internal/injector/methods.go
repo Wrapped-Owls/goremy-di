@@ -38,9 +38,7 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) erro
 }
 
 func Get[T any](retriever types.DependencyRetriever, keys ...string) (T, error) {
-	var (
-		key string
-	)
+	var key string
 
 	if len(keys) > 0 {
 		key = keys[0]
@@ -70,6 +68,7 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (T, error) 
 		if instanceBind, assertOk := bind.(T); assertOk {
 			return instanceBind, nil
 		}
+		err = utils.ErrTypeCastInRuntime
 	}
 	// retrieve values from cacheStorage
 	return utils.Default[T](), err
