@@ -229,9 +229,8 @@ func TestGetGen(t *testing.T) {
 		)
 
 		// register a bool bind to check if it will be replaced during parameter passing
-		_ = Register(
-			i, binds.Instance(false),
-		)
+		_ = Register(i, binds.Instance(false))
+
 		t.Run(
 			tCase.name, func(t *testing.T) {
 				result := tCase.getGenCallback(i)

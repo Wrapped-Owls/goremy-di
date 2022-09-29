@@ -21,9 +21,7 @@ func TestOverride(t *testing.T) {
 	// create an injector that can override a bind and try to register it twice
 	inj := NewInjector(Config{CanOverride: true})
 	RegisterInstance(inj, "test")
-	Override(inj, Instance(func(retriever DependencyRetriever) string {
-		return "test_override"
-	}))
+	Override(inj, Instance("test_override"))
 	checkpoints++
 	RegisterInstance(inj, "test_panic_override")
 	checkpoints++

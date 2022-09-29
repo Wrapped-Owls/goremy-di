@@ -48,13 +48,7 @@ func TestStdInjector_SubInjectorEmpty(t *testing.T) {
 	parent := New(false, types.ReflectionOptions{})
 	subInjector := parent.SubInjector(false)
 
-	_ = Register(
-		parent, binds.Instance(
-			func(retriever types.DependencyRetriever) string {
-				return "snake-pong"
-			},
-		), elementKey,
-	)
+	_ = Register(parent, binds.Instance("snake-pong"), elementKey)
 
 	results := [...]string{TryGet[string](parent, elementKey), TryGet[string](subInjector, elementKey)}
 	if results[0] != results[1] {
