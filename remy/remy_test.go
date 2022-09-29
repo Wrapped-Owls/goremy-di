@@ -46,8 +46,6 @@ func TestOverride__panicIfNotAllowed(t *testing.T) {
 
 	inj := NewInjector(Config{CanOverride: false})
 	RegisterInstance(inj, "test")
-	Override(inj, Instance(func(retriever DependencyRetriever) string {
-		return "test_override"
-	}))
+	Override(inj, Instance("test_override"))
 	checkpoints++
 }
