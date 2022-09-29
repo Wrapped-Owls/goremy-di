@@ -1,8 +1,9 @@
 package binds
 
 import (
-	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"sync"
+
+	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 )
 
 type SingletonBind[T any] struct {
@@ -32,4 +33,11 @@ func (b *SingletonBind[T]) Generates(injector types.DependencyRetriever) T {
 	b.BuildDependency(injector)
 
 	return *b.dependency
+}
+
+func (b *SingletonBind[T]) Type() types.BindType {
+	if b.IsLazy {
+		return types.BindLazySingleton
+	}
+	return types.BindSingleton
 }

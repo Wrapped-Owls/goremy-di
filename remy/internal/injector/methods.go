@@ -1,7 +1,6 @@
 package injector
 
 import (
-	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 )
@@ -17,18 +16,13 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) erro
 	if wrappedRetriever := retriever.WrapRetriever(); wrappedRetriever != nil {
 		retriever = wrappedRetriever
 	}
-	if insBind, ok := bind.(binds.InstanceBind[T]); ok {
-		if !insBind.IsFactory {
-			value := insBind.Generates(retriever)
-			if key != "" {
-				return ij.BindNamed(elementType, key, value)
-			}
-			return ij.Bind(elementType, value)
+
+	if bindType := bind.Type(); bindType == types.BindInstance || bindType == types.BindSingleton {
+		value := bind.Generates(retriever)
+		if key != "" {
+			return ij.BindNamed(elementType, key, value)
 		}
-	} else if sglBind, assertOk := bind.(*binds.SingletonBind[T]); assertOk {
-		if !sglBind.IsLazy && sglBind.ShouldGenerate() {
-			sglBind.BuildDependency(retriever)
-		}
+		return ij.Bind(elementType, value)
 	}
 
 	if key != "" {

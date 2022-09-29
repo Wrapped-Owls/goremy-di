@@ -16,14 +16,14 @@ func LazySingleton[T any](binder types.Binder[T]) types.Bind[T] {
 }
 
 func Factory[T any](binder types.Binder[T]) types.Bind[T] {
-	return InstanceBind[T]{
+	return FactoryBind[T]{
 		binder:    binder,
 		IsFactory: true,
 	}
 }
 
 func Instance[T any](binder types.Binder[T]) types.Bind[T] {
-	return InstanceBind[T]{
+	return FactoryBind[T]{
 		binder: binder,
 	}
 }
