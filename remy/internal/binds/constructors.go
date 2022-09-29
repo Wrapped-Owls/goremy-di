@@ -22,8 +22,10 @@ func Factory[T any](binder types.Binder[T]) types.Bind[T] {
 	}
 }
 
-func Instance[T any](binder types.Binder[T]) types.Bind[T] {
+func Instance[T any](element T) types.Bind[T] {
 	return FactoryBind[T]{
-		binder: binder,
+		binder: func(retriever types.DependencyRetriever) T {
+			return element
+		},
 	}
 }

@@ -12,8 +12,8 @@ import (
 //
 // It's recommended to use it only for read value injections.
 // For concurrent mutable binds is recommended to use Singleton or LazySingleton
-func Instance[T any](binder types.Binder[T]) Bind[T] {
-	return binds.Instance(binder)
+func Instance[T any](element T) Bind[T] {
+	return binds.Instance(element)
 }
 
 // Factory generates a bind that will be generated everytime a dependency with its type is requested by the Injector.
@@ -28,9 +28,8 @@ func Factory[T any](binder types.Binder[T]) Bind[T] {
 	return binds.Factory(binder)
 }
 
-// Singleton generates a bind that is thread-safe, and holds the same object instance across application lifetime.
-//
-// The default singleton bind will execute the types.Binder during the bind registration process.
+// Singleton generates a bind during the registration process.
+// At the end of the registration, it holds the same object instance across application lifetime.
 //
 // If you don't want to generate the bind immediately at its registration, you can use the LazySingleton bind.
 func Singleton[T any](binder types.Binder[T]) Bind[T] {
