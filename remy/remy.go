@@ -96,6 +96,13 @@ func RegisterInstance[T any](i Injector, value T, keys ...string) {
 	Register(mustInjector(i), Instance(value), keys...)
 }
 
+// RegisterSingleton directly generates a singleton bind without needing to write it.
+//
+// Receives: Injector (required); Binder (required); key (optional)
+func RegisterSingleton[T any](i Injector, binder types.Binder[T], keys ...string) {
+	Register(mustInjector(i), Singleton(binder), keys...)
+}
+
 // Get directly access a retriever and returns the type that was bound in it.
 //
 // Receives: DependencyRetriever (required); key (optional)
