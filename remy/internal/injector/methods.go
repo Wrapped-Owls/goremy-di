@@ -17,18 +17,15 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) erro
 		retriever = wrappedRetriever
 	}
 
+	var value any = bind
 	if bindType := bind.Type(); bindType == types.BindInstance || bindType == types.BindSingleton {
-		value := bind.Generates(retriever)
-		if key != "" {
-			return ij.BindNamed(elementType, key, value)
-		}
-		return ij.Bind(elementType, value)
+		value = bind.Generates(retriever)
 	}
 
 	if key != "" {
-		return ij.BindNamed(elementType, key, bind)
+		return ij.BindNamed(elementType, key, value)
 	}
-	return ij.Bind(elementType, bind)
+	return ij.Bind(elementType, value)
 }
 
 func Get[T any](retriever types.DependencyRetriever, keys ...string) (T, error) {
