@@ -93,30 +93,14 @@ func Override[T any](i Injector, bind Bind[T], keys ...string) {
 //
 // Receives: Injector (required); value (required); key (optional)
 func RegisterInstance[T any](i Injector, value T, keys ...string) {
-	Register(
-		mustInjector(i),
-		Instance(
-			func(DependencyRetriever) T {
-				return value
-			},
-		),
-		keys...,
-	)
+	Register(mustInjector(i), Instance(value), keys...)
 }
 
 // RegisterSingleton directly generates a singleton bind without needing to write it.
 //
-// Receives: Injector (required); value (required); key (optional)
-func RegisterSingleton[T any](i Injector, value T, keys ...string) {
-	Register(
-		mustInjector(i),
-		Singleton(
-			func(DependencyRetriever) T {
-				return value
-			},
-		),
-		keys...,
-	)
+// Receives: Injector (required); Binder (required); key (optional)
+func RegisterSingleton[T any](i Injector, binder types.Binder[T], keys ...string) {
+	Register(mustInjector(i), Singleton(binder), keys...)
 }
 
 // Get directly access a retriever and returns the type that was bound in it.

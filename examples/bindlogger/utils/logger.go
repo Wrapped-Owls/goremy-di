@@ -14,7 +14,9 @@ type (
 	LogLevel uint8
 
 	DefaultLogger struct {
-		Level LogLevel
+		Level     LogLevel
+		StdOutput *log.Logger
+		ErrOutput *log.Logger
 	}
 )
 
@@ -39,36 +41,36 @@ func (l DefaultLogger) hasError() bool {
 
 func (l DefaultLogger) Error(args ...any) {
 	if l.hasError() {
-		log.Println("[Error]", args)
+		l.ErrOutput.Println("[Error]", args)
 	}
 }
 
 func (l DefaultLogger) Errorf(format string, args ...any) {
 	if l.hasError() {
-		log.Printf("[Errorf] "+format, args...)
+		l.ErrOutput.Printf("[Errorf] "+format, args...)
 	}
 }
 
 func (l DefaultLogger) Warning(args ...any) {
 	if l.hasWarning() {
-		log.Println("[Warning]", args)
+		l.StdOutput.Println("[Warning]", args)
 	}
 }
 
 func (l DefaultLogger) Warningf(format string, args ...any) {
 	if l.hasWarning() {
-		log.Printf("[Warningf] "+format, args...)
+		l.StdOutput.Printf("[Warningf] "+format, args...)
 	}
 }
 
 func (l DefaultLogger) Info(args ...any) {
 	if l.hasInfo() {
-		log.Println("[Info]", args)
+		l.StdOutput.Println("[Info]", args)
 	}
 }
 
 func (l DefaultLogger) Infof(format string, args ...any) {
 	if l.hasInfo() {
-		log.Printf("[Infof] "+format, args...)
+		l.StdOutput.Printf("[Infof] "+format, args...)
 	}
 }

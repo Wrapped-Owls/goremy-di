@@ -2,14 +2,18 @@ package binds
 
 import "github.com/wrapped-owls/goremy-di/remy/internal/types"
 
-type InstanceBind[T any] struct {
-	// key allows to fetch a dependency directly if it's exists.
-	//
-	// Optional.: default: ""
+type FactoryBind[T any] struct {
 	IsFactory bool
 	binder    types.Binder[T]
 }
 
-func (b InstanceBind[T]) Generates(injector types.DependencyRetriever) T {
+func (b FactoryBind[T]) Generates(injector types.DependencyRetriever) T {
 	return b.binder(injector)
+}
+
+func (b FactoryBind[T]) Type() types.BindType {
+	if b.IsFactory {
+		return types.BindFactory
+	}
+	return types.BindInstance
 }
