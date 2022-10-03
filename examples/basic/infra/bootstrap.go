@@ -2,20 +2,23 @@ package infra
 
 import (
 	"database/sql"
+	"log"
+
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/wrapped-owls/goremy-di/remy"
 	"github.com/wrapped-owls/talaria-di/examples/basic/core"
 	"github.com/wrapped-owls/talaria-di/examples/basic/infra/repositories"
-	"log"
 )
 
 func init() {
 	log.Println("Registering repositories")
 	remy.Register(
 		core.Injector,
-		remy.Factory(func(retriever remy.DependencyRetriever) core.ToysRepository {
-			return repositories.NewToysDbRepository(remy.Get[*sql.DB](retriever))
-		}),
+		remy.Factory(
+			func(retriever remy.DependencyRetriever) core.ToysRepository {
+				return repositories.NewToysDbRepository(remy.Get[*sql.DB](retriever))
+			},
+		),
 	)
 }
 
@@ -23,12 +26,14 @@ func init() {
 func init() {
 	remy.Register(
 		core.Injector,
-		remy.Singleton(func(retriever remy.DependencyRetriever) *sql.DB {
-			db, err := sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
-			if err != nil {
-				panic(err)
-			}
-			return db
-		}),
+		remy.Singleton(
+			func(retriever remy.DependencyRetriever) *sql.DB {
+				db, err := sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
+				if err != nil {
+					panic(err)
+				}
+				return db
+			},
+		),
 	)
 }
