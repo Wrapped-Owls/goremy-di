@@ -34,24 +34,26 @@ func TestElementsStorage_Set__Override(t *testing.T) {
 
 	stg := NewElementsStorage[string](false, types.ReflectionOptions{})
 	for _, toTest := range testCases {
-		t.Run(toTest.name, func(t *testing.T) {
-			var checkpoints uint8
-			// Checks if panics when trying to override
-			defer func() {
-				r := recover()
-				if r == nil {
-					t.Error("Function did not panic")
-					t.FailNow()
-				}
-				if checkpoints != 1 {
-					t.Error("Test panic before reaching the first checkpoint")
-				}
-			}()
+		t.Run(
+			toTest.name, func(t *testing.T) {
+				var checkpoints uint8
+				// Checks if panics when trying to override
+				defer func() {
+					r := recover()
+					if r == nil {
+						t.Error("Function did not panic")
+						t.FailNow()
+					}
+					if checkpoints != 1 {
+						t.Error("Test panic before reaching the first checkpoint")
+					}
+				}()
 
-			toTest.setterFunc(stg, toTest.values[0])
-			checkpoints++
-			toTest.setterFunc(stg, toTest.values[1])
-		})
+				toTest.setterFunc(stg, toTest.values[0])
+				checkpoints++
+				toTest.setterFunc(stg, toTest.values[1])
+			},
+		)
 	}
 }
 

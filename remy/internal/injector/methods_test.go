@@ -18,47 +18,59 @@ func TestGenerateBind__InstanceFactory(testObj *testing.T) {
 	cases := []struct {
 		name                string
 		expectedGenerations int
-		bindGenerator       func(types.Binder[string]) types.Bind[string]
+		bindGenerator       func(func() string) types.Bind[string]
 	}{
 		{
 			name:                "INSTANCE",
 			expectedGenerations: 1,
-			bindGenerator:       binds.Instance[string],
+			bindGenerator: func(factory func() string) types.Bind[string] {
+				return binds.Instance[string](factory())
+			},
 		},
 		{
 			name:                "FACTORY",
 			expectedGenerations: totalExecutions,
-			bindGenerator:       binds.Factory[string],
+			bindGenerator: func(factory func() string) types.Bind[string] {
+				return binds.Factory[string](
+					func(retriever types.DependencyRetriever) string {
+						return factory()
+					},
+				)
+			},
 		},
 	}
 
 	for _, c := range cases {
-		testObj.Run(c.name, func(t *testing.T) {
-			counter := 0
-			insBind := c.bindGenerator(func(retriever types.DependencyRetriever) string {
-				counter++
-				return expectedString
-			})
+		testObj.Run(
+			c.name, func(t *testing.T) {
+				counter := 0
+				insBind := c.bindGenerator(
+					func() string {
+						counter++
+						return expectedString
+					},
+				)
 
-			i := New(true, types.ReflectionOptions{})
-			if err := Register(i, insBind); err != nil {
-				t.Error(err)
-				t.FailNow()
-			}
-			for index := 0; index < totalExecutions; index++ {
-				result, err := Get[string](i)
-				if result != expectedString {
-					t.Error("Generated instance is incorrect")
-				}
-				if err != nil {
+				i := New(true, types.ReflectionOptions{})
+				if err := Register(i, insBind); err != nil {
 					t.Error(err)
+					t.FailNow()
 				}
-			}
+				for index := 0; index < totalExecutions; index++ {
+					result, err := Get[string](i)
+					if result != expectedString {
+						t.Error("Generated instance is incorrect")
+					}
+					if err != nil {
+						t.Error(err)
+					}
+				}
 
-			if counter != c.expectedGenerations {
-				t.Errorf("Instance bind generated %d times. Expected %d", counter, c.expectedGenerations)
-			}
-		})
+				if counter != c.expectedGenerations {
+					t.Errorf("Bind generated %d times. Expected %d", counter, c.expectedGenerations)
+				}
+			},
+		)
 	}
 }
 
@@ -86,40 +98,42 @@ func TestRegister__Singleton(testObj *testing.T) {
 	}
 
 	for _, bindCase := range cases {
-		testObj.Run(bindCase.name, func(t *testing.T) {
-			var (
-				invocations = 0
-			)
-			sgtBind := bindCase.bindGenerator(func(retriever types.DependencyRetriever) *string {
-				invocations++
-				return &bindCase.expected
-			})
+		testObj.Run(
+			bindCase.name, func(t *testing.T) {
+				invocations := 0
+				sgtBind := bindCase.bindGenerator(
+					func(retriever types.DependencyRetriever) *string {
+						invocations++
+						return &bindCase.expected
+					},
+				)
 
-			i := New(true, types.ReflectionOptions{})
-			if invocations != 0 {
-				t.Error("Singleton was generated before register")
-			}
-			for index := 0; index < 11; index++ {
-				_ = Register(i, sgtBind)
-				if invocations != bindCase.registerGenerations {
-					t.Errorf("Singleton %d times. Expected %d", invocations, bindCase.registerGenerations)
-					t.FailNow()
+				i := New(true, types.ReflectionOptions{})
+				if invocations != 0 {
+					t.Error("Singleton was generated before register")
 				}
-			}
+				for index := 0; index < 11; index++ {
+					_ = Register(i, sgtBind)
+					if invocations != bindCase.registerGenerations {
+						t.Errorf("Singleton %d times. Expected %d", invocations, bindCase.registerGenerations)
+						t.FailNow()
+					}
+				}
 
-			for index := 0; index < totalGetsExecuted; index++ {
-				result, err := Get[*string](i)
-				if err != nil {
-					t.Error(err)
+				for index := 0; index < totalGetsExecuted; index++ {
+					result, err := Get[*string](i)
+					if err != nil {
+						t.Error(err)
+					}
+					if result != &bindCase.expected {
+						t.Errorf("Singleton is not working as singleton")
+					}
+					if invocations != 1 {
+						t.Errorf("Singleton generated %d times", invocations)
+					}
 				}
-				if result != &bindCase.expected {
-					t.Errorf("Singleton is not working as singleton")
-				}
-				if invocations != 1 {
-					t.Errorf("Singleton generated %d times", invocations)
-				}
-			}
-		})
+			},
+		)
 	}
 }
 
@@ -138,18 +152,22 @@ func TestRegister__overrideInstanceByBind(t *testing.T) {
 		expectedString   = "avocado"
 		unexpectedString = "banana"
 	)
-	_ = Register(inj, binds.Instance(func(retriever types.DependencyRetriever) string {
-		return expectedString
-	}))
+	_ = Register(
+		inj, binds.Instance(expectedString),
+	)
 
 	if result := TryGet[string](inj); result != expectedString {
 		t.Error("Instance register is not working as expected")
 		t.FailNow()
 	}
 
-	_ = Register(inj, binds.Singleton(func(retriever types.DependencyRetriever) string {
-		return unexpectedString
-	}))
+	_ = Register(
+		inj, binds.Singleton(
+			func(retriever types.DependencyRetriever) string {
+				return unexpectedString
+			},
+		),
+	)
 
 	if result := TryGet[string](inj); result != expectedString {
 		t.Error("Instance bind is being overridden by singleton bind")
@@ -186,21 +204,13 @@ func TestGetGen(t *testing.T) {
 		{
 			name: "GetGenFunc[string]",
 			getGenCallback: func(i types.Injector) string {
-				return TryGetGenFunc[string](i, func(ij types.Injector) {
-					_ = Register(ij, binds.Instance(func(retriever types.DependencyRetriever) uint8 {
-						return 42
-					}))
-					_ = Register(
-						ij,
-						binds.Instance(func(retriever types.DependencyRetriever) string {
-							return "Go"
-						}),
-						"lang",
-					)
-					_ = Register(ij, binds.Instance(func(retriever types.DependencyRetriever) bool {
-						return true
-					}))
-				})
+				return TryGetGenFunc[string](
+					i, func(ij types.Injector) {
+						_ = Register(ij, binds.Instance[uint8](42))
+						_ = Register(ij, binds.Instance("Go"), "lang")
+						_ = Register(ij, binds.Instance(true))
+					},
+				)
 			},
 		},
 	}
@@ -208,39 +218,40 @@ func TestGetGen(t *testing.T) {
 	for _, tCase := range testCases {
 		i := New(true, types.ReflectionOptions{})
 		_ = Register(
-			i, binds.Factory(func(ij types.DependencyRetriever) string {
-				return fmt.Sprintf(
-					"I love %s, yes this is %v, as the answer %d",
-					TryGet[string](ij, "lang"), TryGet[bool](ij), TryGet[uint8](ij),
-				)
-			}),
+			i, binds.Factory(
+				func(ij types.DependencyRetriever) string {
+					return fmt.Sprintf(
+						"I love %s, yes this is %v, as the answer %d",
+						TryGet[string](ij, "lang"), TryGet[bool](ij), TryGet[uint8](ij),
+					)
+				},
+			),
 		)
 
 		// register a bool bind to check if it will be replaced during parameter passing
-		_ = Register(
-			i, binds.Instance(func(ij types.DependencyRetriever) bool {
-				return false
-			}),
+		_ = Register(i, binds.Instance(false))
+
+		t.Run(
+			tCase.name, func(t *testing.T) {
+				result := tCase.getGenCallback(i)
+
+				if result != expected {
+					t.Errorf(
+						"The direct params was not injected correctly.\nExpected: `%s`\nReceived: `%s`",
+						expected, result,
+					)
+					t.FailNow()
+				}
+
+				// Check if the binds doesn't exist after do the GetGen
+				uintResult := TryGet[uint8](i)
+				boolResult := TryGet[bool](i)
+				strResult := TryGet[string](i, "lang")
+
+				if uintResult != 0 || boolResult || len(strResult) > 0 {
+					t.Error("Parameter injection values override the original injector")
+				}
+			},
 		)
-		t.Run(tCase.name, func(t *testing.T) {
-			result := tCase.getGenCallback(i)
-
-			if result != expected {
-				t.Errorf(
-					"The direct params was not injected correctly.\nExpected: `%s`\nReceived: `%s`",
-					expected, result,
-				)
-				t.FailNow()
-			}
-
-			// Check if the binds doesn't exist after do the GetGen
-			uintResult := TryGet[uint8](i)
-			boolResult := TryGet[bool](i)
-			strResult := TryGet[string](i, "lang")
-
-			if uintResult != 0 || boolResult || len(strResult) > 0 {
-				t.Error("Parameter injection values override the original injector")
-			}
-		})
 	}
 }

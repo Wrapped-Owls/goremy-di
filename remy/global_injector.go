@@ -1,7 +1,7 @@
 package remy
 
 import (
-	"github.com/wrapped-owls/goremy-di/remy/internal/utils"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 )
 
 var (

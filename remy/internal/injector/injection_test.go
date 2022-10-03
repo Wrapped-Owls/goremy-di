@@ -1,10 +1,11 @@
 package injector
 
 import (
-	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
-	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"math"
 	"testing"
+
+	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
+	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 )
 
 func TestInjection__GetNoRegistered(t *testing.T) {
@@ -51,17 +52,9 @@ func TestInjection__GetStructImplementInterface(t *testing.T) {
 	}
 	ij := New(false, types.ReflectionOptions{GenerifyInterface: true})
 
-	_ = Register(ij, binds.Instance(
-		func(retriever types.DependencyRetriever) universalAnswer {
-			return &expected[0]
-		},
-	))
+	_ = Register(ij, binds.Instance[universalAnswer](&expected[0]))
 	// Register again as another type, to check if it works
-	_ = Register(ij, binds.Instance(
-		func(retriever types.DependencyRetriever) guide {
-			return expected[1]
-		},
-	))
+	_ = Register(ij, binds.Instance[guide](expected[1]))
 
 	result := TryGet[universalAnswer](ij)
 	if result != &expected[0] {
@@ -84,18 +77,10 @@ func TestInjection__RegisterSameKeyDifferentType(t *testing.T) {
 
 	ij := New(false, types.ReflectionOptions{})
 	_ = Register(
-		ij,
-		binds.Instance(func(retriever types.DependencyRetriever) string {
-			return expectedStr
-		}),
-		"truth",
+		ij, binds.Instance(expectedStr), "truth",
 	)
 	_ = Register(
-		ij,
-		binds.Instance(func(retriever types.DependencyRetriever) int {
-			return expectedInt
-		}),
-		"truth",
+		ij, binds.Instance(expectedInt), "truth",
 	)
 
 	strResult := TryGet[string](ij, "truth")
@@ -107,17 +92,14 @@ func TestInjection__RegisterSameKeyDifferentType(t *testing.T) {
 	if intResult != expectedInt {
 		t.Errorf("int injection should not be overrided. Received: `%d`. Expected: `%d`", intResult, expectedInt)
 	}
-
 }
 
 func TestInjection__RetrieveSameTypeDifferentKey(t *testing.T) {
-	var (
-		resultParts = [...]string{
-			"I'm programming in ",
-			"go",
-		}
-	)
-	a := binds.Instance(
+	resultParts := [...]string{
+		"I'm programming in ",
+		"go",
+	}
+	a := binds.Singleton(
 		func(ij types.DependencyRetriever) string {
 			language := TryGet[string](ij, "lang")
 			return resultParts[0] + language
@@ -126,11 +108,7 @@ func TestInjection__RetrieveSameTypeDifferentKey(t *testing.T) {
 
 	ij := New(true, types.ReflectionOptions{})
 	_ = Register(
-		ij,
-		binds.Instance(func(retriever types.DependencyRetriever) string {
-			return resultParts[1]
-		}),
-		"lang",
+		ij, binds.Instance(resultParts[1]), "lang",
 	)
 	_ = Register(ij, a)
 	result := TryGet[string](ij)
@@ -166,18 +144,10 @@ func TestInjection__RegisterEqualInterfaces(t *testing.T) {
 
 	ij := New(true, types.ReflectionOptions{})
 	_ = Register(
-		ij,
-		binds.Instance(func(retriever types.DependencyRetriever) spk1 {
-			return elements[0]
-		}),
-		storageKey,
+		ij, binds.Instance[spk1](elements[0]), storageKey,
 	)
 	_ = Register(
-		ij,
-		binds.Instance(func(retriever types.DependencyRetriever) spk2 {
-			return elements[1]
-		}),
-		storageKey,
+		ij, binds.Instance[spk2](elements[1]), storageKey,
 	)
 
 	// Start to retrieve the injected objects

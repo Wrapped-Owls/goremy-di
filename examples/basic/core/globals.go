@@ -1,8 +1,9 @@
 package core
 
 import (
-	"github.com/wrapped-owls/goremy-di/remy"
 	"log"
+
+	"github.com/wrapped-owls/goremy-di/remy"
 )
 
 var Injector remy.Injector

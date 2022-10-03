@@ -2,7 +2,7 @@ package remy
 
 import (
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
-	"github.com/wrapped-owls/goremy-di/remy/internal/utils"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 )
 
 // cycleDetectorInjector is the injector to be used in test file, to check if
@@ -37,12 +37,14 @@ func (c cycleDetectorInjector) SubInjector(allowOverrides ...bool) types.Injecto
 	if len(allowOverrides) > 0 {
 		shouldOverride = allowOverrides[0]
 	}
-	inj := NewCycleDetectorInjector(Config{
-		ParentInjector:     c,
-		CanOverride:        shouldOverride,
-		GenerifyInterfaces: c.config.GenerifyInterfaces,
-		UseReflectionType:  c.config.UseReflectionType,
-	})
+	inj := NewCycleDetectorInjector(
+		Config{
+			ParentInjector:     c,
+			CanOverride:        shouldOverride,
+			GenerifyInterfaces: c.config.GenerifyInterfaces,
+			UseReflectionType:  c.config.UseReflectionType,
+		},
+	)
 	return inj
 }
 

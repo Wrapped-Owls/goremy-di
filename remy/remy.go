@@ -3,15 +3,23 @@ package remy
 import (
 	"errors"
 	"fmt"
+
 	"github.com/wrapped-owls/goremy-di/remy/internal/injector"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
-	"github.com/wrapped-owls/goremy-di/remy/internal/utils"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 )
 
 type (
 	DependencyRetriever = types.DependencyRetriever
 	Injector            = types.Injector
 	InstancePairAny     = types.InstancePair[any]
+
+	// BindKey is the internal type used to generate all type keys, and used to retrieve all types from the injector.
+	// Is not supposed to use directly without the remy library, as this remove the main use of the remy-generics methods
+	BindKey = types.BindKey
+
+	// ReflectionOptions All options internally used to know how and when to use the `reflect` package
+	ReflectionOptions = types.ReflectionOptions
 
 	// Bind is directly copy from types.Bind
 	Bind[T any] interface {
@@ -85,30 +93,14 @@ func Override[T any](i Injector, bind Bind[T], keys ...string) {
 //
 // Receives: Injector (required); value (required); key (optional)
 func RegisterInstance[T any](i Injector, value T, keys ...string) {
-	Register(
-		mustInjector(i),
-		Instance(
-			func(DependencyRetriever) T {
-				return value
-			},
-		),
-		keys...,
-	)
+	Register(mustInjector(i), Instance(value), keys...)
 }
 
 // RegisterSingleton directly generates a singleton bind without needing to write it.
 //
-// Receives: Injector (required); value (required); key (optional)
-func RegisterSingleton[T any](i Injector, value T, keys ...string) {
-	Register(
-		mustInjector(i),
-		Singleton(
-			func(DependencyRetriever) T {
-				return value
-			},
-		),
-		keys...,
-	)
+// Receives: Injector (required); Binder (required); key (optional)
+func RegisterSingleton[T any](i Injector, binder types.Binder[T], keys ...string) {
+	Register(mustInjector(i), Singleton(binder), keys...)
 }
 
 // Get directly access a retriever and returns the type that was bound in it.

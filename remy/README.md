@@ -79,13 +79,15 @@ import (
 func init() {
 	remy.Register(
 		core.Injector,
-		remy.Singleton(func(retriever remy.DependencyRetriever) *sql.DB {
-			db, err := sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
-			if err != nil {
-				panic(err)
-			}
-			return db
-		}),
+		remy.Singleton(
+			func(retriever remy.DependencyRetriever) *sql.DB {
+				db, err := sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
+				if err != nil {
+					panic(err)
+				}
+				return db
+			},
+		),
 	)
 }
 ```
@@ -103,13 +105,14 @@ import (
 
 // Create an instance of the database connection
 func init() {
-	db, err := sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
-	if err != nil {
-		panic(err)
-	}
 	remy.RegisterSingleton(
-		core.Injector,
-		db,
+		core.Injector, func(retriever remy.DependencyRetriever) *sql.DB {
+			db, err := sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
+			if err != nil {
+				panic(err)
+			}
+			return db
+		},
 	)
 }
 ```
@@ -123,8 +126,9 @@ Singleton is not the only bind that can be used, in total is possible to registe
 - _Factory_: Build an instance on demand.
 - _Instance_: Adds an existing instance.
 
-The main difference about **Instance** and **Singleton** is that the singleton bind has a mutex during its access, so is
-safely to be used in a multithreading program, while the instance has no protection over it.
+The main difference about **Instance** and **Singleton** is that the singleton bind was made to be used when the object
+needs to be generated using the value in other binds, in this way we still have an instance, but it will be more easily
+to generate and inject.
 
 #### Using the **DependencyRetriever**
 
@@ -152,9 +156,11 @@ import (
 func init() {
 	remy.Register(
 		core.Injector,
-		remy.Factory(func(retriever remy.DependencyRetriever) core.GenericRepository {
-			return repositories.NewGenericDbRepository(remy.Get[*sql.DB](retriever))
-		}),
+		remy.Factory(
+			func(retriever remy.DependencyRetriever) core.GenericRepository {
+				return repositories.NewGenericDbRepository(remy.Get[*sql.DB](retriever))
+			},
+		),
 	)
 }
 ```
@@ -204,12 +210,14 @@ import "github.com/wrapped-owls/goremy-di/remy"
 
 func init() {
 	remy.Register(
-		nil, remy.Factory(func(injector remy.DependencyRetriever) string {
-			return fmt.Sprintf(
-				"I love %s, yes this is %v, as the answer %d",
-				remy.Get[string](injector, "lang"), remy.Get[bool](injector), remy.Get[uint8](injector),
-			)
-		}),
+		nil, remy.Factory(
+			func(injector remy.DependencyRetriever) string {
+				return fmt.Sprintf(
+					"I love %s, yes this is %v, as the answer %d",
+					remy.Get[string](injector, "lang"), remy.Get[bool](injector), remy.Get[uint8](injector),
+				)
+			},
+		),
 	)
 }
 ```
@@ -255,22 +263,16 @@ func main() {
 ```go
 package main
 
+import "github.com/wrapped-owls/goremy-di/remy"
+
 func main() {
-	remy.GetGenFunc[string](injector, func(injector remy.Injector) {
-		remy.Register(ij, remy.Instance(func(retriever remy.DependencyRetriever) uint8 {
-			return 42
-		}))
-		remy.Register(
-			ij,
-			remy.Instance(func(retriever remy.DependencyRetriever) string {
-				return "Go"
-			}),
-			"lang",
-		)
-		remy.Register(ij, remy.Instance(func(retriever remy.DependencyRetriever) bool {
-			return true
-		}))
-	})
+	remy.GetGenFunc[string](
+		injector, func(injector remy.Injector) {
+			remy.Register(ij, remy.Instance[uint8](42))
+			remy.Register(ij, remy.Instance("Go"), "lang")
+			remy.Register(ij, remy.Instance(true))
+		},
+	)
 }
 ```
 

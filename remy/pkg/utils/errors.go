@@ -9,4 +9,5 @@ var (
 	ErrNoElementFoundInsideOrParent = errors.New("no element found on the given injector or any of it's parents")
 	ErrCycleDependencyDetected      = errors.New("cycle dependency detected, check for it")
 	ErrOverrideInRuntime            = errors.New("a process tried to override a value during runtime")
+	ErrTypeCastInRuntime            = errors.New("unable to find/cast the element with given type")
 )
