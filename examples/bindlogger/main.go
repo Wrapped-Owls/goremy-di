@@ -12,7 +12,7 @@ import (
 func main() {
 	lInject := utils.NewLoggerInjector(
 		utils.DefaultLogger{
-			ErrOutput: log.New(os.Stderr, "[Error]", log.LstdFlags|log.Lshortfile),
+			ErrOutput: log.New(os.Stderr, "[Error] ", log.LstdFlags|log.Lshortfile),
 			StdOutput: log.New(os.Stdout, "", log.LstdFlags),
 			Level:     utils.LevelDefault | utils.LevelInfo,
 		},
