@@ -39,3 +39,6 @@ jobs:
 
       - name: Build basic example
         run: cd ./examples/basic && go build -v ./...
+
+      - name: Build bindlogger example
+        run: cd ./examples/bindlogger && go build -v ./...
