@@ -70,3 +70,6 @@
 - Update README/SPEC markdown
 - Add an error to `Get` method
 - Create an example to know how to get logs from Injector
+    - This example needs to use unexported packages yet, so it will need update after the release
+- Update `bind.Instance` to not use **remy.Binder** functions
+- Change `RegisterSingleton` function signature
