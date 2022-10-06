@@ -17,9 +17,14 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) erro
 		retriever = wrappedRetriever
 	}
 
-	var value any = bind
+	var (
+		value any = bind
+		err   error
+	)
 	if bindType := bind.Type(); bindType == types.BindInstance || bindType == types.BindSingleton {
-		value = bind.Generates(retriever)
+		if value, err = bind.Generates(retriever); err != nil {
+			return err
+		}
 	}
 
 	if key != "" {
@@ -53,8 +58,7 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (T, error) 
 
 	if err == nil {
 		if typedBind, assertOk := bind.(types.Bind[T]); assertOk {
-			result := typedBind.Generates(retriever)
-			return result, nil
+			return typedBind.Generates(retriever)
 		}
 		if instanceBind, assertOk := bind.(T); assertOk {
 			return instanceBind, nil
@@ -95,17 +99,20 @@ func TryGetGen[T any](
 	return
 }
 
-func GetGenFunc[T any](retriever types.DependencyRetriever, binder func(injector types.Injector), keys ...string) (
-	T, error,
-) {
+func GetGenFunc[T any](
+	retriever types.DependencyRetriever,
+	binder func(injector types.Injector) error, keys ...string,
+) (result T, err error) {
 	subInjector := New(false, retriever.ReflectOpts(), retriever)
-	binder(subInjector)
+	if err = binder(subInjector); err != nil {
+		return
+	}
 	return Get[T](subInjector, keys...)
 }
 
 func TryGetGenFunc[T any](
 	retriever types.DependencyRetriever,
-	binder func(injector types.Injector),
+	binder func(injector types.Injector) error,
 	keys ...string,
 ) (result T) {
 	result, _ = GetGenFunc[T](retriever, binder, keys...)

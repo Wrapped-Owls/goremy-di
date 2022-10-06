@@ -24,8 +24,8 @@ func Factory[T any](binder types.Binder[T]) types.Bind[T] {
 
 func Instance[T any](element T) types.Bind[T] {
 	return FactoryBind[T]{
-		binder: func(retriever types.DependencyRetriever) T {
-			return element
+		binder: func(retriever types.DependencyRetriever) (T, error) {
+			return element, nil
 		},
 	}
 }

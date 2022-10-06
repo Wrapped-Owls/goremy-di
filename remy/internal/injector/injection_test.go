@@ -100,9 +100,9 @@ func TestInjection__RetrieveSameTypeDifferentKey(t *testing.T) {
 		"go",
 	}
 	a := binds.Singleton(
-		func(ij types.DependencyRetriever) string {
+		func(ij types.DependencyRetriever) (string, error) {
 			language := TryGet[string](ij, "lang")
-			return resultParts[0] + language
+			return resultParts[0] + language, nil
 		},
 	)
 

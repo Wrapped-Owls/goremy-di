@@ -73,3 +73,8 @@
     - This example needs to use unexported packages yet, so it will need update after the release
 - Update `bind.Instance` to not use **remy.Binder** functions
 - Change `RegisterSingleton` function signature
+
+## 20221006 - remy/v1.6.0
+
+- Change `remy.Binder` to return an error alongside with the value
+    - Update all tests to match the new Binder function
