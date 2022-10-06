@@ -1,9 +1,10 @@
 package binds
 
 import (
-	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"sync"
 	"testing"
+
+	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 )
 
 func TestSingletonBind_Generates(t *testing.T) {
