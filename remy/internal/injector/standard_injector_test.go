@@ -16,17 +16,17 @@ func TestStdInjector_SubInjector(t *testing.T) {
 	var counter uint8 = 0
 	_ = Register(
 		parent, binds.Factory(
-			func(retriever types.DependencyRetriever) uint8 {
+			func(retriever types.DependencyRetriever) (uint8, error) {
 				counter++
-				return counter
+				return counter, nil
 			},
 		),
 	)
 
 	_ = Register(
 		subInjector, binds.Factory(
-			func(retriever types.DependencyRetriever) string {
-				return fmt.Sprintf("%s %d", strFirstHalf, TryGet[uint8](retriever))
+			func(retriever types.DependencyRetriever) (string, error) {
+				return fmt.Sprintf("%s %d", strFirstHalf, TryGet[uint8](retriever)), nil
 			},
 		),
 	)
@@ -76,16 +76,16 @@ func TestStdInjector_SubInjector__OverrideParent(t *testing.T) {
 
 	_ = Register(
 		parent, binds.Factory(
-			func(retriever types.DependencyRetriever) uint8 {
-				return 101
+			func(retriever types.DependencyRetriever) (uint8, error) {
+				return 101, nil
 			},
 		),
 	)
 
 	_ = Register(
 		subInjector, binds.Factory(
-			func(retriever types.DependencyRetriever) string {
-				return fmt.Sprintf("%s %d", strFirstHalf, TryGet[uint8](retriever))
+			func(retriever types.DependencyRetriever) (string, error) {
+				return fmt.Sprintf("%s %d", strFirstHalf, TryGet[uint8](retriever)), nil
 			},
 		),
 	)
@@ -101,8 +101,8 @@ func TestStdInjector_SubInjector__OverrideParent(t *testing.T) {
 	// Register a new uint8 to override parent
 	_ = Register(
 		subInjector, binds.Singleton(
-			func(retriever types.DependencyRetriever) uint8 {
-				return 42
+			func(retriever types.DependencyRetriever) (uint8, error) {
+				return 42, nil
 			},
 		),
 	)

@@ -16,18 +16,38 @@ func TestCycleDetectorInjector_Register(t *testing.T) {
 	}()
 	ij := NewCycleDetectorInjector(Config{CanOverride: false})
 	cycleKey := [...]string{"lang", "tool"}
-	Register(ij, Factory(func(retriever DependencyRetriever) string {
-		return Get[string](retriever, cycleKey[0]) + " is awesome"
-	}))
-	Register(ij, Factory(func(retriever DependencyRetriever) string {
-		return "git" + Get[string](retriever)
-	}), cycleKey[1])
-	Register(ij, Factory(func(retriever DependencyRetriever) string {
-		return "Go + " + Get[string](retriever, cycleKey[1])
-	}), cycleKey[0])
-	Register(ij, Singleton(func(retriever DependencyRetriever) int {
-		return len(Get[string](retriever, cycleKey[0]))
-	}))
+	Register(
+		ij, Factory(
+			func(retriever DependencyRetriever) (result string, err error) {
+				result = Get[string](retriever, cycleKey[0]) + " is awesome"
+				return
+			},
+		),
+	)
+	Register(
+		ij, Factory(
+			func(retriever DependencyRetriever) (result string, err error) {
+				result = "git" + Get[string](retriever)
+				return
+			},
+		), cycleKey[1],
+	)
+	Register(
+		ij, Factory(
+			func(retriever DependencyRetriever) (result string, err error) {
+				result = "Go + " + Get[string](retriever, cycleKey[1])
+				return
+			},
+		), cycleKey[0],
+	)
+	Register(
+		ij, Singleton(
+			func(retriever DependencyRetriever) (result int, err error) {
+				result = len(Get[string](retriever, cycleKey[0]))
+				return
+			},
+		),
+	)
 }
 
 func TestCycleDetectorInjector_Get(t *testing.T) {
@@ -37,11 +57,12 @@ func TestCycleDetectorInjector_Get(t *testing.T) {
 	RegisterInstance(ij, uint8(42))
 	Register(
 		ij, Factory(
-			func(retriever DependencyRetriever) string {
-				return fmt.Sprintf(
+			func(retriever DependencyRetriever) (result string, err error) {
+				result = fmt.Sprintf(
 					"The lenght for the string `%s` is %d ",
 					Get[string](retriever), Get[uint8](retriever),
 				)
+				return
 			},
 		), cycleKey,
 	)
@@ -53,8 +74,8 @@ func TestCycleDetectorInjector_Get(t *testing.T) {
 	// overrides a dependency to insert a cycle
 	Override(
 		ij, Factory(
-			func(retriever DependencyRetriever) uint8 {
-				return uint8(len(Get[string](retriever, cycleKey)))
+			func(retriever DependencyRetriever) (uint8, error) {
+				return uint8(len(Get[string](retriever, cycleKey))), nil
 			},
 		),
 	)

@@ -32,8 +32,8 @@ func TestGenerateBind__InstanceFactory(testObj *testing.T) {
 			expectedGenerations: totalExecutions,
 			bindGenerator: func(factory func() string) types.Bind[string] {
 				return binds.Factory[string](
-					func(retriever types.DependencyRetriever) string {
-						return factory()
+					func(retriever types.DependencyRetriever) (string, error) {
+						return factory(), nil
 					},
 				)
 			},
@@ -102,9 +102,9 @@ func TestRegister__Singleton(testObj *testing.T) {
 			bindCase.name, func(t *testing.T) {
 				invocations := 0
 				sgtBind := bindCase.bindGenerator(
-					func(retriever types.DependencyRetriever) *string {
+					func(retriever types.DependencyRetriever) (*string, error) {
 						invocations++
-						return &bindCase.expected
+						return &bindCase.expected, nil
 					},
 				)
 
@@ -163,8 +163,8 @@ func TestRegister__overrideInstanceByBind(t *testing.T) {
 
 	_ = Register(
 		inj, binds.Singleton(
-			func(retriever types.DependencyRetriever) string {
-				return unexpectedString
+			func(retriever types.DependencyRetriever) (string, error) {
+				return unexpectedString, nil
 			},
 		),
 	)
@@ -205,10 +205,11 @@ func TestGetGen(t *testing.T) {
 			name: "GetGenFunc[string]",
 			getGenCallback: func(i types.Injector) string {
 				return TryGetGenFunc[string](
-					i, func(ij types.Injector) {
-						_ = Register(ij, binds.Instance[uint8](42))
-						_ = Register(ij, binds.Instance("Go"), "lang")
-						_ = Register(ij, binds.Instance(true))
+					i, func(ij types.Injector) error {
+						err := Register(ij, binds.Instance[uint8](42))
+						err = Register(ij, binds.Instance("Go"), "lang")
+						err = Register(ij, binds.Instance(true))
+						return err
 					},
 				)
 			},
@@ -219,11 +220,12 @@ func TestGetGen(t *testing.T) {
 		i := New(true, types.ReflectionOptions{})
 		_ = Register(
 			i, binds.Factory(
-				func(ij types.DependencyRetriever) string {
-					return fmt.Sprintf(
+				func(ij types.DependencyRetriever) (result string, err error) {
+					result = fmt.Sprintf(
 						"I love %s, yes this is %v, as the answer %d",
 						TryGet[string](ij, "lang"), TryGet[bool](ij), TryGet[uint8](ij),
 					)
+					return
 				},
 			),
 		)

@@ -14,16 +14,19 @@ func TestSingletonBind_Generates(t *testing.T) {
 	)
 
 	bind := Singleton[*string](
-		func(retriever types.DependencyRetriever) *string {
+		func(retriever types.DependencyRetriever) (*string, error) {
 			counter += 1
-			return &expected
+			return &expected, nil
 		},
 	)
 	// Checks if the build method is called only once
 	for index := 0; index < 10; index++ {
 		wg.Add(1)
 		go func() {
-			result := bind.Generates(nil)
+			result, err := bind.Generates(nil)
+			if err != nil {
+				t.Error(err)
+			}
 			if result != &expected {
 				t.Fail()
 			}
