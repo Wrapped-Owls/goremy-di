@@ -74,3 +74,7 @@ func GetType[T any]() (foundType reflect.Type, isInterface bool) {
 	}
 	return
 }
+
+func GetPointerValue(element any) any {
+	return reflect.ValueOf(element).Elem().Interface()
+}
