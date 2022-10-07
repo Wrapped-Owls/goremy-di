@@ -48,15 +48,9 @@ func init() {
 
 ### Global Injector
 
-The easiest way to `register` and `retrieve` a bind, is using the **globalInjector**, but this approach comes with a
-drawback: To be safer in a multithreading system, during the retrieval access, it uses a RWMutex`, which make the app
-execution slower than directing accessing the injector.
-
-A global injector can be defined in two different ways, bt setting a custom one using the method `SetGlobalInjector`, or
-let it be created automatically by the **remy** package.
-
-**Curiosity tip:** To don't allocate the object in memory directly, the global injector is only generated when it is
-first accessed.
+The easiest way to `register` and `retrieve` a bind, is using the **globalInjector**, that can be defined in two
+different ways, bt setting a custom one using the method `SetGlobalInjector`, or let it be created automatically by
+the **remy** package.
 
 To use the global injector, you must pass a _nil_ as the `Injector` parameter
 in `Get[T]`/`Register[T]`/`GetGen[T]` functions.
