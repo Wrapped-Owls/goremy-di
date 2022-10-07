@@ -220,8 +220,8 @@ The requested values can be passed by two forms:
 
 ##### Using InstancePair array
 
-With this method is not possible to register correctly interfaces, so in case the factory binds requests an interface
-value, is better to use the other method.
+This is the most straightforward way to register temporary binds that will only be used in the `Get` call. When use this
+way to register interface types, double of the attention is required, as it doesn't have compile-time type assertion.
 
 ```go
 package main
@@ -244,6 +244,9 @@ func main() {
 			},
 			{
 				Value: true,
+			},
+			{
+				InstanceValue: (*error)(nil),
 			},
 		},
 	)

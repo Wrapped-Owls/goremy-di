@@ -10,9 +10,9 @@ func TestTypeName__DifferPointerFromInterface(t *testing.T) {
 	}
 
 	for _, generifyInterface := range [...]bool{true, false} {
-		interfaceTypeResult := TypeName[testInterface](generifyInterface)
-		pointerTypeResult := TypeName[*testInterface](generifyInterface)
-		doublePointerTypeResult := TypeName[**testInterface](generifyInterface)
+		interfaceTypeResult := TypeName[testInterface](generifyInterface, true)
+		pointerTypeResult := TypeName[*testInterface](generifyInterface, true)
+		doublePointerTypeResult := TypeName[**testInterface](generifyInterface, true)
 		if interfaceTypeResult == pointerTypeResult {
 			t.Error(typeNameErr)
 		}
@@ -28,9 +28,9 @@ func TestTypeNameByReflect__DifferPointerFromInterface(t *testing.T) {
 	}
 
 	for _, generifyInterface := range [...]bool{true, false} {
-		interfaceTypeResult := TypeNameByReflect[testInterface](generifyInterface)
-		pointerTypeResult := TypeNameByReflect[*testInterface](generifyInterface)
-		doublePointerTypeResult := TypeNameByReflect[**testInterface](generifyInterface)
+		interfaceTypeResult := TypeNameByReflect[testInterface](generifyInterface, true)
+		pointerTypeResult := TypeNameByReflect[*testInterface](generifyInterface, true)
+		doublePointerTypeResult := TypeNameByReflect[**testInterface](generifyInterface, true)
 		if interfaceTypeResult == pointerTypeResult {
 			t.Error(typeNameErr)
 		}

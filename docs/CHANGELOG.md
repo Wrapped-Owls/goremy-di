@@ -78,3 +78,6 @@
 
 - Change `remy.Binder` to return an error alongside with the value
     - Update all tests to match the new Binder function
+- Add new option in `InstancePair` to bind interfaces
+- Change the internal use of `ReflectionOptions` to use bitwise operators
+    - In this way it'll be possible to add more internal options in the future

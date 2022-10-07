@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/keyopts"
 	"testing"
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
@@ -22,24 +23,24 @@ func TestGetKey__Generify(t *testing.T) {
 		}
 	)
 
-	options := types.ReflectionOptions{}
+	options := keyopts.KeyOptNone
 	if GetKey[super](options) == GetKey[sub](options) {
 		t.Error("type names was the same when should not generify")
 	}
 
-	options = types.ReflectionOptions{GenerifyInterface: true}
+	options = keyopts.KeyOptGenerifyInterface
 	if GetKey[super](options) != GetKey[sub](options) {
 		t.Error("generified type name should be the same")
 	}
 }
 
 func TestGetKey__SameStructWithDifferentPackage(t *testing.T) {
-	options := types.ReflectionOptions{UseReflectionType: true}
+	options := keyopts.KeyOptUseReflectionType
 	if GetKey[aTypes.Syringe](options) == GetKey[bTypes.Syringe](options) {
 		t.Error("type names was the same, when it should be different, because of different packages")
 	}
 
-	options = types.ReflectionOptions{UseReflectionType: true}
+	options = keyopts.KeyOptUseReflectionType
 	if GetElemKey(t, options) != GetKey[*testing.T](options) {
 		t.Error("element type should be the same from type and object")
 	}
@@ -58,8 +59,8 @@ func TestGetKey__Functions(t *testing.T) {
 		namedBoolCheckerCallback = func(languages ...string) bool
 	)
 
-	optionsCases := [...]types.ReflectionOptions{
-		{UseReflectionType: false}, {UseReflectionType: true},
+	optionsCases := [...]keyopts.GenOption{
+		keyopts.KeyOptNone, keyopts.KeyOptUseReflectionType,
 	}
 
 	for _, optCase := range optionsCases {
