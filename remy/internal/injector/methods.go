@@ -81,20 +81,20 @@ func GetGen[T any](retriever types.DependencyRetriever, elements []types.Instanc
 	subInjector := New(false, retriever.ReflectOpts(), retriever)
 	for _, element := range elements {
 		var (
-			opts  = keyopts.FromReflectOpts(subInjector.ReflectOpts())
-			value = element.Value
+			opts       = keyopts.FromReflectOpts(subInjector.ReflectOpts())
+			typeSeeker = element.Value
 		)
-		if element.IsInterface {
+		if element.InterfaceValue != nil {
 			opts |= keyopts.KeyOptIgnorePointer
-			value = utils.GetPointerValue(value)
+			typeSeeker = element.InterfaceValue
 		}
-		bindKey := utils.GetElemKey(element.Value, opts)
+		bindKey := utils.GetElemKey(typeSeeker, opts)
 
 		if element.Key != "" {
-			if err = subInjector.BindNamed(bindKey, element.Key, value); err != nil {
+			if err = subInjector.BindNamed(bindKey, element.Key, element.Value); err != nil {
 				return
 			}
-		} else if err = subInjector.Bind(bindKey, value); err != nil {
+		} else if err = subInjector.Bind(bindKey, element.Value); err != nil {
 			return
 		}
 	}
