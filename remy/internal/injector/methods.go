@@ -75,9 +75,9 @@ func TryGet[T any](retriever types.DependencyRetriever, keys ...string) (result 
 	return
 }
 
-func GetGen[T any](retriever types.DependencyRetriever, elements []types.InstancePair[any], keys ...string) (
-	result T, err error,
-) {
+func GetGen[T any](
+	retriever types.DependencyRetriever, elements []types.InstancePair[any], keys ...string,
+) (result T, err error) {
 	subInjector := New(false, retriever.ReflectOpts(), retriever)
 	for _, element := range elements {
 		var (

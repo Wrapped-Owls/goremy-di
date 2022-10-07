@@ -44,7 +44,10 @@ func TypeNameByReflect[T any](generifyInterface, identifyPointer bool, elements 
 		return buildDuckInterfaceType(elementType)
 	}
 
-	name := fmt.Sprintf("%s/%s{###}%s", elementType.PkgPath(), elementType.Name(), fmt.Sprint(elementType))
+	name := fmt.Sprintf(
+		"%s/%s{###}%s",
+		elementType.PkgPath(), elementType.Name(), fmt.Sprint(elementType),
+	)
 	if !isInterface && identifyPointer {
 		// check if is a pointer
 		if reflect.ValueOf(value).Kind() == reflect.Ptr {
