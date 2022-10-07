@@ -1,11 +1,13 @@
 package injector
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 	"github.com/wrapped-owls/goremy-di/remy/test/fixtures"
 )
 
@@ -281,4 +283,66 @@ func TestGetGen(t *testing.T) {
 			},
 		)
 	}
+}
+
+func TestGetGen_raiseCastError(t *testing.T) {
+	var (
+		i                                = New(true, types.ReflectionOptions{})
+		interfaceValue fixtures.Language = fixtures.GoProgrammingLang{}
+	)
+	err := Register(
+		i, binds.Factory(
+			func(retriever types.DependencyRetriever) (result string, getErr error) {
+				var lang fixtures.Language
+				if lang, getErr = Get[fixtures.Language](retriever); getErr == nil {
+					result = lang.Kind() + " language: " + lang.Name()
+				}
+				return
+			},
+		),
+	)
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+
+	t.Run(
+		"Correctly bind registration", func(t *testing.T) {
+			_, err = GetGen[string](
+				i,
+				[]types.InstancePair[any]{
+					{
+						Value:          interfaceValue,
+						InterfaceValue: (*fixtures.Language)(nil),
+					},
+				},
+			)
+			if err != nil {
+				t.Error(err)
+				t.FailNow()
+			}
+		},
+	)
+
+	t.Run(
+		"Register pointer interface value", func(t *testing.T) {
+			_, err = GetGen[string](
+				i,
+				[]types.InstancePair[any]{
+					{
+						Value:          &interfaceValue,
+						InterfaceValue: (*fixtures.Language)(nil),
+					},
+				},
+			)
+			if err == nil {
+				t.Error("No error has returned after binding the value incorrectly")
+				t.FailNow()
+			}
+
+			if !errors.Is(err, utils.ErrTypeCastInRuntime) {
+				t.Errorf("Unknown error raised: `%v`\n", err)
+			}
+		},
+	)
 }
