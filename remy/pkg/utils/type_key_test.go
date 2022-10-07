@@ -2,10 +2,10 @@ package utils
 
 import (
 	"fmt"
-	"github.com/wrapped-owls/goremy-di/remy/pkg/keyopts"
 	"testing"
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/keyopts"
 	aTypes "github.com/wrapped-owls/goremy-di/remy/test/fixtures/a/testtypes"
 	bTypes "github.com/wrapped-owls/goremy-di/remy/test/fixtures/b/testtypes"
 )
@@ -37,7 +37,9 @@ func TestGetKey__Generify(t *testing.T) {
 func TestGetKey__SameStructWithDifferentPackage(t *testing.T) {
 	options := keyopts.KeyOptUseReflectionType
 	if GetKey[aTypes.Syringe](options) == GetKey[bTypes.Syringe](options) {
-		t.Error("type names was the same, when it should be different, because of different packages")
+		t.Error(
+			"type names was the same, when it should be different, because of different packages",
+		)
 	}
 
 	options = keyopts.KeyOptUseReflectionType
@@ -70,13 +72,17 @@ func TestGetKey__Functions(t *testing.T) {
 				cases := [...][2]types.BindKey{
 					{GetKey[namedStringCallback](optCase), GetKey[stringCallback](optCase)},
 					{GetKey[namedMultiArgsCallback](optCase), GetKey[multiArgsCallback](optCase)},
-					{GetKey[namedBoolCheckerCallback](optCase), GetKey[boolCheckerCallback](optCase)},
+					{
+						GetKey[namedBoolCheckerCallback](optCase),
+						GetKey[boolCheckerCallback](optCase),
+					},
 				}
 				for _, results := range cases {
 					if results[0] != results[1] {
 						t.Errorf(
 							"Named and unnamed functions have been identified as different\nExpected: `%s`\nReceived: `%s`",
-							results[0], results[1],
+							results[0],
+							results[1],
 						)
 					}
 				}
