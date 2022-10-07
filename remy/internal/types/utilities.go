@@ -4,8 +4,9 @@ type (
 	BindKey string
 
 	InstancePair[T any] struct {
-		Value T
-		Key   string
+		Value       T
+		Key         string
+		IsInterface bool
 	}
 
 	ReflectionOptions struct {
