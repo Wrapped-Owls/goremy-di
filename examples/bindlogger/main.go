@@ -20,8 +20,11 @@ func main() {
 	remy.RegisterInstance(lInject, "The Lord of the Rings", "movie")
 	remy.Register(
 		lInject, remy.Factory(
-			func(retriever remy.DependencyRetriever) string {
-				return fmt.Sprintf("I love this movie with name `%s`", remy.Get[string](retriever, "movie"))
+			func(retriever remy.DependencyRetriever) (result string, err error) {
+				var movieName string
+				movieName, err = remy.DoGet[string](retriever, "movie")
+				result = fmt.Sprintf("I love this movie with name `%s`", movieName)
+				return
 			},
 		),
 	)

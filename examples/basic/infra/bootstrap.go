@@ -15,8 +15,9 @@ func init() {
 	remy.Register(
 		core.Injector,
 		remy.Factory(
-			func(retriever remy.DependencyRetriever) core.ToysRepository {
-				return repositories.NewToysDbRepository(remy.Get[*sql.DB](retriever))
+			func(retriever remy.DependencyRetriever) (core.ToysRepository, error) {
+				db, err := remy.DoGet[*sql.DB](retriever)
+				return repositories.NewToysDbRepository(db), err
 			},
 		),
 	)
@@ -27,12 +28,8 @@ func init() {
 	remy.Register(
 		core.Injector,
 		remy.Singleton(
-			func(retriever remy.DependencyRetriever) *sql.DB {
-				db, err := sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
-				if err != nil {
-					panic(err)
-				}
-				return db
+			func(retriever remy.DependencyRetriever) (*sql.DB, error) {
+				return sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
 			},
 		),
 	)
