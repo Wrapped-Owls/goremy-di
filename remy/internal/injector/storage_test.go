@@ -1,8 +1,9 @@
 package injector
 
 import (
-	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"testing"
+
+	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 )
 
 func TestElementsStorage_Set(t *testing.T) {

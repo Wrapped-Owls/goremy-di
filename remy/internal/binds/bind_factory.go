@@ -7,7 +7,7 @@ type FactoryBind[T any] struct {
 	binder    types.Binder[T]
 }
 
-func (b FactoryBind[T]) Generates(injector types.DependencyRetriever) T {
+func (b FactoryBind[T]) Generates(injector types.DependencyRetriever) (T, error) {
 	return b.binder(injector)
 }
 

@@ -1,17 +1,32 @@
 package utils
 
-import "github.com/wrapped-owls/goremy-di/remy/internal/types"
+import (
+	"github.com/wrapped-owls/goremy-di/remy/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/keyopts"
+)
 
-func GetKey[T any](options types.ReflectionOptions) types.BindKey {
-	if options.UseReflectionType {
-		return types.BindKey(TypeNameByReflect[T](options.GenerifyInterface))
-	}
-	return types.BindKey(TypeName[T](options.GenerifyInterface))
+func shouldGenerify(options keyopts.GenOption) bool {
+	return options&keyopts.KeyOptGenerifyInterface == keyopts.KeyOptGenerifyInterface
 }
 
-func GetElemKey(element any, options types.ReflectionOptions) types.BindKey {
-	if options.UseReflectionType {
-		return types.BindKey(TypeNameByReflect(options.GenerifyInterface, element))
+func shouldUseReflection(options keyopts.GenOption) bool {
+	return options&keyopts.KeyOptUseReflectionType == keyopts.KeyOptUseReflectionType
+}
+
+func shouldPrefixPointer(options keyopts.GenOption) bool {
+	return options&keyopts.KeyOptIgnorePointer != keyopts.KeyOptIgnorePointer
+}
+
+func GetKey[T any](options keyopts.GenOption) types.BindKey {
+	if shouldUseReflection(options) {
+		return types.BindKey(TypeNameByReflect[T](shouldGenerify(options), shouldPrefixPointer(options)))
 	}
-	return types.BindKey(TypeName(options.GenerifyInterface, element))
+	return types.BindKey(TypeName[T](shouldGenerify(options), shouldPrefixPointer(options)))
+}
+
+func GetElemKey(element any, options keyopts.GenOption) types.BindKey {
+	if shouldUseReflection(options) {
+		return types.BindKey(TypeNameByReflect(shouldGenerify(options), shouldPrefixPointer(options), element))
+	}
+	return types.BindKey(TypeName(shouldGenerify(options), shouldPrefixPointer(options), element))
 }

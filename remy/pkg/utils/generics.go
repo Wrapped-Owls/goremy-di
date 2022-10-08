@@ -21,7 +21,7 @@ func interfaceTypeName[T any](shouldGenerify bool, element T) (name string) {
 	return
 }
 
-func TypeName[T any](shouldGenerify bool, elements ...T) (name string) {
+func TypeName[T any](shouldGenerify, identifyPointer bool, elements ...T) (name string) {
 	var value T
 	if len(elements) > 0 {
 		value = elements[0]
@@ -30,7 +30,7 @@ func TypeName[T any](shouldGenerify bool, elements ...T) (name string) {
 	name = fmt.Sprintf("%T", value)
 	if name == nilStr {
 		name = interfaceTypeName(shouldGenerify, value)
-	} else if strings.HasPrefix(name, "*") {
+	} else if strings.HasPrefix(name, "*") && identifyPointer {
 		name = fmt.Sprintf("pointer_&%s", name)
 	}
 	return

@@ -23,10 +23,14 @@ func TestGlobal_GetWithConcurrency(t *testing.T) {
 func TestSetGlobalInjector(t *testing.T) {
 	ij := NewInjector()
 	var counter uint8 = 0
-	Register(ij, Factory(func(retriever DependencyRetriever) uint8 {
-		counter += 1
-		return counter
-	}))
+	Register(
+		ij, Factory(
+			func(retriever DependencyRetriever) (uint8, error) {
+				counter += 1
+				return counter, nil
+			},
+		),
+	)
 
 	value := Get[uint8](ij)
 	if value != 1 {

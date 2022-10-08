@@ -48,15 +48,9 @@ func init() {
 
 ### Global Injector
 
-The easiest way to `register` and `retrieve` a bind, is using the **globalInjector**, but this approach comes with a
-drawback: To be safer in a multithreading system, during the retrieval access, it uses a RWMutex`, which make the app
-execution slower than directing accessing the injector.
-
-A global injector can be defined in two different ways, bt setting a custom one using the method `SetGlobalInjector`, or
-let it be created automatically by the **remy** package.
-
-**Curiosity tip:** To don't allocate the object in memory directly, the global injector is only generated when it is
-first accessed.
+The easiest way to `register` and `retrieve` a bind, is using the **globalInjector**, that can be defined in two
+different ways, bt setting a custom one using the method `SetGlobalInjector`, or let it be created automatically by
+the **remy** package.
 
 To use the global injector, you must pass a _nil_ as the `Injector` parameter
 in `Get[T]`/`Register[T]`/`GetGen[T]` functions.
@@ -80,12 +74,8 @@ func init() {
 	remy.Register(
 		core.Injector,
 		remy.Singleton(
-			func(retriever remy.DependencyRetriever) *sql.DB {
-				db, err := sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
-				if err != nil {
-					panic(err)
-				}
-				return db
+			func(retriever remy.DependencyRetriever) (*sql.DB, error) {
+				return sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
 			},
 		),
 	)
@@ -106,12 +96,8 @@ import (
 // Create an instance of the database connection
 func init() {
 	remy.RegisterSingleton(
-		core.Injector, func(retriever remy.DependencyRetriever) *sql.DB {
-			db, err := sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
-			if err != nil {
-				panic(err)
-			}
-			return db
+		core.Injector, func(retriever remy.DependencyRetriever) (*sql.DB, error) {
+			return sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
 		},
 	)
 }
@@ -157,8 +143,9 @@ func init() {
 	remy.Register(
 		core.Injector,
 		remy.Factory(
-			func(retriever remy.DependencyRetriever) core.GenericRepository {
-				return repositories.NewGenericDbRepository(remy.Get[*sql.DB](retriever))
+			func(retriever remy.DependencyRetriever) (repo core.GenericRepository, err error) {
+				repo = repositories.NewGenericDbRepository(remy.Get[*sql.DB](retriever))
+				return
 			},
 		),
 	)
@@ -211,11 +198,12 @@ import "github.com/wrapped-owls/goremy-di/remy"
 func init() {
 	remy.Register(
 		nil, remy.Factory(
-			func(injector remy.DependencyRetriever) string {
-				return fmt.Sprintf(
+			func(injector remy.DependencyRetriever) (result string, err error) {
+				result = fmt.Sprintf(
 					"I love %s, yes this is %v, as the answer %d",
 					remy.Get[string](injector, "lang"), remy.Get[bool](injector), remy.Get[uint8](injector),
 				)
+				return
 			},
 		),
 	)
@@ -226,8 +214,8 @@ The requested values can be passed by two forms:
 
 ##### Using InstancePair array
 
-With this method is not possible to register correctly interfaces, so in case the factory binds requests an interface
-value, is better to use the other method.
+This is the most straightforward way to register temporary binds that will only be used in the `Get` call. When use this
+way to register interface types, double of the attention is required, as it doesn't have compile-time type assertion.
 
 ```go
 package main
@@ -251,6 +239,9 @@ func main() {
 			{
 				Value: true,
 			},
+			{
+				InstanceValue: (*error)(nil),
+			},
 		},
 	)
 
@@ -267,10 +258,11 @@ import "github.com/wrapped-owls/goremy-di/remy"
 
 func main() {
 	remy.GetGenFunc[string](
-		injector, func(injector remy.Injector) {
+		injector, func(injector remy.Injector) error {
 			remy.Register(ij, remy.Instance[uint8](42))
 			remy.Register(ij, remy.Instance("Go"), "lang")
 			remy.Register(ij, remy.Instance(true))
+			return nil
 		},
 	)
 }

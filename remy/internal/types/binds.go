@@ -2,9 +2,9 @@ package types
 
 type (
 	BindType      uint8
-	Binder[T any] func(DependencyRetriever) T
+	Binder[T any] func(DependencyRetriever) (T, error)
 	Bind[T any]   interface {
-		Generates(DependencyRetriever) T
+		Generates(DependencyRetriever) (T, error)
 		Type() BindType
 	}
 )

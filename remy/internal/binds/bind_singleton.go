@@ -13,14 +13,16 @@ type SingletonBind[T any] struct {
 	IsLazy     bool
 }
 
-func (b *SingletonBind[T]) BuildDependency(injector types.DependencyRetriever) {
-	dep := b.binder(injector)
+func (b *SingletonBind[T]) BuildDependency(injector types.DependencyRetriever) error {
+	dep, err := b.binder(injector)
 	b.dependency = &dep
+	return err
 }
 
-func (b *SingletonBind[T]) Generates(injector types.DependencyRetriever) T {
+func (b *SingletonBind[T]) Generates(injector types.DependencyRetriever) (result T, err error) {
 	if !b.ShouldGenerate() {
-		return *b.dependency
+		result = *b.dependency
+		return
 	}
 
 	b.mutex.Lock()
@@ -28,11 +30,16 @@ func (b *SingletonBind[T]) Generates(injector types.DependencyRetriever) T {
 
 	// Checks again if no other goroutine has initialized the dependency
 	if b.dependency != nil {
-		return *b.dependency
+		result = *b.dependency
+		return
 	}
-	b.BuildDependency(injector)
 
-	return *b.dependency
+	err = b.BuildDependency(injector)
+	if b.dependency != nil {
+		result = *b.dependency
+	}
+
+	return
 }
 
 func (b *SingletonBind[T]) Type() types.BindType {
