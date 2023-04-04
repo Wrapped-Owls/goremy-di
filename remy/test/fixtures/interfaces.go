@@ -14,3 +14,15 @@ func (g GoProgrammingLang) Name() string {
 func (g GoProgrammingLang) Kind() string {
 	return "programming"
 }
+
+type CountryLanguage struct {
+	Language string
+}
+
+func (l CountryLanguage) Name() string {
+	return l.Language
+}
+
+func (l CountryLanguage) Kind() string {
+	return "idiom"
+}

@@ -346,3 +346,84 @@ func TestGetGen_raiseCastError(t *testing.T) {
 		},
 	)
 }
+
+func TestGet_duckTypeInterface(t *testing.T) {
+	strGenerator := func(lang fixtures.Language) string {
+		return lang.Kind() + " language: " + lang.Name()
+	}
+
+	var (
+		testFirstSubject  = fixtures.GoProgrammingLang{}
+		testSecondSubject = fixtures.CountryLanguage{}
+		testCases         = [...]struct {
+			name            string
+			registerSubject uint8
+			expected        string
+			expectedError   error
+		}{
+			{
+				name:            "Correctly bind registration",
+				registerSubject: 1,
+				expected:        strGenerator(testFirstSubject),
+			},
+			{
+				name:            "Failed to find dependency bind",
+				registerSubject: 0,
+				expected:        "",
+				expectedError:   utils.ErrElementNotRegistered,
+			},
+			{
+				name:            "Inject multiple elements that implements interface",
+				registerSubject: 2,
+				expected:        "",
+				expectedError:   utils.ErrFoundMoreThanOneValidDI,
+			},
+		}
+	)
+
+	for _, tt := range testCases {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				i := New(false, types.ReflectionOptions{})
+				err := Register(
+					i, binds.Factory(
+						func(retriever types.DependencyRetriever) (result string, getErr error) {
+							var lang fixtures.Language
+							if lang, getErr = Get[fixtures.Language](retriever); getErr == nil {
+								result = strGenerator(lang)
+							}
+							return
+						},
+					),
+				)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				if tt.registerSubject > 1 {
+					if err = Register(i, binds.Instance(testSecondSubject)); err != nil {
+						t.Fatal(err)
+					}
+				}
+				if tt.registerSubject > 0 {
+					if err = Register(i, binds.Instance(testFirstSubject)); err != nil {
+						t.Fatal(err)
+					}
+				}
+
+				var result string
+				result, err = Get[string](i)
+				if err != nil && !errors.Is(err, tt.expectedError) {
+					t.Fatalf(
+						"Error is not the same:\nExpected: `%v`\nReceived: `%v`",
+						tt.expectedError, err,
+					)
+				}
+
+				if result != tt.expected {
+					t.Error("Result is not the same as expected")
+				}
+			},
+		)
+	}
+}
