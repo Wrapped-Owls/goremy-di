@@ -1,6 +1,8 @@
 package injector
 
 import (
+	"errors"
+
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/keyopts"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
@@ -95,9 +97,12 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (element T,
 	}
 
 	// Start to search for every element if it is configured in this way
-	if foundElement, accessAllError := getByGuess[T](retriever); accessAllError == nil {
+	foundElement, accessAllError := getByGuess[T](retriever)
+	if accessAllError == nil {
 		element = foundElement
 		err = nil
+	} else if !errors.Is(accessAllError, utils.ErrElementNotRegistered) {
+		err = accessAllError
 	}
 
 	// retrieve values from cacheStorage
