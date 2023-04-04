@@ -35,8 +35,3 @@ func TypeName[T any](shouldGenerify, identifyPointer bool, elements ...T) (name 
 	}
 	return
 }
-
-func Default[T any]() T {
-	var element T
-	return element
-}
