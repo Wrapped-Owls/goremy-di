@@ -14,7 +14,11 @@ type (
 	}
 )
 
-func New(canOverride bool, reflectOpts types.ReflectionOptions, parent ...types.DependencyRetriever) *StdInjector {
+func New(
+	canOverride bool,
+	reflectOpts types.ReflectionOptions,
+	parent ...types.DependencyRetriever,
+) *StdInjector {
 	var parentInjector types.DependencyRetriever
 	if len(parent) > 0 {
 		parentInjector = parent[0]
@@ -75,5 +79,31 @@ func (s *StdInjector) GetNamed(bType types.BindKey, name string) (result any, er
 			err = utils.ErrNoElementFoundInsideOrParent
 		}
 	}
+	return
+}
+
+func (s *StdInjector) GetAll() (resultList []any, err error) {
+	var (
+		cachedElements []any
+		parentElements []any
+	)
+
+	if cachedElements, err = s.cacheStorage.GetAll(); err != nil {
+		return
+	}
+
+	if s.parentInjector != nil {
+		if parentElements, err = s.parentInjector.GetAll(); err != nil {
+			return
+		}
+	}
+
+	resultList = make([]any, len(cachedElements), len(cachedElements)+len(parentElements))
+	copy(resultList, cachedElements)
+
+	for _, element := range parentElements {
+		resultList = append(resultList, element)
+	}
+
 	return
 }

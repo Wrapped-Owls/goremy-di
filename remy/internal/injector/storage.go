@@ -80,3 +80,11 @@ func (s *ElementsStorage[T]) Get(key T) (result any, err error) {
 	}
 	return
 }
+
+func (s *ElementsStorage[T]) GetAll() (resultList []any, err error) {
+	resultList = make([]any, len(s.elements))
+	for _, value := range s.elements {
+		resultList = append(resultList, value)
+	}
+	return
+}
