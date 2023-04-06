@@ -6,10 +6,11 @@ import (
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 )
 
 func TestInjection__GetNoRegistered(t *testing.T) {
-	ij := New(false, types.ReflectionOptions{})
+	ij := New(injopts.CacheOptNone, types.ReflectionOptions{})
 
 	// Verify if an error is returned when trying to retrieve a non-registered object
 	if _, err := Get[string](ij); err == nil {
@@ -50,7 +51,7 @@ func TestInjection__GetStructImplementInterface(t *testing.T) {
 	type universalAnswer interface {
 		String() string
 	}
-	ij := New(false, types.ReflectionOptions{GenerifyInterface: true})
+	ij := New(injopts.CacheOptNone, types.ReflectionOptions{GenerifyInterface: true})
 
 	_ = Register(ij, binds.Instance[universalAnswer](&expected[0]))
 	// Register again as another type, to check if it works
@@ -65,7 +66,10 @@ func TestInjection__GetStructImplementInterface(t *testing.T) {
 
 	structResult := TryGet[guide](ij)
 	if structResult.String() != expected[1].value {
-		t.Errorf("element was reseted. Expected: `%s`; Received: `%s`", expected[1].value, structResult.String())
+		t.Errorf(
+			"element was reseted. Expected: `%s`; Received: `%s`",
+			expected[1].value, structResult.String(),
+		)
 	}
 }
 
@@ -75,22 +79,24 @@ func TestInjection__RegisterSameKeyDifferentType(t *testing.T) {
 		expectedInt = 42
 	)
 
-	ij := New(false, types.ReflectionOptions{})
-	_ = Register(
-		ij, binds.Instance(expectedStr), "truth",
-	)
-	_ = Register(
-		ij, binds.Instance(expectedInt), "truth",
-	)
+	ij := New(injopts.CacheOptNone, types.ReflectionOptions{})
+	_ = Register(ij, binds.Instance(expectedStr), "truth")
+	_ = Register(ij, binds.Instance(expectedInt), "truth")
 
 	strResult := TryGet[string](ij, "truth")
 	intResult := TryGet[int](ij, "truth")
 
 	if strResult != expectedStr {
-		t.Errorf("string injection should not be overrided. Received: `%s`. Expected: `%s`", strResult, expectedStr)
+		t.Errorf(
+			"string injection should not be overrided. Received: `%s`. Expected: `%s`",
+			strResult, expectedStr,
+		)
 	}
 	if intResult != expectedInt {
-		t.Errorf("int injection should not be overrided. Received: `%d`. Expected: `%d`", intResult, expectedInt)
+		t.Errorf(
+			"int injection should not be overrided. Received: `%d`. Expected: `%d`",
+			intResult, expectedInt,
+		)
 	}
 }
 
@@ -106,10 +112,8 @@ func TestInjection__RetrieveSameTypeDifferentKey(t *testing.T) {
 		},
 	)
 
-	ij := New(true, types.ReflectionOptions{})
-	_ = Register(
-		ij, binds.Instance(resultParts[1]), "lang",
-	)
+	ij := New(injopts.CacheOptAllowOverride, types.ReflectionOptions{})
+	_ = Register(ij, binds.Instance(resultParts[1]), "lang")
 	_ = Register(ij, a)
 	result := TryGet[string](ij)
 
@@ -142,13 +146,9 @@ func TestInjection__RegisterEqualInterfaces(t *testing.T) {
 		{sound: "woof woof"},
 	}
 
-	ij := New(true, types.ReflectionOptions{})
-	_ = Register(
-		ij, binds.Instance[spk1](elements[0]), storageKey,
-	)
-	_ = Register(
-		ij, binds.Instance[spk2](elements[1]), storageKey,
-	)
+	ij := New(injopts.CacheOptAllowOverride, types.ReflectionOptions{})
+	_ = Register(ij, binds.Instance[spk1](elements[0]), storageKey)
+	_ = Register(ij, binds.Instance[spk2](elements[1]), storageKey)
 
 	// Start to retrieve the injected objects
 	results := [...]spk1{

@@ -7,6 +7,7 @@ import (
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 	"github.com/wrapped-owls/goremy-di/remy/test/fixtures"
 )
@@ -54,7 +55,7 @@ func TestGenerateBind__InstanceFactory(testObj *testing.T) {
 					},
 				)
 
-				i := New(true, types.ReflectionOptions{})
+				i := New(injopts.CacheOptAllowOverride, types.ReflectionOptions{})
 				if err := Register(i, insBind); err != nil {
 					t.Error(err)
 					t.FailNow()
@@ -111,7 +112,7 @@ func TestRegister__Singleton(testObj *testing.T) {
 					},
 				)
 
-				i := New(true, types.ReflectionOptions{})
+				i := New(injopts.CacheOptAllowOverride, types.ReflectionOptions{})
 				if invocations != 0 {
 					t.Error("Singleton was generated before register")
 				}
@@ -154,7 +155,7 @@ func TestRegister__overrideInstanceByBind(t *testing.T) {
 			t.FailNow()
 		}
 	}()
-	inj := New(false, types.ReflectionOptions{})
+	inj := New(injopts.CacheOptNone, types.ReflectionOptions{})
 	const (
 		expectedString   = "avocado"
 		unexpectedString = "banana"
@@ -233,7 +234,7 @@ func TestGetGen(t *testing.T) {
 	}
 
 	for _, tCase := range testCases {
-		i := New(true, types.ReflectionOptions{})
+		i := New(injopts.CacheOptAllowOverride, types.ReflectionOptions{})
 		_ = Register(
 			i, binds.Factory(
 				func(retriever types.DependencyRetriever) (result string, err error) {
@@ -287,7 +288,10 @@ func TestGetGen(t *testing.T) {
 
 func TestGetGen_raiseCastError(t *testing.T) {
 	var (
-		i                                = New(true, types.ReflectionOptions{})
+		i = New(
+			injopts.CacheOptAllowOverride,
+			types.ReflectionOptions{},
+		)
 		interfaceValue fixtures.Language = fixtures.GoProgrammingLang{}
 	)
 	err := Register(
@@ -384,7 +388,7 @@ func TestGet_duckTypeInterface(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(
 			tt.name, func(t *testing.T) {
-				i := New(false, types.ReflectionOptions{})
+				i := New(injopts.CacheOptReturnAll, types.ReflectionOptions{})
 				err := Register(
 					i, binds.Factory(
 						func(retriever types.DependencyRetriever) (result string, getErr error) {

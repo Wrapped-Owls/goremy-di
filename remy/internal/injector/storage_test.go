@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 )
 
 func TestElementsStorage_Set(t *testing.T) {
@@ -20,7 +21,7 @@ func TestElementsStorage_Set(t *testing.T) {
 		}
 	}()
 
-	stg := NewElementsStorage[string](true, types.ReflectionOptions{})
+	stg := NewElementsStorage[string](injopts.CacheOptAllowOverride, types.ReflectionOptions{})
 	_ = stg.Set("value", 7)
 	checkpoints++
 	_ = stg.Set("value", 11)
@@ -33,7 +34,7 @@ func TestElementsStorage_Set(t *testing.T) {
 func TestElementsStorage_Set__Override(t *testing.T) {
 	testCases := generateStorageTestCases()
 
-	stg := NewElementsStorage[string](false, types.ReflectionOptions{})
+	stg := NewElementsStorage[string](injopts.CacheOptNone, types.ReflectionOptions{})
 	for _, toTest := range testCases {
 		t.Run(
 			toTest.name, func(t *testing.T) {
