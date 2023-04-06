@@ -2,31 +2,35 @@ package utils
 
 import (
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
-	"github.com/wrapped-owls/goremy-di/remy/pkg/keyopts"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 )
 
-func shouldGenerify(options keyopts.GenOption) bool {
-	return options&keyopts.KeyOptGenerifyInterface == keyopts.KeyOptGenerifyInterface
+func shouldGenerify(options injopts.KeyGenOption) bool {
+	return options&injopts.KeyOptGenerifyInterface == injopts.KeyOptGenerifyInterface
 }
 
-func shouldUseReflection(options keyopts.GenOption) bool {
-	return options&keyopts.KeyOptUseReflectionType == keyopts.KeyOptUseReflectionType
+func shouldUseReflection(options injopts.KeyGenOption) bool {
+	return options&injopts.KeyOptUseReflectionType == injopts.KeyOptUseReflectionType
 }
 
-func shouldPrefixPointer(options keyopts.GenOption) bool {
-	return options&keyopts.KeyOptIgnorePointer != keyopts.KeyOptIgnorePointer
+func shouldPrefixPointer(options injopts.KeyGenOption) bool {
+	return options&injopts.KeyOptIgnorePointer != injopts.KeyOptIgnorePointer
 }
 
-func GetKey[T any](options keyopts.GenOption) types.BindKey {
+func GetKey[T any](options injopts.KeyGenOption) types.BindKey {
 	if shouldUseReflection(options) {
-		return types.BindKey(TypeNameByReflect[T](shouldGenerify(options), shouldPrefixPointer(options)))
+		return types.BindKey(
+			TypeNameByReflect[T](shouldGenerify(options), shouldPrefixPointer(options)),
+		)
 	}
 	return types.BindKey(TypeName[T](shouldGenerify(options), shouldPrefixPointer(options)))
 }
 
-func GetElemKey(element any, options keyopts.GenOption) types.BindKey {
+func GetElemKey(element any, options injopts.KeyGenOption) types.BindKey {
 	if shouldUseReflection(options) {
-		return types.BindKey(TypeNameByReflect(shouldGenerify(options), shouldPrefixPointer(options), element))
+		return types.BindKey(
+			TypeNameByReflect(shouldGenerify(options), shouldPrefixPointer(options), element),
+		)
 	}
 	return types.BindKey(TypeName(shouldGenerify(options), shouldPrefixPointer(options), element))
 }

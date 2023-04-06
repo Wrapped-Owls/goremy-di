@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
-	"github.com/wrapped-owls/goremy-di/remy/pkg/keyopts"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 )
 
@@ -14,7 +14,7 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) erro
 		key = keys[0]
 	}
 
-	elementType := utils.GetKey[T](keyopts.FromReflectOpts(ij.ReflectOpts()))
+	elementType := utils.GetKey[T](injopts.KeyOptsFromStruct(ij.ReflectOpts()))
 	var retriever types.DependencyRetriever = ij
 	if wrappedRetriever := retriever.WrapRetriever(); wrappedRetriever != nil {
 		retriever = wrappedRetriever
@@ -72,7 +72,7 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (element T,
 	var (
 		key         string
 		bind        any
-		elementType = utils.GetKey[T](keyopts.FromReflectOpts(retriever.ReflectOpts()))
+		elementType = utils.GetKey[T](injopts.KeyOptsFromStruct(retriever.ReflectOpts()))
 	)
 
 	if len(keys) > 0 {
@@ -122,11 +122,11 @@ func GetGen[T any](
 	subInjector := New(false, retriever.ReflectOpts(), retriever)
 	for _, element := range elements {
 		var (
-			opts       = keyopts.FromReflectOpts(subInjector.ReflectOpts())
+			opts       = injopts.KeyOptsFromStruct(subInjector.ReflectOpts())
 			typeSeeker = element.Value
 		)
 		if element.InterfaceValue != nil {
-			opts |= keyopts.KeyOptIgnorePointer
+			opts |= injopts.KeyOptIgnorePointer
 			typeSeeker = element.InterfaceValue
 		}
 		bindKey := utils.GetElemKey(typeSeeker, opts)

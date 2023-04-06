@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
-	"github.com/wrapped-owls/goremy-di/remy/pkg/keyopts"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 	aTypes "github.com/wrapped-owls/goremy-di/remy/test/fixtures/a/testtypes"
 	bTypes "github.com/wrapped-owls/goremy-di/remy/test/fixtures/b/testtypes"
 )
@@ -23,26 +23,26 @@ func TestGetKey__Generify(t *testing.T) {
 		}
 	)
 
-	options := keyopts.KeyOptNone
+	options := injopts.KeyOptNone
 	if GetKey[super](options) == GetKey[sub](options) {
 		t.Error("type names was the same when should not generify")
 	}
 
-	options = keyopts.KeyOptGenerifyInterface
+	options = injopts.KeyOptGenerifyInterface
 	if GetKey[super](options) != GetKey[sub](options) {
 		t.Error("generified type name should be the same")
 	}
 }
 
 func TestGetKey__SameStructWithDifferentPackage(t *testing.T) {
-	options := keyopts.KeyOptUseReflectionType
+	options := injopts.KeyOptUseReflectionType
 	if GetKey[aTypes.Syringe](options) == GetKey[bTypes.Syringe](options) {
 		t.Error(
 			"type names was the same, when it should be different, because of different packages",
 		)
 	}
 
-	options = keyopts.KeyOptUseReflectionType
+	options = injopts.KeyOptUseReflectionType
 	if GetElemKey(t, options) != GetKey[*testing.T](options) {
 		t.Error("element type should be the same from type and object")
 	}
@@ -61,8 +61,8 @@ func TestGetKey__Functions(t *testing.T) {
 		namedBoolCheckerCallback = func(languages ...string) bool
 	)
 
-	optionsCases := [...]keyopts.GenOption{
-		keyopts.KeyOptNone, keyopts.KeyOptUseReflectionType,
+	optionsCases := [...]injopts.KeyGenOption{
+		injopts.KeyOptNone, injopts.KeyOptUseReflectionType,
 	}
 
 	for _, optCase := range optionsCases {
