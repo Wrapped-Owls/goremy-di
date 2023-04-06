@@ -22,7 +22,7 @@ type (
 		Get(T) (any, error)
 
 		// GetAll returns all elements from the storage that hasn't a key
-		GetAll() ([]any, error)
+		GetAll(optKey ...string) ([]any, error)
 		CheckReflectionOptions
 	}
 

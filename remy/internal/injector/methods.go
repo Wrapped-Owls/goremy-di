@@ -36,12 +36,14 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) erro
 	return ij.Bind(elementType, value)
 }
 
-func getByGuess[T any](retriever types.DependencyRetriever) (element T, err error) {
+func getByGuess[T any](
+	retriever types.DependencyRetriever, optKey ...string,
+) (element T, err error) {
 	var (
 		elementList    []any
 		accessAllError error
 	)
-	elementList, accessAllError = retriever.GetAll()
+	elementList, accessAllError = retriever.GetAll(optKey...)
 	if accessAllError != nil {
 		return
 	}
@@ -97,7 +99,7 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (element T,
 	}
 
 	// Start to search for every element if it is configured in this way
-	foundElement, accessAllError := getByGuess[T](retriever)
+	foundElement, accessAllError := getByGuess[T](retriever, keys...)
 	if accessAllError == nil {
 		element = foundElement
 		err = nil

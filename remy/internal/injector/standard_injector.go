@@ -82,18 +82,18 @@ func (s *StdInjector) GetNamed(bType types.BindKey, name string) (result any, er
 	return
 }
 
-func (s *StdInjector) GetAll() (resultList []any, err error) {
+func (s *StdInjector) GetAll(optKey ...string) (resultList []any, err error) {
 	var (
 		cachedElements []any
 		parentElements []any
 	)
 
-	if cachedElements, err = s.cacheStorage.GetAll(); err != nil {
+	if cachedElements, err = s.cacheStorage.GetAll(optKey...); err != nil {
 		return
 	}
 
 	if s.parentInjector != nil {
-		if parentElements, err = s.parentInjector.GetAll(); err != nil {
+		if parentElements, err = s.parentInjector.GetAll(optKey...); err != nil {
 			return
 		}
 	}

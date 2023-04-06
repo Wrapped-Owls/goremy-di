@@ -99,8 +99,8 @@ func (c cycleDetectorInjector) Get(key types.BindKey) (any, error) {
 	return c.ij.Get(key)
 }
 
-func (c cycleDetectorInjector) GetAll() ([]any, error) {
-	return c.ij.GetAll()
+func (c cycleDetectorInjector) GetAll(optKey ...string) ([]any, error) {
+	return c.ij.GetAll(optKey...)
 }
 
 func (c cycleDetectorInjector) ReflectOpts() types.ReflectionOptions {
