@@ -39,12 +39,8 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) erro
 func getByGuess[T any](
 	retriever types.DependencyRetriever, optKey ...string,
 ) (element T, err error) {
-	var (
-		elementList    []any
-		accessAllError error
-	)
-	elementList, accessAllError = retriever.GetAll(optKey...)
-	if accessAllError != nil {
+	var elementList []any
+	if elementList, err = retriever.GetAll(optKey...); err != nil {
 		return
 	}
 
@@ -119,7 +115,7 @@ func TryGet[T any](retriever types.DependencyRetriever, keys ...string) (result 
 func GetGen[T any](
 	retriever types.DependencyRetriever, elements []types.InstancePair[any], keys ...string,
 ) (result T, err error) {
-	subInjector := New(false, retriever.ReflectOpts(), retriever)
+	subInjector := New(injopts.CacheOptNone, retriever.ReflectOpts(), retriever)
 	for _, element := range elements {
 		var (
 			opts       = injopts.KeyOptsFromStruct(subInjector.ReflectOpts())
@@ -154,7 +150,7 @@ func GetGenFunc[T any](
 	retriever types.DependencyRetriever,
 	binder func(injector types.Injector) error, keys ...string,
 ) (result T, err error) {
-	subInjector := New(false, retriever.ReflectOpts(), retriever)
+	subInjector := New(injopts.CacheOptNone, retriever.ReflectOpts(), retriever)
 	if err = binder(subInjector); err != nil {
 		return
 	}

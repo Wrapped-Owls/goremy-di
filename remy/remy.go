@@ -35,6 +35,12 @@ type (
 		// CanOverride defines if a bind can be overridden if it is registered twice.
 		CanOverride bool
 
+		// DuckTypeElements informs to the injector that it can try to discover if the requested type
+		// is on one of the already registered one.
+		//
+		// CAUTION: It costly a lot, since it will try to discover all registered elements
+		DuckTypeElements bool
+
 		// GenerifyInterfaces defines the method to check for interface binds.
 		// If this parameter is true, then an interface that is defined in two different packages,
 		// but has the same signature methods, will generate the same key. If is false, all interfaces will generate
@@ -62,10 +68,12 @@ func NewInjector(configs ...Config) Injector {
 		GenerifyInterface: cfg.GenerifyInterfaces,
 		UseReflectionType: cfg.UseReflectionType,
 	}
+	cacheOpts := cacheOptsFromConfig(cfg)
+
 	if cfg.ParentInjector != nil {
-		return injector.New(cfg.CanOverride, reflectOpts, cfg.ParentInjector)
+		return injector.New(cacheOpts, reflectOpts, cfg.ParentInjector)
 	}
-	return injector.New(cfg.CanOverride, reflectOpts)
+	return injector.New(cacheOpts, reflectOpts)
 }
 
 // Register must be called first, because the library doesn't support registering dependencies while get at same time.
@@ -136,7 +144,10 @@ func GetGen[T any](i DependencyRetriever, elements []InstancePairAny, keys ...st
 // Additionally, it returns an error which indicates if the bind was found or not.
 //
 // Receives: DependencyRetriever (required); []InstancePairAny (required); key (optional)
-func DoGetGen[T any](i DependencyRetriever, elements []InstancePairAny, keys ...string) (result T, err error) {
+func DoGetGen[T any](
+	i DependencyRetriever, elements []InstancePairAny,
+	keys ...string,
+) (result T, err error) {
 	defer func() {
 		r := recover()
 		if r != nil {
@@ -158,7 +169,10 @@ func GetGenFunc[T any](i DependencyRetriever, binder func(Injector) error, keys 
 // Additionally, it returns an error which indicates if the bind was found or not.
 //
 // Receives: DependencyRetriever (required); func(Injector) (required); key (optional)
-func DoGetGenFunc[T any](i DependencyRetriever, binder func(Injector) error, keys ...string) (result T, err error) {
+func DoGetGenFunc[T any](
+	i DependencyRetriever, binder func(Injector) error,
+	keys ...string,
+) (result T, err error) {
 	defer func() {
 		r := recover()
 		if r != nil {
