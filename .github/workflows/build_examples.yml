@@ -42,3 +42,6 @@ jobs:
 
       - name: Build bindlogger example
         run: cd ./examples/bindlogger && go build -v ./...
+
+      - name: Build guessing_types example
+        run: cd ./examples/guessing_types && go build -v ./...
