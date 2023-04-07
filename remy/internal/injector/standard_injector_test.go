@@ -6,11 +6,12 @@ import (
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 )
 
 func TestStdInjector_SubInjector(t *testing.T) {
 	const strFirstHalf = "the counter is at"
-	parent := New(false, types.ReflectionOptions{})
+	parent := New(injopts.CacheOptNone, types.ReflectionOptions{})
 	subInjector := parent.SubInjector(false)
 
 	var counter uint8 = 0
@@ -35,7 +36,8 @@ func TestStdInjector_SubInjector(t *testing.T) {
 		expected := fmt.Sprintf("%s %d", strFirstHalf, i+1)
 		if result := TryGet[string](subInjector); result != expected {
 			t.Errorf(
-				"sub-injector is not calling parent injector correctly. Received: `%s`; Expected: `%s`", result,
+				"sub-injector is not calling parent injector correctly. Received: `%s`; Expected: `%s`",
+				result,
 				expected,
 			)
 			t.FailNow()
@@ -45,12 +47,15 @@ func TestStdInjector_SubInjector(t *testing.T) {
 
 func TestStdInjector_SubInjectorEmpty(t *testing.T) {
 	const elementKey = "game-name"
-	parent := New(false, types.ReflectionOptions{})
+	parent := New(injopts.CacheOptNone, types.ReflectionOptions{})
 	subInjector := parent.SubInjector(false)
 
 	_ = Register(parent, binds.Instance("snake-pong"), elementKey)
 
-	results := [...]string{TryGet[string](parent, elementKey), TryGet[string](subInjector, elementKey)}
+	results := [...]string{
+		TryGet[string](parent, elementKey),
+		TryGet[string](subInjector, elementKey),
+	}
 	if results[0] != results[1] {
 		t.Error("Result isn't the same for parent and sub injectors")
 	}
@@ -58,7 +63,7 @@ func TestStdInjector_SubInjectorEmpty(t *testing.T) {
 
 func TestStdInjector_GetUnboundedElement(t *testing.T) {
 	const errMessage = "An error have not been returned when getting unbounded element"
-	parentInjector := New(false, types.ReflectionOptions{})
+	parentInjector := New(injopts.CacheOptNone, types.ReflectionOptions{})
 	for _, ij := range [...]types.Injector{parentInjector, parentInjector.SubInjector()} {
 		if _, err := Get[string](ij); err == nil {
 			t.Error(errMessage)
@@ -71,7 +76,7 @@ func TestStdInjector_GetUnboundedElement(t *testing.T) {
 
 func TestStdInjector_SubInjector__OverrideParent(t *testing.T) {
 	const strFirstHalf = "The totally value of it is"
-	parent := New(false, types.ReflectionOptions{})
+	parent := New(injopts.CacheOptNone, types.ReflectionOptions{})
 	subInjector := parent.SubInjector(false)
 
 	_ = Register(
@@ -93,7 +98,8 @@ func TestStdInjector_SubInjector__OverrideParent(t *testing.T) {
 	expected := fmt.Sprintf("%s 101", strFirstHalf)
 	if result := TryGet[string](subInjector); result != expected {
 		t.Errorf(
-			"sub-injector is not calling parent injector correctly. Received: `%s`; Expected: `%s`", result, expected,
+			"sub-injector is not calling parent injector correctly. Received: `%s`; Expected: `%s`",
+			result, expected,
 		)
 		t.FailNow()
 	}
@@ -110,7 +116,8 @@ func TestStdInjector_SubInjector__OverrideParent(t *testing.T) {
 	expected = fmt.Sprintf("%s 42", strFirstHalf)
 	if result := TryGet[string](subInjector); result != expected {
 		t.Errorf(
-			"sub-injector is not calling parent injector correctly. Received: `%s`; Expected: `%s`", result, expected,
+			"sub-injector is not calling parent injector correctly. Received: `%s`; Expected: `%s`",
+			result, expected,
 		)
 		t.FailNow()
 	}

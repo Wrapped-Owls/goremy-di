@@ -7,4 +7,5 @@
 - [x] Remove use of `reflect.TypeOf` in the injector
     - [x] Implement a method to get the type of `element` without using `reflect.TypeOf`
     - [x] Only use **reflection** if requested by the user
+- [ ] Swap error type to have more info about its origin
 - [ ] Create an injector bind generator package using `//go:generate` comments

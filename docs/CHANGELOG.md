@@ -81,3 +81,15 @@
 - Add new option in `InstancePair` to bind interfaces
 - Change the internal use of `ReflectionOptions` to use bitwise operators
     - In this way it'll be possible to add more internal options in the future
+
+## 20230407 - remy/v1.7.0
+
+- Add a new config option to guess element type
+    - It only works for instance binds
+    - Is strongly recommended to not use
+    - Add test cases for new element guessing system
+- Create an example that uses the new element guessing option
+- Add new errors on utils package
+- Remove unused `Default[T any]() T` function from utils
+- Refactor cacheConfig internally to use bitwise operators on numeric element
+    - This will allow to pass less parameters to constructors

@@ -1,4 +1,4 @@
-module github.com/wrapped-owls/talaria-di/examples/basic
+module github.com/wrapped-owls/goremy-di/examples/basic
 
 go 1.18
 

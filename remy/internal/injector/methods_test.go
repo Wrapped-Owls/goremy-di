@@ -7,6 +7,7 @@ import (
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 	"github.com/wrapped-owls/goremy-di/remy/test/fixtures"
 )
@@ -54,7 +55,7 @@ func TestGenerateBind__InstanceFactory(testObj *testing.T) {
 					},
 				)
 
-				i := New(true, types.ReflectionOptions{})
+				i := New(injopts.CacheOptAllowOverride, types.ReflectionOptions{})
 				if err := Register(i, insBind); err != nil {
 					t.Error(err)
 					t.FailNow()
@@ -111,7 +112,7 @@ func TestRegister__Singleton(testObj *testing.T) {
 					},
 				)
 
-				i := New(true, types.ReflectionOptions{})
+				i := New(injopts.CacheOptAllowOverride, types.ReflectionOptions{})
 				if invocations != 0 {
 					t.Error("Singleton was generated before register")
 				}
@@ -154,7 +155,7 @@ func TestRegister__overrideInstanceByBind(t *testing.T) {
 			t.FailNow()
 		}
 	}()
-	inj := New(false, types.ReflectionOptions{})
+	inj := New(injopts.CacheOptNone, types.ReflectionOptions{})
 	const (
 		expectedString   = "avocado"
 		unexpectedString = "banana"
@@ -233,7 +234,7 @@ func TestGetGen(t *testing.T) {
 	}
 
 	for _, tCase := range testCases {
-		i := New(true, types.ReflectionOptions{})
+		i := New(injopts.CacheOptAllowOverride, types.ReflectionOptions{})
 		_ = Register(
 			i, binds.Factory(
 				func(retriever types.DependencyRetriever) (result string, err error) {
@@ -287,7 +288,10 @@ func TestGetGen(t *testing.T) {
 
 func TestGetGen_raiseCastError(t *testing.T) {
 	var (
-		i                                = New(true, types.ReflectionOptions{})
+		i = New(
+			injopts.CacheOptAllowOverride,
+			types.ReflectionOptions{},
+		)
 		interfaceValue fixtures.Language = fixtures.GoProgrammingLang{}
 	)
 	err := Register(
@@ -345,4 +349,121 @@ func TestGetGen_raiseCastError(t *testing.T) {
 			}
 		},
 	)
+}
+
+func TestGet_duckTypeInterface(t *testing.T) {
+	strGenerator := func(lang fixtures.Language) string {
+		return lang.Kind() + " language: " + lang.Name()
+	}
+
+	var (
+		testFirstSubject  = fixtures.GoProgrammingLang{}
+		testSecondSubject = fixtures.CountryLanguage{}
+		testCases         = [...]struct {
+			name            string
+			registerSubject uint8
+			expected        string
+			expectedError   error
+		}{
+			{
+				name:            "Correctly bind registration",
+				registerSubject: 1,
+				expected:        strGenerator(testFirstSubject),
+			},
+			{
+				name:            "Failed to find dependency bind",
+				registerSubject: 0,
+				expected:        "",
+				expectedError:   utils.ErrElementNotRegistered,
+			},
+			{
+				name:            "Inject multiple elements that implements interface",
+				registerSubject: 2,
+				expected:        "",
+				expectedError:   utils.ErrFoundMoreThanOneValidDI,
+			},
+		}
+	)
+
+	for _, tt := range testCases {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				i := New(injopts.CacheOptReturnAll, types.ReflectionOptions{})
+				err := Register(
+					i, binds.Factory(
+						func(retriever types.DependencyRetriever) (result string, getErr error) {
+							var lang fixtures.Language
+							if lang, getErr = Get[fixtures.Language](retriever); getErr == nil {
+								result = strGenerator(lang)
+							}
+							return
+						},
+					),
+				)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				if tt.registerSubject > 1 {
+					if err = Register(i, binds.Instance(testSecondSubject)); err != nil {
+						t.Fatal(err)
+					}
+				}
+				if tt.registerSubject > 0 {
+					if err = Register(i, binds.Instance(testFirstSubject)); err != nil {
+						t.Fatal(err)
+					}
+				}
+
+				var result string
+				result, err = Get[string](i)
+				if err != nil && !errors.Is(err, tt.expectedError) {
+					t.Fatalf(
+						"Error is not the same:\nExpected: `%v`\nReceived: `%v`",
+						tt.expectedError, err,
+					)
+				}
+
+				if result != tt.expected {
+					t.Error("Result is not the same as expected")
+				}
+			},
+		)
+	}
+}
+
+func testGuestSubtype[T, K interface{ ~int32 | ~uint8 | ~float64 }](t *testing.T) {
+	i := New(injopts.CacheOptReturnAll, types.ReflectionOptions{})
+	var (
+		registerElement K = 0b101010
+		expectedElement T // zero value
+	)
+
+	if err := Register(i, binds.Instance(registerElement)); err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := Get[T](i)
+	if err == nil {
+		t.Fatalf("No error was received when trying to find subtype `%T`", result)
+	}
+
+	if result != expectedElement {
+		t.Errorf(
+			"Result is not the same as expected\nReceived: `%v`\nExpected: `%v`",
+			result, registerElement,
+		)
+	}
+}
+
+func TestGet_guessSubtypes(t *testing.T) {
+	type (
+		SubTypeInt32   uint8
+		SubTypeUint8   uint8
+		SubTypeFloat64 float64
+	)
+
+	t.Run("Int32 subtype", testGuestSubtype[SubTypeInt32, uint8])
+	t.Run("Uint8 subtype", testGuestSubtype[SubTypeUint8, uint8])
+	t.Run("Float64 subtype", testGuestSubtype[SubTypeFloat64, uint8])
 }

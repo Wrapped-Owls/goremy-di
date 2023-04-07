@@ -2,6 +2,7 @@ package injector
 
 import (
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 )
 
@@ -9,7 +10,7 @@ import (
 type (
 	genericAnyMap[T comparable]   map[T]any
 	ElementsStorage[T comparable] struct {
-		allowOverride bool
+		opts          injopts.CacheConfOption
 		reflectOpts   types.ReflectionOptions
 		namedElements map[string]genericAnyMap[T]
 		elements      genericAnyMap[T]
@@ -17,11 +18,11 @@ type (
 )
 
 func NewElementsStorage[T comparable](
-	allowOverride bool,
+	opts injopts.CacheConfOption,
 	reflectionOptions types.ReflectionOptions,
 ) *ElementsStorage[T] {
 	return &ElementsStorage[T]{
-		allowOverride: allowOverride,
+		opts:          opts,
 		reflectOpts:   reflectionOptions,
 		namedElements: map[string]genericAnyMap[T]{},
 		elements:      genericAnyMap[T]{},
@@ -34,7 +35,7 @@ func (s *ElementsStorage[T]) ReflectOpts() types.ReflectionOptions {
 
 func (s *ElementsStorage[T]) Set(key T, value any) (wasOverridden bool) {
 	if _, ok := s.elements[key]; ok {
-		if !s.allowOverride {
+		if !s.opts.Is(injopts.CacheOptAllowOverride) {
 			panic(utils.ErrAlreadyBound)
 		}
 		wasOverridden = true
@@ -52,7 +53,7 @@ func (s *ElementsStorage[T]) SetNamed(elementType T, name string, value any) (wa
 	}
 
 	if _, ok := namedBinds[elementType]; ok {
-		if !s.allowOverride {
+		if !s.opts.Is(injopts.CacheOptAllowOverride) {
 			panic(utils.ErrAlreadyBound)
 		}
 		wasOverridden = true
@@ -77,6 +78,24 @@ func (s *ElementsStorage[T]) Get(key T) (result any, err error) {
 	var ok bool
 	if result, ok = s.elements[key]; !ok {
 		err = utils.ErrElementNotRegistered
+	}
+	return
+}
+
+func (s *ElementsStorage[T]) GetAll(optKey ...string) (resultList []any, err error) {
+	if !s.opts.Is(injopts.CacheOptReturnAll) {
+		err = utils.ErrElementNotRegistered
+		return
+	}
+
+	fromList := s.elements
+	if len(optKey) > 0 {
+		fromList = s.namedElements[optKey[0]]
+	}
+
+	resultList = make([]any, 0, len(fromList))
+	for _, value := range fromList {
+		resultList = append(resultList, value)
 	}
 	return
 }

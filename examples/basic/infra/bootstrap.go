@@ -6,8 +6,9 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/wrapped-owls/goremy-di/remy"
-	"github.com/wrapped-owls/talaria-di/examples/basic/core"
-	"github.com/wrapped-owls/talaria-di/examples/basic/infra/repositories"
+
+	"github.com/wrapped-owls/goremy-di/examples/basic/core"
+	"github.com/wrapped-owls/goremy-di/examples/basic/infra/repositories"
 )
 
 func init() {

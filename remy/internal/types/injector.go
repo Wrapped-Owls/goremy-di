@@ -20,6 +20,9 @@ type (
 
 		// Get search for a named element that was cached using the T value given
 		Get(T) (any, error)
+
+		// GetAll returns all elements from the storage that hasn't a key
+		GetAll(optKey ...string) ([]any, error)
 		CheckReflectionOptions
 	}
 
