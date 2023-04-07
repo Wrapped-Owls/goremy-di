@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="go test remy" type="GoTestRunConfiguration" factoryName="Go Test" nameIsGenerated="true">
+    <module name="talaria-di" />
+    <working_directory value="$PROJECT_DIR$/remy" />
+    <go_parameters value="-coverpkg=./... -race" />
+    <kind value="DIRECTORY" />
+    <package value="github.com/wrapped-owls/goremy-di/remy" />
+    <directory value="$PROJECT_DIR$/remy" />
+    <filePath value="$PROJECT_DIR$" />
+    <framework value="gotest" />
+    <method v="2" />
+  </configuration>
+</component>
