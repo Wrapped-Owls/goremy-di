@@ -1,4 +1,4 @@
-module github.com/wrapped-owls/talaria-di/examples/bindlogger
+module github.com/wrapped-owls/goremy-di/examples/bindlogger
 
 go 1.18
 

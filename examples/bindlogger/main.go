@@ -7,7 +7,7 @@ import (
 
 	"github.com/wrapped-owls/goremy-di/remy"
 
-	"github.com/wrapped-owls/talaria-di/examples/bindlogger/utils"
+	"github.com/wrapped-owls/goremy-di/examples/bindlogger/utils"
 )
 
 func main() {

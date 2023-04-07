@@ -1,4 +1,4 @@
-module github.com/wrapped-owls/talaria-di/examples/guessing_types
+module github.com/wrapped-owls/goremy-di/examples/guessing_types
 
 go 1.18
 

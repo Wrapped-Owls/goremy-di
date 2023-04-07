@@ -6,7 +6,8 @@ import (
 
 	"github.com/wrapped-owls/goremy-di/remy"
 	"github.com/wrapped-owls/goremy-di/remy/test/fixtures"
-	"github.com/wrapped-owls/talaria-di/examples/guessing_types/models"
+
+	"github.com/wrapped-owls/goremy-di/examples/guessing_types/models"
 )
 
 func guessBindType(i remy.Injector) {
