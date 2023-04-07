@@ -81,6 +81,17 @@ func (c loggerInjector) Get(key remy.BindKey) (result any, err error) {
 	return
 }
 
+func (c loggerInjector) GetAll(optKey ...string) (result []any, err error) {
+	c.logger.Infof("Injector[GetAll](%+v) - Starting\n", optKey)
+	result, err = c.ij.GetAll(optKey...)
+	if err != nil {
+		c.logger.Errorf("Injector[GetAll] - Error: `%v`\n", err)
+	}
+
+	c.logger.Infof("Injector[GetAll](%+v) - Found `%+v`\n", optKey, result)
+	return
+}
+
 func (c loggerInjector) ReflectOpts() (opts remy.ReflectionOptions) {
 	opts = c.ij.ReflectOpts()
 	c.logger.Infof("Injector[ReflectOpts] - Returning `%+v`\n", opts)

@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/wrapped-owls/goremy-di/remy"
+
 	"github.com/wrapped-owls/talaria-di/examples/bindlogger/utils"
 )
 
