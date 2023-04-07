@@ -33,17 +33,19 @@ attributes:
 package core
 
 import (
-	"github.com/wrapped-owls/goremy-di/remy"
-	"log"
+  "log"
+
+  "github.com/wrapped-owls/goremy-di/remy"
 )
 
 var Injector remy.Injector
 
 // create a new instance of the injector
 func init() {
-	log.Println("Initializing injector")
-	Injector = remy.NewInjector()
+  log.Println("Initializing injector")
+  Injector = remy.NewInjector()
 }
+
 ```
 
 ### Global Injector
@@ -65,21 +67,24 @@ a `DependencyRetriever` as parameter, which can be used to get another values th
 package main
 
 import (
-	"database/sql"
-	"github.com/wrapped-owls/goremy-di/remy"
+  "database/sql"
+
+  "github.com/wrapped-owls/goremy-di/examples/basic/core"
+  "github.com/wrapped-owls/goremy-di/remy"
 )
 
 // Create an instance of the database connection
 func init() {
-	remy.Register(
-		core.Injector,
-		remy.Singleton(
-			func(retriever remy.DependencyRetriever) (*sql.DB, error) {
-				return sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
-			},
-		),
-	)
+  remy.Register(
+    core.Injector,
+    remy.Singleton(
+      func(retriever remy.DependencyRetriever) (*sql.DB, error) {
+        return sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
+      },
+    ),
+  )
 }
+
 ```
 
 In this example, we register a database connection using the `Register` function, a `Bind` function and the `Binder`
@@ -89,18 +94,21 @@ closure. To make it cleaner to read, we can rewrite this using the `RegisterSing
 package main
 
 import (
-	"database/sql"
-	"github.com/wrapped-owls/goremy-di/remy"
+  "database/sql"
+
+  "github.com/wrapped-owls/goremy-di/examples/basic/core"
+  "github.com/wrapped-owls/goremy-di/remy"
 )
 
 // Create an instance of the database connection
 func init() {
-	remy.RegisterSingleton(
-		core.Injector, func(retriever remy.DependencyRetriever) (*sql.DB, error) {
-			return sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
-		},
-	)
+  remy.RegisterSingleton(
+    core.Injector, func(retriever remy.DependencyRetriever) (*sql.DB, error) {
+      return sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
+    },
+  )
 }
+
 ```
 
 #### Bind types
@@ -135,21 +143,24 @@ calling the Get function:
 package main
 
 import (
-	"database/sql"
-	"github.com/wrapped-owls/goremy-di/remy"
+  "database/sql"
+
+  "github.com/wrapped-owls/goremy-di/examples/basic/core"
+  "github.com/wrapped-owls/goremy-di/remy"
 )
 
 func init() {
-	remy.Register(
-		core.Injector,
-		remy.Factory(
-			func(retriever remy.DependencyRetriever) (repo core.GenericRepository, err error) {
-				repo = repositories.NewGenericDbRepository(remy.Get[*sql.DB](retriever))
-				return
-			},
-		),
-	)
+  remy.Register(
+    core.Injector,
+    remy.Factory(
+      func(retriever remy.DependencyRetriever) (repo core.GenericRepository, err error) {
+        repo = repositories.NewGenericDbRepository(remy.Get[*sql.DB](retriever))
+        return
+      },
+    ),
+  )
 }
+
 ```
 
 You can also use the registered element in any place of your application, using either the _global_ injector or a _
@@ -159,17 +170,21 @@ local_ one.
 package main
 
 import (
-	"database/sql"
-	"github.com/wrapped-owls/goremy-di/remy"
+  "database/sql"
+  "log"
+
+  "github.com/wrapped-owls/goremy-di/examples/basic/core"
+  "github.com/wrapped-owls/goremy-di/remy"
 )
 
 func main() {
-	// Executing create table query
-	dbConn := remy.Get[*sql.DB](core.Injector)
-	if _, err := dbConn.Exec("CREATE TABLE programming_languages(id INTEGER, name VARCHAR(60))"); err != nil {
-		log.Fatalln(err)
-	}
+  // Executing create table query
+  dbConn := remy.Get[*sql.DB](core.Injector)
+  if _, err := dbConn.Exec("CREATE TABLE programming_languages(id INTEGER, name VARCHAR(60))"); err != nil {
+    log.Fatalln(err)
+  }
 }
+
 ```
 
 #### Passing parameters to bind injector
@@ -221,32 +236,34 @@ way to register interface types, double of the attention is required, as it does
 package main
 
 import (
-	"github.com/wrapped-owls/goremy-di/remy"
-	"log"
+  "log"
+
+  "github.com/wrapped-owls/goremy-di/remy"
 )
 
 func main() {
-	result := remy.GetGen[string](
-		injector,
-		[]remy.InstancePairAny{
-			{
-				Value: uint8(42),
-			},
-			{
-				Value: "Go",
-				Key:   "lang",
-			},
-			{
-				Value: true,
-			},
-			{
-				InstanceValue: (*error)(nil),
-			},
-		},
-	)
+  result := remy.GetGen[string](
+    injector,
+    []remy.InstancePairAny{
+      {
+        Value: uint8(42),
+      },
+      {
+        Value: "Go",
+        Key:   "lang",
+      },
+      {
+        Value: true,
+      },
+      {
+        InstanceValue: (*error)(nil),
+      },
+    },
+  )
 
-	log.Println(result)
+  log.Println(result)
 }
+
 ```
 
 ##### Using callback to register the values
@@ -286,8 +303,9 @@ test files, to make sure that no dependency cycle was created.
 package main
 
 import (
-	"github.com/wrapped-owls/goremy-di/remy"
 	"testing"
+
+	"github.com/wrapped-owls/goremy-di/remy"
 )
 
 func createInjections(injector remy.Injector) {
@@ -301,6 +319,7 @@ func TestCycles(t *testing.T) {
 		t.Error(err)
 	}
 }
+
 ```
 
 #### Important Note
@@ -308,3 +327,6 @@ func TestCycles(t *testing.T) {
 When using the `CycleDetectorInjector` is important that in Binds, all _Get_ methods used call the
 given `DependencyRetriever`, if the same injector is used inside the function, as a clojure, it will not be able to
 detect cycles.
+
+Also, if you are using type guessing, the cycle detector will not work, as it doesn't know which element
+you are currently searching
