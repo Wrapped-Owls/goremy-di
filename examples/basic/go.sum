@@ -1,4 +1,4 @@
-github.com/mattn/go-sqlite3 v1.14.14 h1:qZgc/Rwetq+MtyE18WhzjokPD93dNqLGNT3QJuLvBGw=
-github.com/mattn/go-sqlite3 v1.14.14/go.mod h1:NyWgC/yNuGj7Q9rpYnZvas74GogHl5/Z4A/KQRfk6bU=
-github.com/wrapped-owls/goremy-di/remy v1.6.0 h1:wPNZgusIerNDao1C2hkKDt/1ZClmhtNx93xMEgoS9Lo=
-github.com/wrapped-owls/goremy-di/remy v1.6.0/go.mod h1:qYN9E07yip4Vw4oihsMq05IgLSMvFKsjrA/Ca79zq8w=
+github.com/mattn/go-sqlite3 v1.14.16 h1:yOQRA0RpS5PFz/oikGwBEqvAWhWg5ufRz4ETLjwpU1Y=
+github.com/mattn/go-sqlite3 v1.14.16/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=
+github.com/wrapped-owls/goremy-di/remy v1.7.0 h1:Olzx3NSjriWVIngu2YsJiiZC9jnLkuIIKp6xunwgib8=
+github.com/wrapped-owls/goremy-di/remy v1.7.0/go.mod h1:qYN9E07yip4Vw4oihsMq05IgLSMvFKsjrA/Ca79zq8w=
