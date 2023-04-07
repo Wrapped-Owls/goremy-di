@@ -431,3 +431,39 @@ func TestGet_duckTypeInterface(t *testing.T) {
 		)
 	}
 }
+
+func testGuestSubtype[T, K interface{ ~int32 | ~uint8 | ~float64 }](t *testing.T) {
+	i := New(injopts.CacheOptReturnAll, types.ReflectionOptions{})
+	var (
+		registerElement K = 0b101010
+		expectedElement T // zero value
+	)
+
+	if err := Register(i, binds.Instance(registerElement)); err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := Get[T](i)
+	if err == nil {
+		t.Fatalf("No error was received when trying to find subtype `%T`", result)
+	}
+
+	if result != expectedElement {
+		t.Errorf(
+			"Result is not the same as expected\nReceived: `%v`\nExpected: `%v`",
+			result, registerElement,
+		)
+	}
+}
+
+func TestGet_guessSubtypes(t *testing.T) {
+	type (
+		SubTypeInt32   uint8
+		SubTypeUint8   uint8
+		SubTypeFloat64 float64
+	)
+
+	t.Run("Int32 subtype", testGuestSubtype[SubTypeInt32, uint8])
+	t.Run("Uint8 subtype", testGuestSubtype[SubTypeUint8, uint8])
+	t.Run("Float64 subtype", testGuestSubtype[SubTypeFloat64, uint8])
+}

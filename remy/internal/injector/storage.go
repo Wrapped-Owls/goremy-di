@@ -93,7 +93,7 @@ func (s *ElementsStorage[T]) GetAll(optKey ...string) (resultList []any, err err
 		fromList = s.namedElements[optKey[0]]
 	}
 
-	resultList = make([]any, len(fromList))
+	resultList = make([]any, 0, len(fromList))
 	for _, value := range fromList {
 		resultList = append(resultList, value)
 	}
