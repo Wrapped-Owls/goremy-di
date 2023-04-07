@@ -327,6 +327,3 @@ func TestCycles(t *testing.T) {
 When using the `CycleDetectorInjector` is important that in Binds, all _Get_ methods used call the
 given `DependencyRetriever`, if the same injector is used inside the function, as a clojure, it will not be able to
 detect cycles.
-
-Also, if you are using type guessing, the cycle detector will not work, as it doesn't know which element
-you are currently searching
