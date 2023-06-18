@@ -93,3 +93,14 @@
 - Remove unused `Default[T any]() T` function from utils
 - Refactor cacheConfig internally to use bitwise operators on numeric element
     - This will allow to pass less parameters to constructors
+
+## 20230617 - remy/1.8.0
+
+- Replace internal type detection
+    - Stop using `fmt.Sprintf` which uses reflection by default
+    - Optimize existent function `TypeNameByReflection`
+    - Add **0-width** generic type that will be used as key for injections
+- Change `BindKey` type to any
+- Upgrade minimal go-version to _1.20_
+    - This was made to be able to use any as comparable
+- Remove `GenerifyInterfaces=true` from default injector Config
