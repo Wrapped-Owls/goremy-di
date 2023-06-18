@@ -58,7 +58,7 @@ type (
 func NewInjector(configs ...Config) Injector {
 	cfg := Config{
 		CanOverride:        false,
-		GenerifyInterfaces: true,
+		GenerifyInterfaces: false,
 	}
 	if len(configs) > 0 {
 		cfg = configs[0]
