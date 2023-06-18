@@ -1,7 +1,7 @@
 package types
 
 type (
-	BindKey string
+	BindKey = any
 
 	InstancePair[T any] struct {
 		// Value that will be injected directly. (required)
