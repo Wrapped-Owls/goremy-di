@@ -17,6 +17,7 @@ func main() {
 			StdOutput: log.New(os.Stdout, "", log.LstdFlags),
 			Level:     utils.LevelDefault | utils.LevelInfo,
 		},
+		remy.Config{GenerifyInterfaces: true},
 	)
 	remy.RegisterInstance(lInject, "The Lord of the Rings", "movie")
 	remy.Register(

@@ -67,6 +67,26 @@ func runDuckTestCases(t *testing.T, testCases [6]TypeTestCase) {
 	}
 }
 
+const typeNameErr = "type names was the same, when it should be different, because of different pointer"
+
+func TestTypeNameByReflect__DifferPointerFromInterface(t *testing.T) {
+	type testInterface interface {
+		a() bool
+	}
+
+	for _, generifyInterface := range [...]bool{true, false} {
+		interfaceTypeResult := TypeNameByReflection[testInterface](generifyInterface, true)
+		pointerTypeResult := TypeNameByReflection[*testInterface](generifyInterface, true)
+		doublePointerTypeResult := TypeNameByReflection[**testInterface](generifyInterface, true)
+		if interfaceTypeResult == pointerTypeResult {
+			t.Error(typeNameErr)
+		}
+		if doublePointerTypeResult == pointerTypeResult {
+			t.Error(typeNameErr)
+		}
+	}
+}
+
 func TestGetType(t *testing.T) {
 	/* Build test cases when getting type using generics alongside reflection */
 	var testCases = [...]TypeTestCase{

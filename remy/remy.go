@@ -58,7 +58,7 @@ type (
 func NewInjector(configs ...Config) Injector {
 	cfg := Config{
 		CanOverride:        false,
-		GenerifyInterfaces: true,
+		GenerifyInterfaces: false,
 	}
 	if len(configs) > 0 {
 		cfg = configs[0]
@@ -109,6 +109,22 @@ func RegisterInstance[T any](i Injector, value T, keys ...string) {
 // Receives: Injector (required); Binder (required); key (optional)
 func RegisterSingleton[T any](i Injector, binder types.Binder[T], keys ...string) {
 	Register(mustInjector(i), Singleton(binder), keys...)
+}
+
+// GetAll directly access a retriever and returns all instance types that was bound in it and match qualifier.
+//
+// Receives: DependencyRetriever (required); key (optional)
+func GetAll[T any](i DependencyRetriever, keys ...string) []T {
+	result, _ := injector.GetAll[T](mustRetriever(i), keys...)
+	return result
+}
+
+// DoGetAll directly access a retriever and returns a list of element that match requested types that was bound in it.
+// Additionally, it returns an error which indicates if the instance was found or not.
+//
+// Receives: DependencyRetriever (required); key (optional)
+func DoGetAll[T any](i DependencyRetriever, keys ...string) (result []T, err error) {
+	return injector.GetAll[T](mustRetriever(i), keys...)
 }
 
 // Get directly access a retriever and returns the type that was bound in it.

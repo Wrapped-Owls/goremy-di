@@ -189,9 +189,11 @@ func TestGetGen(t *testing.T) {
 	testCases := [...]struct {
 		name           string
 		getGenCallback func(ij types.Injector) string
+		useReflection  bool
 	}{
 		{
-			name: "GetGen[string]",
+			name:          "GetGen[string]",
+			useReflection: true,
 			getGenCallback: func(ij types.Injector) string {
 				return TryGetGen[string](
 					ij,
@@ -234,7 +236,7 @@ func TestGetGen(t *testing.T) {
 	}
 
 	for _, tCase := range testCases {
-		i := New(injopts.CacheOptAllowOverride, types.ReflectionOptions{})
+		i := New(injopts.CacheOptAllowOverride, types.ReflectionOptions{UseReflectionType: tCase.useReflection})
 		_ = Register(
 			i, binds.Factory(
 				func(retriever types.DependencyRetriever) (result string, err error) {
@@ -290,7 +292,7 @@ func TestGetGen_raiseCastError(t *testing.T) {
 	var (
 		i = New(
 			injopts.CacheOptAllowOverride,
-			types.ReflectionOptions{},
+			types.ReflectionOptions{UseReflectionType: true},
 		)
 		interfaceValue fixtures.Language = fixtures.GoProgrammingLang{}
 	)

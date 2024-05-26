@@ -36,23 +36,39 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) erro
 	return ij.Bind(elementType, value)
 }
 
-func getByGuess[T any](
+func GetAll[T any](
 	retriever types.DependencyRetriever, optKey ...string,
-) (element T, err error) {
+) (resultList []T, err error) {
 	var elementList []any
 	if elementList, err = retriever.GetAll(optKey...); err != nil {
 		return
 	}
 
-	var totalFound uint64
+	resultList = make([]T, 0, len(elementList))
 	for _, checkElem := range elementList {
 		if instanceBind, assertOk := checkElem.(T); assertOk {
-			element = instanceBind
-			totalFound += 1
+			resultList = append(resultList, instanceBind)
 		}
 	}
 
+	if len(resultList) == 0 {
+		err = utils.ErrElementNotRegistered
+	}
+
+	return
+}
+
+func getByGuess[T any](
+	retriever types.DependencyRetriever, optKey ...string,
+) (element T, err error) {
+	var elementList []T
+	if elementList, err = GetAll[T](retriever, optKey...); err != nil {
+		return
+	}
+
+	totalFound := len(elementList)
 	if totalFound == 1 {
+		element = elementList[0]
 		return
 	}
 

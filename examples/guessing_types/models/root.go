@@ -8,22 +8,28 @@ type RootCalculator struct {
 }
 
 func (c RootCalculator) executeCalculation(
-	firstNum, increment, actualResult float64, totalCalls uint16,
+	number, increment, actualResult float64, totalCalls uint16,
 ) float64 {
-	var temp float64 = 0
+	var (
+		temp          float64 = 0
+		nextIncrement         = increment / 10
+	)
+	if increment > number {
+		temp = nextIncrement
+	}
 	for temp == 0 {
-		if math.Pow(actualResult, float64(c.Radical)) <= firstNum &&
-			math.Pow(actualResult+increment, float64(c.Radical)) > firstNum {
+		if math.Pow(actualResult, float64(c.Radical)) <= number &&
+			math.Pow(actualResult+increment, float64(c.Radical)) > number {
 			temp = actualResult
 		}
 		actualResult = actualResult + increment
 	}
 	actualResult = temp
-	if math.Pow(actualResult, float64(c.Radical)) == firstNum || totalCalls >= c.Precision {
+	if math.Pow(actualResult, float64(c.Radical)) == number || totalCalls >= c.Precision {
 		return actualResult
 	}
 
-	return c.executeCalculation(firstNum, increment/10, actualResult, totalCalls+1)
+	return c.executeCalculation(number, nextIncrement, actualResult, totalCalls+1)
 }
 
 func (c RootCalculator) Calculate(from float64) (result float64) {
@@ -36,6 +42,9 @@ func (c RootCalculator) Calculate(from float64) (result float64) {
 		return 1
 	}
 
+	if from < 0 {
+		from *= -1
+	}
 	result = c.executeCalculation(from, 1, 1, 0)
 
 	if shouldDivide {

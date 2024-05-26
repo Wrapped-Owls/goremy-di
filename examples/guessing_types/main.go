@@ -65,6 +65,24 @@ func main() {
 		}
 	}
 
+	// If you want to get and find more than one element, use remy.GetAll
+	{
+		listOfCalculators, err := remy.DoGetAll[Calculator[float64]](i)
+		if err != nil {
+			log.Printf("An error was raised, it is not expected")
+		} else {
+			var (
+				value             float64 = 19980707
+				totalCalculations uint8
+			)
+			for _, calculator := range listOfCalculators {
+				value = calculator.Calculate(value)
+				totalCalculations += 1
+			}
+			fmt.Printf("Result after perform %d calculations: `%v`\n", totalCalculations, value)
+		}
+	}
+
 	// Once we register anything as the actual interface, it will start to get only it
 	remy.RegisterInstance[Calculator[uint64]](i, models.FactorialCalculator{})
 	{
