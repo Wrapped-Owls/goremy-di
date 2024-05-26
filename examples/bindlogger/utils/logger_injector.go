@@ -17,7 +17,7 @@ func (c loggerInjector) Bind(key remy.BindKey, element any) (err error) {
 	c.logger.Infof("Injector[Bind](%v, %v) - Starting\n", key, element)
 	err = c.ij.Bind(key, element)
 	if err != nil {
-		c.logger.Errorf("Injector[Bind] - Error: `%v`\n", err)
+		c.logger.Errorf("Injector[Bind]<%v> - Error: `%v`\n", key, err)
 	}
 	c.logger.Infof("Injector[Bind](%v, %v) - Ending\n", key, element)
 	return
@@ -27,7 +27,7 @@ func (c loggerInjector) BindNamed(key remy.BindKey, name string, element any) (e
 	c.logger.Infof("Injector[Bind](%v, %s, %v) - Starting\n", key, name, element)
 	err = c.ij.BindNamed(key, name, element)
 	if err != nil {
-		c.logger.Errorf("Injector[BindNamed] - Error: `%v`\n", err)
+		c.logger.Errorf("Injector[BindNamed]<%v:%s> - Error: `%v`\n", key, name, err)
 	}
 	c.logger.Infof("Injector[Bind](%v, %s, %v) - Ending\n", key, name, element)
 	return
@@ -63,7 +63,7 @@ func (c loggerInjector) GetNamed(key remy.BindKey, name string) (result any, err
 	c.logger.Infof("Injector[GetNamed](%v, %s) - Starting\n", key, name)
 	result, err = c.ij.GetNamed(key, name)
 	if err != nil {
-		c.logger.Errorf("Injector[GetNamed] - Error: `%v`\n", err)
+		c.logger.Errorf("Injector[GetNamed]<%v:%s> - Error: `%v`\n", key, name, err)
 	}
 
 	c.logger.Infof("Injector[GetNamed](%v, %s) - Found `%+v`\n", key, name, result)
@@ -74,7 +74,7 @@ func (c loggerInjector) Get(key remy.BindKey) (result any, err error) {
 	c.logger.Infof("Injector[Get](%v) - Starting\n", key)
 	result, err = c.ij.Get(key)
 	if err != nil {
-		c.logger.Errorf("Injector[Get] - Error: `%v`\n", err)
+		c.logger.Errorf("Injector[Get]<%v> - Error: `%v`\n", key, err)
 	}
 
 	c.logger.Infof("Injector[Get](%v) - Found `%+v`\n", key, result)
@@ -85,7 +85,7 @@ func (c loggerInjector) GetAll(optKey ...string) (result []any, err error) {
 	c.logger.Infof("Injector[GetAll](%+v) - Starting\n", optKey)
 	result, err = c.ij.GetAll(optKey...)
 	if err != nil {
-		c.logger.Errorf("Injector[GetAll] - Error: `%v`\n", err)
+		c.logger.Errorf("Injector[GetAll]<%v> - Error: `%v`\n", optKey, err)
 	}
 
 	c.logger.Infof("Injector[GetAll](%+v) - Found `%+v`\n", optKey, result)

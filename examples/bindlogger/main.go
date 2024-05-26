@@ -38,6 +38,7 @@ func main() {
 	if len(phrase) >= 2^5 {
 		fmt.Println(remy.Get[bool](lInject))
 	}
-	result := remy.Get[uint16](lInject)
+
+	result := remy.Get[error](lInject)
 	fmt.Println(result)
 }
