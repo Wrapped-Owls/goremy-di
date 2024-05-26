@@ -9,6 +9,12 @@ import (
 func buildDuckInterfaceType(elementType reflect.Type) string {
 	var builder strings.Builder
 	builder.WriteString("interface { ")
+	if elementType.Kind() == reflect.Ptr {
+		if newElemType := elementType.Elem(); newElemType != nil {
+			elementType = newElemType
+		}
+	}
+
 	for i := 0; i < elementType.NumMethod(); i++ {
 		if i > 0 {
 			builder.WriteString("; ")

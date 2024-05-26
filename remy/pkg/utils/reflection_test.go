@@ -25,14 +25,14 @@ type TypeTestCase struct {
 }
 
 var typeElements = [...]TypeTestCase{
-	{expectedStr: "interface {  }", reflectType: reflect.TypeOf((*empty)(nil)).Elem()},
-	{expectedStr: "interface { A func() string }", reflectType: reflect.TypeOf((*a)(nil)).Elem()},
-	{expectedStr: "interface { B func() bool }", reflectType: reflect.TypeOf((*b)(nil)).Elem()},
-	{expectedStr: "interface { C func() }", reflectType: reflect.TypeOf((*c)(nil)).Elem()},
-	{expectedStr: "interface { D func() float64 }", reflectType: reflect.TypeOf((*d)(nil)).Elem()},
+	{expectedStr: "interface {  }", reflectType: reflect.TypeOf((*empty)(nil))},
+	{expectedStr: "interface { A func() string }", reflectType: reflect.TypeOf((*a)(nil))},
+	{expectedStr: "interface { B func() bool }", reflectType: reflect.TypeOf((*b)(nil))},
+	{expectedStr: "interface { C func() }", reflectType: reflect.TypeOf((*c)(nil))},
+	{expectedStr: "interface { D func() float64 }", reflectType: reflect.TypeOf((*d)(nil))},
 	{
 		expectedStr: "interface { A func() string; B func() bool; C func(); D func() float64 }",
-		reflectType: reflect.TypeOf((*full)(nil)).Elem(),
+		reflectType: reflect.TypeOf((*full)(nil)),
 	},
 }
 
