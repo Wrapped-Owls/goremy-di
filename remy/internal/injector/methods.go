@@ -36,6 +36,27 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) erro
 	return ij.Bind(elementType, value)
 }
 
+func checkSavedAsBind[T any](
+	retriever types.DependencyRetriever, checkElem any,
+) (foundElem *T, err error) {
+	if genericBind, assertOk := checkElem.(interface {
+		PointerValue() any
+		GenAsAny(injector types.DependencyRetriever) (any, error)
+	}); assertOk {
+		// Check if the returned value can implement the requested interface
+		if _, ok := genericBind.PointerValue().(T); !ok {
+			return
+		}
+		var anyVal any
+		if anyVal, err = genericBind.GenAsAny(retriever); err != nil {
+			return
+		} else if bindElem, ok := anyVal.(T); ok {
+			foundElem = &bindElem
+		}
+	}
+	return
+}
+
 func GetAll[T any](
 	retriever types.DependencyRetriever, optKey ...string,
 ) (resultList []T, err error) {
@@ -50,19 +71,13 @@ func GetAll[T any](
 		case T:
 			resultList = append(resultList, instanceBind)
 		default:
-			if genericBind, assertOk := checkElem.(interface {
-				PointerValue() any
-				GenAsAny(injector types.DependencyRetriever) (any, error)
-			}); assertOk {
-				if _, ok := genericBind.PointerValue().(T); !ok {
-					continue
-				}
-				var anyVal any
-				if anyVal, err = genericBind.GenAsAny(retriever); err != nil {
-					return
-				} else if bindElem, ok := anyVal.(T); ok {
-					resultList = append(resultList, bindElem)
-				}
+			var foundElem *T
+			if foundElem, err = checkSavedAsBind[T](retriever, checkElem); err != nil {
+				return
+			}
+
+			if foundElem != nil {
+				resultList = append(resultList, *foundElem)
 			}
 		}
 	}
