@@ -46,8 +46,24 @@ func GetAll[T any](
 
 	resultList = make([]T, 0, len(elementList))
 	for _, checkElem := range elementList {
-		if instanceBind, assertOk := checkElem.(T); assertOk {
+		switch instanceBind := checkElem.(type) {
+		case T:
 			resultList = append(resultList, instanceBind)
+		default:
+			if genericBind, assertOk := checkElem.(interface {
+				PointerValue() any
+				GenAsAny(injector types.DependencyRetriever) (any, error)
+			}); assertOk {
+				if _, ok := genericBind.PointerValue().(T); !ok {
+					continue
+				}
+				var anyVal any
+				if anyVal, err = genericBind.GenAsAny(retriever); err != nil {
+					return
+				} else if bindElem, ok := anyVal.(T); ok {
+					resultList = append(resultList, bindElem)
+				}
+			}
 		}
 	}
 
