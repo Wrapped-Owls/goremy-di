@@ -17,18 +17,20 @@ func shouldPrefixPointer(options injopts.KeyGenOption) bool {
 	return options&injopts.KeyOptIgnorePointer != injopts.KeyOptIgnorePointer
 }
 
-type keyElem[T any] struct{}
-
 func GetKey[T any](options injopts.KeyGenOption) types.BindKey {
 	generifyInterface := shouldGenerify(options)
 	if shouldUseReflection(options) || generifyInterface {
-		return types.BindKey(TypeNameByReflection[T](generifyInterface, shouldPrefixPointer(options)))
+		return types.StrKeyElem(
+			TypeNameByReflection[T](generifyInterface, shouldPrefixPointer(options)),
+		)
 	}
 
-	return keyElem[T]{}
+	return types.KeyElem[T]{}
 }
 
 func GetElemKey(element any, options injopts.KeyGenOption) types.BindKey {
 	generifyInterface := shouldGenerify(options)
-	return types.BindKey(TypeNameByReflection(generifyInterface, shouldPrefixPointer(options), element))
+	return types.StrKeyElem(
+		TypeNameByReflection(generifyInterface, shouldPrefixPointer(options), element),
+	)
 }

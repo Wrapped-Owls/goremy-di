@@ -1,8 +1,6 @@
 package types
 
 type (
-	BindKey = any
-
 	InstancePair[T any] struct {
 		// Value that will be injected directly. (required)
 		Value T
@@ -23,11 +21,5 @@ type (
 	ReflectionOptions struct {
 		GenerifyInterface bool
 		UseReflectionType bool
-	}
-
-	BindDependencies[T any] map[BindKey]T
-	DependencyGraph         struct {
-		UnnamedDependency BindDependencies[bool]
-		NamedDependency   BindDependencies[map[string]bool]
 	}
 )
