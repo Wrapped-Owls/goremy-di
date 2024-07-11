@@ -104,3 +104,17 @@
 - Upgrade minimal go-version to _1.20_
     - This was made to be able to use any as comparable
 - Remove `GenerifyInterfaces=true` from default injector Config
+
+## 20240526 - remy/1.8.2
+
+- Update `GetAll` method (and also duck type get) to retrieve objects stored as **Bind[T]**
+    - This update add a little more overhead to check if the bind implements the type we're searching for
+    - Created a new function on Binds to try to prevent stack-overflow and cycle dependency get
+    - If everything matches, this new way of returning duck-type elements will call the Generate method on bind
+        - It must be very careful about cycle dependencies now more than ever
+- Add tests to cover the new duckType mode with `Bind[T]`
+- Add new functions to register constructors with the injector.
+    - `RegisterConstructor` - `RegisterConstructorErr`
+    - `RegisterConstructorArgs1` - `RegisterConstructorArgs1Err`
+    - `RegisterConstructorArgs2` - `RegisterConstructorArgs2Err`
+- Add tests to cover new constructor registration.

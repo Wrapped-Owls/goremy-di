@@ -236,7 +236,10 @@ func TestGetGen(t *testing.T) {
 	}
 
 	for _, tCase := range testCases {
-		i := New(injopts.CacheOptAllowOverride, types.ReflectionOptions{UseReflectionType: tCase.useReflection})
+		i := New(
+			injopts.CacheOptAllowOverride,
+			types.ReflectionOptions{UseReflectionType: tCase.useReflection},
+		)
 		_ = Register(
 			i, binds.Factory(
 				func(retriever types.DependencyRetriever) (result string, err error) {
@@ -468,4 +471,30 @@ func TestGet_guessSubtypes(t *testing.T) {
 	t.Run("Int32 subtype", testGuestSubtype[SubTypeInt32, uint8])
 	t.Run("Uint8 subtype", testGuestSubtype[SubTypeUint8, uint8])
 	t.Run("Float64 subtype", testGuestSubtype[SubTypeFloat64, uint8])
+}
+
+func TestGetAll_withGeneratedBind(t *testing.T) {
+	const expectedLanguage = "Portuguese"
+	i := New(injopts.CacheOptReturnAll, types.ReflectionOptions{})
+	err := Register(
+		i,
+		binds.Factory(func(retriever types.DependencyRetriever) (fixtures.CountryLanguage, error) {
+			return fixtures.CountryLanguage{Language: expectedLanguage}, nil
+		}),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var result fixtures.Language
+	if result, err = Get[fixtures.Language](i); err != nil {
+		t.Fatalf("Should not have gotten error when trying to find all subtypes")
+	}
+
+	if result.Name() != expectedLanguage {
+		t.Errorf(
+			"Result is not the same as expected\nReceived: `%v`\nExpected: `%v`",
+			result, expectedLanguage,
+		)
+	}
 }
