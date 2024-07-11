@@ -15,13 +15,13 @@ type (
 	ConstructorArg2[T, K, P any] func(K, P) (T, error)
 )
 
-// binder calls the constructor function for ConstructorEmpty and returns the constructed value and any error encountered.
-func (cons ConstructorEmpty[T]) binder(types.DependencyRetriever) (T, error) {
+// Binder calls the constructor function for ConstructorEmpty and returns the constructed value and any error encountered.
+func (cons ConstructorEmpty[T]) Binder(types.DependencyRetriever) (T, error) {
 	return cons()
 }
 
-// binder retrieves the dependency of type K, then calls the constructor function for ConstructorArg1 and returns the constructed value and any error encountered.
-func (cons ConstructorArg1[T, K]) binder(retriever types.DependencyRetriever) (value T, err error) {
+// Binder retrieves the dependency of type K, then calls the constructor function for ConstructorArg1 and returns the constructed value and any error encountered.
+func (cons ConstructorArg1[T, K]) Binder(retriever types.DependencyRetriever) (value T, err error) {
 	var (
 		first K
 	)
@@ -31,8 +31,8 @@ func (cons ConstructorArg1[T, K]) binder(retriever types.DependencyRetriever) (v
 	return cons(first)
 }
 
-// binder retrieves the dependencies of types K and P, then calls the constructor function for ConstructorArg2 and returns the constructed value and any error encountered.
-func (cons ConstructorArg2[T, K, P]) binder(retriever types.DependencyRetriever) (value T, err error) {
+// Binder retrieves the dependencies of types K and P, then calls the constructor function for ConstructorArg2 and returns the constructed value and any error encountered.
+func (cons ConstructorArg2[T, K, P]) Binder(retriever types.DependencyRetriever) (value T, err error) {
 	var (
 		first  K
 		second P
@@ -53,7 +53,7 @@ func RegisterConstructorErr[T any](
 	constructor func() (T, error), keys ...string,
 ) {
 	var generator = ConstructorEmpty[T](constructor)
-	Register(mustInjector(i), bindFunc(generator.binder), keys...)
+	Register(mustInjector(i), bindFunc(generator.Binder), keys...)
 }
 
 // RegisterConstructor registers a constructor function that returns a value of type T without an error.
@@ -73,7 +73,7 @@ func RegisterConstructorArgs1Err[T, K any](
 	constructor func(K) (T, error), keys ...string,
 ) {
 	generator := ConstructorArg1[T, K](constructor)
-	Register(mustInjector(i), bindFunc(generator.binder), keys...)
+	Register(mustInjector(i), bindFunc(generator.Binder), keys...)
 }
 
 // RegisterConstructorArgs1 registers a constructor function with one argument that returns a value of type T without an error.
@@ -93,7 +93,7 @@ func RegisterConstructorArgs2Err[T, K, P any](
 	constructor func(K, P) (T, error), keys ...string,
 ) {
 	generator := ConstructorArg2[T, K, P](constructor)
-	Register(mustInjector(i), bindFunc(generator.binder), keys...)
+	Register(mustInjector(i), bindFunc(generator.Binder), keys...)
 }
 
 // RegisterConstructorArgs2 registers a constructor function with two arguments that returns a value of type T without an error.
