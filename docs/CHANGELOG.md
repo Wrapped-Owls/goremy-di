@@ -113,3 +113,8 @@
     - If everything matches, this new way of returning duck-type elements will call the Generate method on bind
         - It must be very careful about cycle dependencies now more than ever
 - Add tests to cover the new duckType mode with `Bind[T]`
+- Add new functions to register constructors with the injector.
+    - `RegisterConstructor` - `RegisterConstructorErr`
+    - `RegisterConstructorArgs1` - `RegisterConstructorArgs1Err`
+    - `RegisterConstructorArgs2` - `RegisterConstructorArgs2Err`
+- Add tests to cover new constructor registration.
