@@ -97,7 +97,8 @@ func (cons ConstructorArg4[T, A, B, C, D]) Binder(retriever types.DependencyRetr
 	return cons(first, second, third, fourth)
 }
 
-// RegisterConstructorErr registers a constructor function that returns a value of type T and an error.
+// RegisterConstructorErr registers a constructor function with no arguments and an error return.
+// It uses the provided Injector and Bind function to register the constructor in a dependency injection container.
 func RegisterConstructorErr[T any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
 	constructor func() (T, error), keys ...string,
@@ -106,7 +107,9 @@ func RegisterConstructorErr[T any](
 	Register(mustInjector(i), bindFunc(generator.Binder), keys...)
 }
 
-// RegisterConstructor registers a constructor function that returns a value of type T without an error.
+// RegisterConstructor registers a constructor function with no arguments.
+// It uses the provided Injector and Bind function to register the constructor in a dependency injection container.
+// The constructor function does not return an error, so this function wraps it in a function that returns an error.
 func RegisterConstructor[T any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
 	constructor func() T, keys ...string,
@@ -117,7 +120,8 @@ func RegisterConstructor[T any](
 	RegisterConstructorErr(i, bindFunc, generator, keys...)
 }
 
-// RegisterConstructorArgs1Err registers a constructor function with one argument that returns a value of type T and an error.
+// RegisterConstructorArgs1Err registers a constructor function with one argument and an error return.
+// It uses the provided Injector and Bind function to register the constructor in a dependency injection container.
 func RegisterConstructorArgs1Err[T, A any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
 	constructor func(A) (T, error), keys ...string,
@@ -126,7 +130,9 @@ func RegisterConstructorArgs1Err[T, A any](
 	Register(mustInjector(i), bindFunc(generator.Binder), keys...)
 }
 
-// RegisterConstructorArgs1 registers a constructor function with one argument that returns a value of type T without an error.
+// RegisterConstructorArgs1 registers a constructor function with one argument.
+// It uses the provided Injector and Bind function to register the constructor in a dependency injection container.
+// The constructor function does not return an error, so this function wraps it in a function that returns an error.
 func RegisterConstructorArgs1[T, A any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
 	constructor func(A) T, keys ...string,
@@ -137,7 +143,8 @@ func RegisterConstructorArgs1[T, A any](
 	RegisterConstructorArgs1Err(i, bindFunc, generator, keys...)
 }
 
-// RegisterConstructorArgs2Err registers a constructor function with two arguments that returns a value of type T and an error.
+// RegisterConstructorArgs2Err registers a constructor function with two arguments and an error return.
+// It uses the provided Injector and Bind function to register the constructor in a dependency injection container.
 func RegisterConstructorArgs2Err[T, A, B any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
 	constructor func(A, B) (T, error), keys ...string,
@@ -146,7 +153,9 @@ func RegisterConstructorArgs2Err[T, A, B any](
 	Register(mustInjector(i), bindFunc(generator.Binder), keys...)
 }
 
-// RegisterConstructorArgs2 registers a constructor function with two arguments that returns a value of type T without an error.
+// RegisterConstructorArgs2 registers a constructor function with two arguments.
+// It uses the provided Injector and Bind function to register the constructor in a dependency injection container.
+// The constructor function does not return an error, so this function wraps it in a function that returns an error.
 func RegisterConstructorArgs2[T, A, B any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
 	constructor func(A, B) T, keys ...string,
@@ -157,6 +166,8 @@ func RegisterConstructorArgs2[T, A, B any](
 	RegisterConstructorArgs2Err(i, bindFunc, generator, keys...)
 }
 
+// RegisterConstructorArgs3Err registers a constructor function with three arguments and error return.
+// It uses the provided Injector and Bind function to register the constructor in a dependency injection container.
 func RegisterConstructorArgs3Err[T, A, B, C any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
 	constructor func(A, B, C) (T, error), keys ...string,
@@ -165,6 +176,9 @@ func RegisterConstructorArgs3Err[T, A, B, C any](
 	Register(mustInjector(i), bindFunc(generator.Binder), keys...)
 }
 
+// RegisterConstructorArgs3 registers a constructor function with three arguments.
+// It uses the provided Injector and Bind function to register the constructor in a dependency injection container.
+// The constructor function does not return an error, so this function wraps it in a function that returns an error.
 func RegisterConstructorArgs3[T, A, B, C any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
 	constructor func(A, B, C) T, keys ...string,
@@ -175,6 +189,8 @@ func RegisterConstructorArgs3[T, A, B, C any](
 	RegisterConstructorArgs3Err(i, bindFunc, generator, keys...)
 }
 
+// RegisterConstructorArgs4Err registers a constructor function with four arguments and error return.
+// It uses the provided Injector and Bind function to register the constructor in a dependency injection container.
 func RegisterConstructorArgs4Err[T, A, B, C, D any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
 	constructor func(A, B, C, D) (T, error), keys ...string,
@@ -183,6 +199,9 @@ func RegisterConstructorArgs4Err[T, A, B, C, D any](
 	Register(mustInjector(i), bindFunc(generator.Binder), keys...)
 }
 
+// RegisterConstructorArgs4 registers a constructor function with four arguments.
+// It uses the provided Injector and Bind function to register the constructor in a dependency injection container.
+// The constructor function does not return an error, so this function wraps it in a function that returns an error.
 func RegisterConstructorArgs4[T, A, B, C, D any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
 	constructor func(A, B, C, D) T, keys ...string,
