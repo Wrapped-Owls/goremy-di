@@ -1,6 +1,7 @@
 package remy
 
 import (
+	"math"
 	"strconv"
 	"testing"
 )
@@ -42,6 +43,35 @@ func TestRegisterConstructor(t *testing.T) {
 				RegisterInstance(inj, "Universe Answer")
 				RegisterInstance(inj, 42)
 				RegisterConstructorArgs2(inj, Factory[string], constructor, registerKey)
+			},
+		},
+		{
+			name: "Three Parameters",
+			injectionRegister: func(inj Injector, calledTimes *uint16) {
+				constructor := func(arg1 string, arg2 int, arg3 bool) string {
+					*calledTimes++
+					return "(" + strconv.FormatBool(arg3) + ").__" + arg1 + " is " + strconv.Itoa(arg2)
+				}
+				RegisterInstance(inj, "Universe Answer")
+				RegisterInstance(inj, 42)
+				RegisterInstance(inj, true)
+				RegisterConstructorArgs3(inj, Factory[string], constructor, registerKey)
+			},
+		},
+		{
+			name: "Four Parameters",
+			injectionRegister: func(inj Injector, calledTimes *uint16) {
+				constructor := func(arg1 string, arg2 int, arg3 bool, arg4 float32) string {
+					*calledTimes++
+					result := "(" + strconv.FormatBool(arg3) + ").__" + arg1 + " is " + strconv.Itoa(arg2)
+					result += "\tVALUE: " + strconv.FormatFloat(float64(arg4), 'f', -1, 32)
+					return result
+				}
+				RegisterInstance(inj, "Universe Answer")
+				RegisterInstance(inj, 42)
+				RegisterInstance(inj, true)
+				RegisterInstance(inj, float32(math.Pi))
+				RegisterConstructorArgs4(inj, Factory[string], constructor, registerKey)
 			},
 		},
 	}
