@@ -1,11 +1,12 @@
 package remy
 
 import (
-	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
+	"errors"
 )
 
 var (
-	__globalInjector = NewInjector()
+	__globalInjector               = NewInjector()
+	ErrOverrideGlobalInjectWithNil = errors.New("tried to override global injector with nil param")
 )
 
 // mustInjector receives an injector instance, and then returns it if exists or the global injector if it doesn't exist.
@@ -26,7 +27,7 @@ func mustRetriever(retriever DependencyRetriever) DependencyRetriever {
 // SetGlobalInjector receives a custom injector and saves it to be used as a global injector
 func SetGlobalInjector(i Injector) {
 	if i == nil {
-		panic(utils.ErrOverrideInRuntime)
+		panic(ErrOverrideGlobalInjectWithNil)
 	}
 	__globalInjector = i
 }
