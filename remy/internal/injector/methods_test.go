@@ -147,35 +147,35 @@ func TestRegister__Singleton(testObj *testing.T) {
 
 // TestRegister__overrideInstanceByBind verify if when overriding a instance
 func TestRegister__overrideInstanceByBind(t *testing.T) {
-	// Checks if panics when trying to override
-	defer func() {
-		r := recover()
-		if r == nil {
-			t.Error("Function did not panic")
-			t.FailNow()
-		}
-	}()
 	inj := New(injopts.CacheOptNone, types.ReflectionOptions{})
 	const (
 		expectedString   = "avocado"
 		unexpectedString = "banana"
 	)
-	_ = Register(
+	err := Register(
 		inj, binds.Instance(expectedString),
 	)
+	if err != nil {
+		t.Errorf("Unable to fist register instance: %v", err)
+	}
 
 	if result := TryGet[string](inj); result != expectedString {
 		t.Error("Instance register is not working as expected")
 		t.FailNow()
 	}
 
-	_ = Register(
+	err = Register(
 		inj, binds.Singleton(
 			func(retriever types.DependencyRetriever) (string, error) {
 				return unexpectedString, nil
 			},
 		),
 	)
+	if err == nil {
+		t.Fatalf("Instance was registered unexpectedly")
+	} else if !errors.Is(err, remyErrs.ErrAlreadyBoundSentinel) {
+		t.Errorf("Result error is not the expected error: %v", err.Error())
+	}
 
 	if result := TryGet[string](inj); result != expectedString {
 		t.Error("Instance bind is being overridden by singleton bind")
