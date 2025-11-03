@@ -12,7 +12,7 @@ type ErrMultipleDIDuckTypingCandidates struct {
 }
 
 func (e ErrMultipleDIDuckTypingCandidates) Error() string {
-	givenType := genDebugKeyTypeName(e)
+	givenType := genDebugKeyTypeName(e.Type)
 
 	return fmt.Sprintf("found %d elements that fits the given type", e.Count) + givenType
 }
