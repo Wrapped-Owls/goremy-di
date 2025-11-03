@@ -7,11 +7,13 @@ type (
 	ValuesSetter[T comparable] interface {
 		// Set uses the T key given to save the value.
 		// If the key is already bound, it returns a boolean with value true.
-		Set(T, any) bool
+		// Returns an error if the key cannot be set (e.g., override not allowed).
+		Set(T, any) (wasOverridden bool, err error)
 
 		// SetNamed uses the T key and cacheKey given to store the value.
 		// If the key is already bound, it returns a boolean with value true.
-		SetNamed(T, string, any) bool
+		// Returns an error if the key cannot be set (e.g., override not allowed).
+		SetNamed(T, string, any) (wasOverridden bool, err error)
 		CheckReflectionOptions
 	}
 	ValuesGetter[T comparable] interface {

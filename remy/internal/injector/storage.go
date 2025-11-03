@@ -4,7 +4,6 @@ import (
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
-	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 )
 
 // ElementsStorage holds all dependencies
@@ -34,10 +33,10 @@ func (s *ElementsStorage[T]) ReflectOpts() types.ReflectionOptions {
 	return s.reflectOpts
 }
 
-func (s *ElementsStorage[T]) Set(key T, value any) (wasOverridden bool) {
+func (s *ElementsStorage[T]) Set(key T, value any) (wasOverridden bool, err error) {
 	if _, ok := s.elements[key]; ok {
 		if !s.opts.Is(injopts.CacheOptAllowOverride) {
-			panic(utils.ErrAlreadyBound)
+			return false, remyErrs.ErrAlreadyBound{Key: key}
 		}
 		wasOverridden = true
 	}
@@ -45,7 +44,9 @@ func (s *ElementsStorage[T]) Set(key T, value any) (wasOverridden bool) {
 	return
 }
 
-func (s *ElementsStorage[T]) SetNamed(elementType T, name string, value any) (wasOverridden bool) {
+func (s *ElementsStorage[T]) SetNamed(
+	elementType T, name string, value any,
+) (wasOverridden bool, err error) {
 	var namedBinds genericAnyMap[T]
 	if elementMap, ok := s.namedElements[name]; ok {
 		namedBinds = elementMap
@@ -55,7 +56,7 @@ func (s *ElementsStorage[T]) SetNamed(elementType T, name string, value any) (wa
 
 	if _, ok := namedBinds[elementType]; ok {
 		if !s.opts.Is(injopts.CacheOptAllowOverride) {
-			panic(utils.ErrAlreadyBound)
+			return false, remyErrs.ErrAlreadyBound{Key: elementType}
 		}
 		wasOverridden = true
 	}
