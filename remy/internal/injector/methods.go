@@ -167,12 +167,16 @@ func GetGen[T any](
 		var (
 			opts       = injopts.KeyOptsFromStruct(subInjector.ReflectOpts())
 			typeSeeker = element.Value
+			bindKey    types.BindKey
 		)
 		if element.InterfaceValue != nil {
 			opts |= injopts.KeyOptIgnorePointer
 			typeSeeker = element.InterfaceValue
 		}
-		bindKey := utils.GetElemKey(typeSeeker, opts)
+		bindKey, err = utils.GetElemKey(typeSeeker, opts)
+		if err != nil {
+			return
+		}
 
 		if element.Key != "" {
 			if err = subInjector.BindNamed(bindKey, element.Key, element.Value); err != nil {

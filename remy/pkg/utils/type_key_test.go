@@ -43,7 +43,11 @@ func TestGetKey__SameStructWithDifferentPackage(t *testing.T) {
 	}
 
 	options = injopts.KeyOptUseReflectionType
-	if GetElemKey(t, options) != GetKey[*testing.T](options) {
+	elemKey, err := GetElemKey(t, options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if elemKey != GetKey[*testing.T](options) {
 		t.Error("element type should be the same from type and object")
 	}
 }
