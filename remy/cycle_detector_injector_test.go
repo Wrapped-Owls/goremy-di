@@ -1,16 +1,22 @@
 package remy
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
-	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
+	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 )
 
 func TestCycleDetectorInjector_Register(t *testing.T) {
 	defer func() {
 		r := recover()
-		if r != nil && fmt.Sprint(r) != utils.ErrCycleDependencyDetected.Error() {
+
+		asErr, ok := r.(error)
+		if !ok {
+			t.Fatalf("Register() did not return an error")
+		}
+		if r != nil && !errors.Is(asErr, remyErrs.ErrCycleDependencyDetectedSentinel) {
 			t.Error(r)
 		}
 	}()
