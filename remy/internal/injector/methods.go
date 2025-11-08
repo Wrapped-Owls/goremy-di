@@ -31,10 +31,7 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) erro
 		}
 	}
 
-	if key != "" {
-		return ij.BindNamed(elementType, key, value)
-	}
-	return ij.Bind(elementType, value)
+	return ij.BindElem(elementType, key, value)
 }
 
 func checkSavedAsBind[T any](
@@ -176,16 +173,11 @@ func GetGen[T any](
 			opts |= injopts.KeyOptIgnorePointer
 			typeSeeker = element.InterfaceValue
 		}
-		bindKey, err = utils.GetElemKey(typeSeeker, opts)
-		if err != nil {
+		if bindKey, err = utils.GetElemKey(typeSeeker, opts); err != nil {
 			return
 		}
 
-		if element.Key != "" {
-			if err = subInjector.BindNamed(bindKey, element.Key, element.Value); err != nil {
-				return
-			}
-		} else if err = subInjector.Bind(bindKey, element.Value); err != nil {
+		if err = subInjector.BindElem(bindKey, element.Key, element.Value); err != nil {
 			return
 		}
 	}

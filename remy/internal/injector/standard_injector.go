@@ -64,16 +64,13 @@ func (s *StdInjector) checkValidOverride(key types.BindKey, wasOverridden bool) 
 	return nil
 }
 
-func (s *StdInjector) Bind(key types.BindKey, value any) error {
-	wasOverridden, err := s.cacheStorage.Set(key, value)
-	if err != nil {
-		return err
+func (s *StdInjector) BindElem(bType types.BindKey, name string, value any) (err error) {
+	var wasOverridden bool
+	if name == "" {
+		wasOverridden, err = s.cacheStorage.Set(bType, value)
+	} else {
+		wasOverridden, err = s.cacheStorage.SetNamed(bType, name, value)
 	}
-	return s.checkValidOverride(key, wasOverridden)
-}
-
-func (s *StdInjector) BindNamed(bType types.BindKey, name string, value any) error {
-	wasOverridden, err := s.cacheStorage.SetNamed(bType, name, value)
 	if err != nil {
 		return err
 	}

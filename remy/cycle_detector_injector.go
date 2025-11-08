@@ -16,6 +16,8 @@ type cycleDetectorInjector struct {
 // NewCycleDetectorInjector creates a new Injector that is able to check for cycle dependencies during runtime.
 //
 // As it is much slower that the injector.StandardInjector, it is only recommended to be used in test files.
+//
+//goland:noinspection GoExportedFuncWithUnexportedType
 func NewCycleDetectorInjector(configs ...Config) *cycleDetectorInjector {
 	var config Config
 	if len(configs) > 0 {
@@ -24,12 +26,8 @@ func NewCycleDetectorInjector(configs ...Config) *cycleDetectorInjector {
 	return &cycleDetectorInjector{ij: NewInjector(config), config: config}
 }
 
-func (c cycleDetectorInjector) Bind(key types.BindKey, element any) error {
-	return c.ij.Bind(key, element)
-}
-
-func (c cycleDetectorInjector) BindNamed(key types.BindKey, name string, element any) error {
-	return c.ij.BindNamed(key, name, element)
+func (c cycleDetectorInjector) BindElem(key types.BindKey, name string, element any) error {
+	return c.ij.BindElem(key, name, element)
 }
 
 func (c cycleDetectorInjector) SubInjector(allowOverrides ...bool) types.Injector {
