@@ -26,8 +26,10 @@ func NewCycleDetectorInjector(configs ...Config) *cycleDetectorInjector {
 	return &cycleDetectorInjector{ij: NewInjector(config), config: config}
 }
 
-func (c cycleDetectorInjector) BindElem(key types.BindKey, name string, element any) error {
-	return c.ij.BindElem(key, name, element)
+func (c cycleDetectorInjector) BindElem(
+	key types.BindKey, element any, opts types.BindOptions,
+) error {
+	return c.ij.BindElem(key, element, opts)
 }
 
 func (c cycleDetectorInjector) SubInjector(allowOverrides ...bool) types.Injector {
