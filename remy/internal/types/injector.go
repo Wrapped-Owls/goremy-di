@@ -42,7 +42,7 @@ type (
 
 	// Injector is the main interface that contains all needed methods to make an injector work
 	Injector interface {
-		BindElem(depKey BindKey, name string, val any) error
+		BindElem(depKey BindKey, val any, opts BindOptions) error
 		SubInjector(allowOverrides ...bool) Injector
 		DependencyRetriever
 	}

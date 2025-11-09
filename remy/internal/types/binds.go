@@ -15,3 +15,8 @@ const (
 	BindSingleton
 	BindLazySingleton
 )
+
+type BindOptions struct {
+	Tag            string
+	ExpectOverride bool
+}
