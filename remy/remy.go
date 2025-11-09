@@ -1,7 +1,6 @@
 package remy
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/injector"
@@ -89,9 +88,8 @@ func Register[T any](i Injector, bind Bind[T], keys ...string) {
 //
 // This is not supported in multithreading applications because it does not have race protection
 func Override[T any](i Injector, bind Bind[T], keys ...string) {
-	if err := injector.Register[T](mustInjector(i), bind, keys...); err != nil && !errors.Is(
-		err, ErrAlreadyBound,
-	) {
+	err := injector.RegisterWithOverride[T](mustInjector(i), bind, keys...)
+	if err != nil {
 		panic(err)
 	}
 }
