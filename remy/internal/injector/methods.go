@@ -159,7 +159,7 @@ func TryGet[T any](retriever types.DependencyRetriever, keys ...string) (result 
 	return
 }
 
-func GetGen[T any](
+func GetWithPairs[T any](
 	retriever types.DependencyRetriever, elements []types.InstancePair[any], keys ...string,
 ) (result T, err error) {
 	subInjector := New(injopts.CacheOptNone, retriever.ReflectOpts(), retriever)
@@ -185,14 +185,7 @@ func GetGen[T any](
 	return Get[T](subInjector, keys...)
 }
 
-func TryGetGen[T any](
-	retriever types.DependencyRetriever, elements []types.InstancePair[any], keys ...string,
-) (result T) {
-	result, _ = GetGen[T](retriever, elements, keys...)
-	return
-}
-
-func GetGenFunc[T any](
+func GetWith[T any](
 	retriever types.DependencyRetriever,
 	binder func(injector types.Injector) error, keys ...string,
 ) (result T, err error) {
@@ -201,13 +194,4 @@ func GetGenFunc[T any](
 		return
 	}
 	return Get[T](subInjector, keys...)
-}
-
-func TryGetGenFunc[T any](
-	retriever types.DependencyRetriever,
-	binder func(injector types.Injector) error,
-	keys ...string,
-) (result T) {
-	result, _ = GetGenFunc[T](retriever, binder, keys...)
-	return
 }

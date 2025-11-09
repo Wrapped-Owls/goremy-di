@@ -152,7 +152,8 @@ func DoGet[T any](i DependencyRetriever, keys ...string) (result T, err error) {
 //
 // Receives: DependencyRetriever (required); []InstancePairAny (required); key (optional)
 func GetGen[T any](i DependencyRetriever, elements []InstancePairAny, keys ...string) T {
-	return injector.TryGetGen[T](mustRetriever(i), elements, keys...)
+	result, _ := injector.GetWithPairs[T](mustRetriever(i), elements, keys...)
+	return result
 }
 
 // DoGetGen creates a sub-injector and access the retriever to generate and return a Factory bind
@@ -170,14 +171,15 @@ func DoGetGen[T any](
 		}
 	}()
 
-	return injector.GetGen[T](mustRetriever(i), elements, keys...)
+	return injector.GetWithPairs[T](mustRetriever(i), elements, keys...)
 }
 
 // GetGenFunc creates a sub-injector and access the retriever to generate and return a Factory bind
 //
 // Receives: DependencyRetriever (required); func(Injector) (required); key (optional)
 func GetGenFunc[T any](i DependencyRetriever, binder func(Injector) error, keys ...string) T {
-	return injector.TryGetGenFunc[T](mustRetriever(i), binder, keys...)
+	result, _ := injector.GetWith[T](mustRetriever(i), binder, keys...)
+	return result
 }
 
 // DoGetGenFunc creates a sub-injector and access the retriever to generate and return a Factory bind
@@ -195,5 +197,5 @@ func DoGetGenFunc[T any](
 		}
 	}()
 
-	return injector.GetGenFunc[T](mustRetriever(i), binder, keys...)
+	return injector.GetWith[T](mustRetriever(i), binder, keys...)
 }
