@@ -199,7 +199,7 @@ func TestGetWith(t *testing.T) {
 					ij,
 					[]types.InstancePair[any]{
 						{Value: uint8(42)},
-						{Value: "Go", Key: "lang"},
+						{Value: "Go", Tag: "lang"},
 						{Value: true},
 						{
 							Value:          interfaceValue,

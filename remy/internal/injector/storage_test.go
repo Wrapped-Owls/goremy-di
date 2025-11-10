@@ -76,7 +76,7 @@ func generateStorageTestCases() []struct {
 		setterFunc func(types.Storage[string], any) (bool, error)
 	}{
 		{
-			name:   "Set Without Key",
+			name:   "Set Without Tag",
 			values: [2]any{7, 11},
 			setterFunc: func(stg types.Storage[string], receive any) (bool, error) {
 				return stg.Set("value", receive)

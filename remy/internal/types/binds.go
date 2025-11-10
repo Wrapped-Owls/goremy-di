@@ -15,8 +15,3 @@ const (
 	BindSingleton
 	BindLazySingleton
 )
-
-type BindOptions struct {
-	Tag          string
-	SoftOverride bool
-}

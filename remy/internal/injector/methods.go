@@ -186,7 +186,7 @@ func GetWithPairs[T any](
 			return
 		}
 
-		if err = subInjector.BindElem(bindKey, element.Value, types.BindOptions{Tag: element.Key}); err != nil {
+		if err = subInjector.BindElem(bindKey, element.Value, types.BindOptions{Tag: element.Tag}); err != nil {
 			return
 		}
 	}
