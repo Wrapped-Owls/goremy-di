@@ -17,7 +17,7 @@ func init() {
 		core.Injector,
 		remy.Factory(
 			func(retriever remy.DependencyRetriever) (core.ToysRepository, error) {
-				db, err := remy.DoGet[*sql.DB](retriever)
+				db, err := remy.Get[*sql.DB](retriever)
 				return repositories.NewToysDbRepository(db), err
 			},
 		),

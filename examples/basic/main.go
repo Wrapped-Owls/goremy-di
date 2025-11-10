@@ -17,7 +17,7 @@ func init() {
 
 func main() {
 	// Executing create table query
-	dbConn := remy.Get[*sql.DB](core.Injector)
+	dbConn := remy.MustGet[*sql.DB](core.Injector)
 	if _, err := dbConn.Exec("CREATE TABLE toys(id INTEGER, name VARCHAR(60))"); err != nil {
 		log.Fatalln(err)
 	}
@@ -28,7 +28,7 @@ func main() {
 		"Spider-Man",
 	}
 
-	repository := remy.Get[core.ToysRepository](core.Injector)
+	repository := remy.MustGet[core.ToysRepository](core.Injector)
 	for _, name := range names {
 		err := repository.Save(name)
 		if err != nil {
@@ -36,6 +36,6 @@ func main() {
 		}
 	}
 
-	log.Println(remy.Get[string](core.Injector))
+	log.Println(remy.MustGet[string](core.Injector))
 	log.Println(repository.ListAll())
 }
