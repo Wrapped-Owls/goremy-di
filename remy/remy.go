@@ -108,34 +108,40 @@ func RegisterSingleton[T any](i Injector, binder types.Binder[T], optTag ...stri
 	Register(mustInjector(i), Singleton(binder), optTag...)
 }
 
-// GetAll directly access a retriever and returns all instance types that was bound in it and match qualifier.
-//
-// Receives: DependencyRetriever (required); tag (optional)
-func GetAll[T any](i DependencyRetriever, optTag ...string) []T {
-	result, _ := injector.GetAll[T](mustRetriever(i), optTag...)
-	return result
-}
-
-// DoGetAll directly access a retriever and returns a list of element that match requested types that was bound in it.
+// GetAll directly access a retriever and returns a list of element that match requested types that was bound in it.
 // Additionally, it returns an error which indicates if the instance was found or not.
 //
 // Receives: DependencyRetriever (required); tag (optional)
-func DoGetAll[T any](i DependencyRetriever, optTag ...string) (result []T, err error) {
+func GetAll[T any](i DependencyRetriever, optTag ...string) (result []T, err error) {
 	return injector.GetAll[T](mustRetriever(i), optTag...)
 }
 
-// Get directly access a retriever and returns the type that was bound in it.
+// MustGetAll directly access a retriever and returns all instance types that was bound in it and match qualifier.
+// Panics if an error occurs.
 //
 // Receives: DependencyRetriever (required); tag (optional)
-func Get[T any](i DependencyRetriever, optTag ...string) T {
-	return injector.TryGet[T](mustRetriever(i), optTag...)
+func MustGetAll[T any](i DependencyRetriever, optTag ...string) []T {
+	result, err := GetAll[T](i, optTag...)
+	if err != nil {
+		panic(err)
+	}
+	return result
 }
 
-// DoGet directly access a retriever and returns the type that was bound in it.
+// MaybeGetAll directly access a retriever and returns all instance types that was bound in it and match qualifier.
+// Returns an empty slice if an error occurs.
+//
+// Receives: DependencyRetriever (required); tag (optional)
+func MaybeGetAll[T any](i DependencyRetriever, optTag ...string) []T {
+	result, _ := GetAll[T](i, optTag...)
+	return result
+}
+
+// Get directly access a retriever and returns the type that was bound in it.
 // Additionally, it returns an error which indicates if the bind was found or not.
 //
 // Receives: DependencyRetriever (required); tag (optional)
-func DoGet[T any](i DependencyRetriever, optTag ...string) (result T, err error) {
+func Get[T any](i DependencyRetriever, optTag ...string) (result T, err error) {
 	defer func() {
 		r := recover()
 		if r != nil {
@@ -146,21 +152,33 @@ func DoGet[T any](i DependencyRetriever, optTag ...string) (result T, err error)
 	return injector.Get[T](mustRetriever(i), optTag...)
 }
 
-// GetGen creates a sub-injector and access the retriever to generate and return a Factory bind
+// MustGet directly access a retriever and returns the type that was bound in it.
+// Panics if an error occurs.
 //
-// Receives: DependencyRetriever (required); []InstancePairAny (required); tag (optional)
-func GetGen[T any](i DependencyRetriever, elements []InstancePairAny, optTag ...string) T {
-	result, _ := injector.GetWithPairs[T](mustRetriever(i), elements, optTag...)
+// Receives: DependencyRetriever (required); tag (optional)
+func MustGet[T any](i DependencyRetriever, optTag ...string) T {
+	result, err := Get[T](i, optTag...)
+	if err != nil {
+		panic(err)
+	}
 	return result
 }
 
-// DoGetGen creates a sub-injector and access the retriever to generate and return a Factory bind
+// MaybeGet directly access a retriever and returns the type that was bound in it.
+// Returns the zero value of the type if an error occurs.
+//
+// Receives: DependencyRetriever (required); tag (optional)
+func MaybeGet[T any](i DependencyRetriever, optTag ...string) T {
+	result, _ := Get[T](i, optTag...)
+	return result
+}
+
+// GetWithPairs creates a sub-injector and access the retriever to generate and return a Factory bind.
 // Additionally, it returns an error which indicates if the bind was found or not.
 //
 // Receives: DependencyRetriever (required); []InstancePairAny (required); tag (optional)
-func DoGetGen[T any](
-	i DependencyRetriever, elements []InstancePairAny,
-	optTag ...string,
+func GetWithPairs[T any](
+	i DependencyRetriever, elements []InstancePairAny, optTag ...string,
 ) (result T, err error) {
 	defer func() {
 		r := recover()
@@ -172,19 +190,36 @@ func DoGetGen[T any](
 	return injector.GetWithPairs[T](mustRetriever(i), elements, optTag...)
 }
 
-// GetGenFunc creates a sub-injector and access the retriever to generate and return a Factory bind
+// MustGetWithPairs creates a sub-injector and access the retriever to generate and return a Factory bind.
+// Panics if an error occurs.
 //
-// Receives: DependencyRetriever (required); func(Injector) (required); tag (optional)
-func GetGenFunc[T any](i DependencyRetriever, binder func(Injector) error, optTag ...string) T {
-	result, _ := injector.GetWith[T](mustRetriever(i), binder, optTag...)
+// Receives: DependencyRetriever (required); []InstancePairAny (required); tag (optional)
+func MustGetWithPairs[T any](
+	i DependencyRetriever, elements []InstancePairAny, optTag ...string,
+) T {
+	result, err := GetWithPairs[T](i, elements, optTag...)
+	if err != nil {
+		panic(err)
+	}
 	return result
 }
 
-// DoGetGenFunc creates a sub-injector and access the retriever to generate and return a Factory bind
+// MaybeGetWithPairs creates a sub-injector and access the retriever to generate and return a Factory bind.
+// Returns the zero value of the type if an error occurs.
+//
+// Receives: DependencyRetriever (required); []InstancePairAny (required); tag (optional)
+func MaybeGetWithPairs[T any](
+	i DependencyRetriever, elements []InstancePairAny, optTag ...string,
+) T {
+	result, _ := GetWithPairs[T](i, elements, optTag...)
+	return result
+}
+
+// GetWith creates a sub-injector and access the retriever to generate and return a Factory bind.
 // Additionally, it returns an error which indicates if the bind was found or not.
 //
 // Receives: DependencyRetriever (required); func(Injector) (required); tag (optional)
-func DoGetGenFunc[T any](
+func GetWith[T any](
 	i DependencyRetriever, binder func(Injector) error, optTag ...string,
 ) (result T, err error) {
 	defer func() {
@@ -195,4 +230,25 @@ func DoGetGenFunc[T any](
 	}()
 
 	return injector.GetWith[T](mustRetriever(i), binder, optTag...)
+}
+
+// MustGetWith creates a sub-injector and access the retriever to generate and return a Factory bind.
+// Panics if an error occurs.
+//
+// Receives: DependencyRetriever (required); func(Injector) (required); tag (optional)
+func MustGetWith[T any](i DependencyRetriever, binder func(Injector) error, optTag ...string) T {
+	result, err := GetWith[T](i, binder, optTag...)
+	if err != nil {
+		panic(err)
+	}
+	return result
+}
+
+// MaybeGetWith creates a sub-injector and access the retriever to generate and return a Factory bind.
+// Returns the zero value of the type if an error occurs.
+//
+// Receives: DependencyRetriever (required); func(Injector) (required); tag (optional)
+func MaybeGetWith[T any](i DependencyRetriever, binder func(Injector) error, optTag ...string) T {
+	result, _ := GetWith[T](i, binder, optTag...)
+	return result
 }
