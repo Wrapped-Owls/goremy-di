@@ -1,8 +1,6 @@
 package remy
 
 import (
-	"fmt"
-
 	"github.com/wrapped-owls/goremy-di/remy/internal/injector"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 )
@@ -142,14 +140,9 @@ func MaybeGetAll[T any](i DependencyRetriever, optTag ...string) []T {
 //
 // Receives: DependencyRetriever (required); tag (optional)
 func Get[T any](i DependencyRetriever, optTag ...string) (result T, err error) {
-	defer func() {
-		r := recover()
-		if r != nil {
-			err = fmt.Errorf("%v", r)
-		}
-	}()
-
-	return injector.Get[T](mustRetriever(i), optTag...)
+	defer recoverInjectorPanic(&err)
+	result, err = injector.Get[T](mustRetriever(i), optTag...)
+	return result, err
 }
 
 // MustGet directly access a retriever and returns the type that was bound in it.
@@ -180,14 +173,9 @@ func MaybeGet[T any](i DependencyRetriever, optTag ...string) T {
 func GetWithPairs[T any](
 	i DependencyRetriever, elements []InstancePairAny, optTag ...string,
 ) (result T, err error) {
-	defer func() {
-		r := recover()
-		if r != nil {
-			err = fmt.Errorf("%v", r)
-		}
-	}()
-
-	return injector.GetWithPairs[T](mustRetriever(i), elements, optTag...)
+	defer recoverInjectorPanic(&err)
+	result, err = injector.GetWithPairs[T](mustRetriever(i), elements, optTag...)
+	return result, err
 }
 
 // MustGetWithPairs creates a sub-injector and access the retriever to generate and return a Factory bind.
@@ -222,14 +210,9 @@ func MaybeGetWithPairs[T any](
 func GetWith[T any](
 	i DependencyRetriever, binder func(Injector) error, optTag ...string,
 ) (result T, err error) {
-	defer func() {
-		r := recover()
-		if r != nil {
-			err = fmt.Errorf("%v", r)
-		}
-	}()
-
-	return injector.GetWith[T](mustRetriever(i), binder, optTag...)
+	defer recoverInjectorPanic(&err)
+	result, err = injector.GetWith[T](mustRetriever(i), binder, optTag...)
+	return result, err
 }
 
 // MustGetWith creates a sub-injector and access the retriever to generate and return a Factory bind.
