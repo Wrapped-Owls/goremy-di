@@ -4,7 +4,6 @@ import (
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
-	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 )
 
 type (
@@ -58,18 +57,27 @@ func (s *StdInjector) ReflectOpts() types.ReflectionOptions {
 	return s.reflectOpts
 }
 
-func (s *StdInjector) Bind(key types.BindKey, value any) error {
-	if s.cacheStorage.Set(key, value) {
-		return utils.ErrAlreadyBound
+func (s *StdInjector) checkValidOverride(
+	key types.BindKey, shouldOverride, wasOverridden bool,
+) error {
+	if wasOverridden && (!s.cacheOpts.Is(injopts.CacheOptAllowOverride) || !shouldOverride) {
+		return remyErrs.ErrAlreadyBound{Key: key}
 	}
 	return nil
 }
 
-func (s *StdInjector) BindNamed(bType types.BindKey, name string, value any) error {
-	if s.cacheStorage.SetNamed(bType, name, value) {
-		return utils.ErrAlreadyBound
+func (s *StdInjector) BindElem(bType types.BindKey, value any, opts types.BindOptions) (err error) {
+	var wasOverridden bool
+	if opts.Tag == "" {
+		wasOverridden, err = s.cacheStorage.Set(bType, value)
+	} else {
+		wasOverridden, err = s.cacheStorage.SetNamed(bType, opts.Tag, value)
 	}
-	return nil
+	if err != nil {
+		return err
+	}
+
+	return s.checkValidOverride(bType, opts.SoftOverride, wasOverridden)
 }
 
 func (s *StdInjector) Get(key types.BindKey) (result any, err error) {
@@ -113,9 +121,7 @@ func (s *StdInjector) GetAll(optKey ...string) (resultList []any, err error) {
 	resultList = make([]any, len(cachedElements), len(cachedElements)+len(parentElements))
 	copy(resultList, cachedElements)
 
-	for _, element := range parentElements {
-		resultList = append(resultList, element)
-	}
+	resultList = append(resultList, parentElements...)
 
 	return
 }

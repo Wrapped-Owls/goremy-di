@@ -147,42 +147,42 @@ func TestRegister__Singleton(testObj *testing.T) {
 
 // TestRegister__overrideInstanceByBind verify if when overriding a instance
 func TestRegister__overrideInstanceByBind(t *testing.T) {
-	// Checks if panics when trying to override
-	defer func() {
-		r := recover()
-		if r == nil {
-			t.Error("Function did not panic")
-			t.FailNow()
-		}
-	}()
 	inj := New(injopts.CacheOptNone, types.ReflectionOptions{})
 	const (
 		expectedString   = "avocado"
 		unexpectedString = "banana"
 	)
-	_ = Register(
+	err := Register(
 		inj, binds.Instance(expectedString),
 	)
+	if err != nil {
+		t.Errorf("Unable to fist register instance: %v", err)
+	}
 
 	if result := TryGet[string](inj); result != expectedString {
 		t.Error("Instance register is not working as expected")
 		t.FailNow()
 	}
 
-	_ = Register(
+	err = Register(
 		inj, binds.Singleton(
 			func(retriever types.DependencyRetriever) (string, error) {
 				return unexpectedString, nil
 			},
 		),
 	)
+	if err == nil {
+		t.Fatalf("Instance was registered unexpectedly")
+	} else if !errors.Is(err, remyErrs.ErrAlreadyBoundSentinel) {
+		t.Errorf("Result error is not the expected error: %v", err.Error())
+	}
 
 	if result := TryGet[string](inj); result != expectedString {
 		t.Error("Instance bind is being overridden by singleton bind")
 	}
 }
 
-func TestGetGen(t *testing.T) {
+func TestGetWith(t *testing.T) {
 	const expected = "I love Go, yes this is true, as the answer 42"
 
 	interfaceValue := fixtures.GoProgrammingLang{}
@@ -192,34 +192,28 @@ func TestGetGen(t *testing.T) {
 		useReflection  bool
 	}{
 		{
-			name:          "GetGen[string]",
+			name:          "GetWithPairs[string]",
 			useReflection: true,
 			getGenCallback: func(ij types.Injector) string {
-				return TryGetGen[string](
+				result, _ := GetWithPairs[string](
 					ij,
 					[]types.InstancePair[any]{
-						{
-							Value: uint8(42),
-						},
-						{
-							Value: "Go",
-							Key:   "lang",
-						},
-						{
-							Value: true,
-						},
+						{Value: uint8(42)},
+						{Value: "Go", Key: "lang"},
+						{Value: true},
 						{
 							Value:          interfaceValue,
 							InterfaceValue: (*fixtures.Language)(nil),
 						},
 					},
 				)
+				return result
 			},
 		},
 		{
-			name: "GetGenFunc[string]",
+			name: "GetWith[string]",
 			getGenCallback: func(i types.Injector) string {
-				return TryGetGenFunc[string](
+				result, _ := GetWith[string](
 					i, func(ij types.Injector) error {
 						err := Register(ij, binds.Instance[uint8](42))
 						err = Register(ij, binds.Instance("Go"), "lang")
@@ -231,6 +225,8 @@ func TestGetGen(t *testing.T) {
 						return err
 					},
 				)
+
+				return result
 			},
 		},
 	}
@@ -277,11 +273,11 @@ func TestGetGen(t *testing.T) {
 					t.FailNow()
 				}
 
-				// Check if the binds doesn't exist after do the GetGen
+				// Check if the binds doesn't exist after do the GetWithPairs
 				var (
-					uintResult = TryGet[uint8](i)
-					boolResult = TryGet[bool](i)
-					strResult  = TryGet[string](i, "lang")
+					uintResult, _ = Get[uint8](i)
+					boolResult, _ = Get[bool](i)
+					strResult, _  = Get[string](i, "lang")
 				)
 				if uintResult != 0 || boolResult || len(strResult) > 0 {
 					t.Error("Parameter injection values override the original injector")
@@ -317,7 +313,7 @@ func TestGetGen_raiseCastError(t *testing.T) {
 
 	t.Run(
 		"Correctly bind registration", func(t *testing.T) {
-			_, err = GetGen[string](
+			_, err = GetWithPairs[string](
 				i,
 				[]types.InstancePair[any]{
 					{
@@ -335,7 +331,7 @@ func TestGetGen_raiseCastError(t *testing.T) {
 
 	t.Run(
 		"Register pointer interface value", func(t *testing.T) {
-			_, err = GetGen[string](
+			_, err = GetWithPairs[string](
 				i,
 				[]types.InstancePair[any]{
 					{
@@ -349,7 +345,7 @@ func TestGetGen_raiseCastError(t *testing.T) {
 				t.FailNow()
 			}
 
-			if !errors.Is(err, remyErrs.ErrTypeCastInRuntimeSentinel) {
+			if !errors.Is(err, remyErrs.ErrConfigNotAllowReturnAll) {
 				t.Errorf("Unknown error raised: `%v`\n", err)
 			}
 		},

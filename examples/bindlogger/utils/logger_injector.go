@@ -13,23 +13,13 @@ func NewLoggerInjector(logger Logger, configs ...remy.Config) *loggerInjector {
 	return &loggerInjector{ij: remy.NewInjector(configs...), logger: logger}
 }
 
-func (c loggerInjector) Bind(key remy.BindKey, element any) (err error) {
-	c.logger.Infof("Injector[Bind](%v, %v) - Starting\n", key, element)
-	err = c.ij.Bind(key, element)
+func (c loggerInjector) BindElem(key remy.BindKey, element any, opts remy.BindOptions) (err error) {
+	c.logger.Infof("Injector[BindElem](%v, %v, %#v) - Starting\n", key, element, opts)
+	err = c.ij.BindElem(key, element, opts)
 	if err != nil {
-		c.logger.Errorf("Injector[Bind]<%v> - Error: `%v`\n", key, err)
+		c.logger.Errorf("Injector[BindElem]<%v:%#v> - Error: `%v`\n", key, opts, err)
 	}
-	c.logger.Infof("Injector[Bind](%v, %v) - Ending\n", key, element)
-	return
-}
-
-func (c loggerInjector) BindNamed(key remy.BindKey, name string, element any) (err error) {
-	c.logger.Infof("Injector[Bind](%v, %s, %v) - Starting\n", key, name, element)
-	err = c.ij.BindNamed(key, name, element)
-	if err != nil {
-		c.logger.Errorf("Injector[BindNamed]<%v:%s> - Error: `%v`\n", key, name, err)
-	}
-	c.logger.Infof("Injector[Bind](%v, %s, %v) - Ending\n", key, name, element)
+	c.logger.Infof("Injector[BindElem](%v, %v, %#v) - Ending\n", key, element, opts)
 	return
 }
 

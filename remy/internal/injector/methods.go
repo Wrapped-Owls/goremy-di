@@ -9,12 +9,26 @@ import (
 	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 )
 
-func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) error {
-	var key string
-	if len(keys) > 0 {
-		key = keys[0]
+func Register[T any](ij types.Injector, bind types.Bind[T], optTag ...string) error {
+	var tag string
+	if len(optTag) > 0 {
+		tag = optTag[0]
 	}
 
+	bindOpts := types.BindOptions{Tag: tag}
+	return registerNewDep[T](ij, bind, bindOpts)
+}
+
+func RegisterWithOverride[T any](ij types.Injector, bind types.Bind[T], optTag ...string) error {
+	var tag string
+	if len(optTag) > 0 {
+		tag = optTag[0]
+	}
+
+	return registerNewDep[T](ij, bind, types.BindOptions{Tag: tag, SoftOverride: true})
+}
+
+func registerNewDep[T any](ij types.Injector, bind types.Bind[T], opts types.BindOptions) error {
 	elementType := utils.GetKey[T](injopts.KeyOptsFromStruct(ij.ReflectOpts()))
 	var retriever types.DependencyRetriever = ij
 	if wrappedRetriever := retriever.WrapRetriever(); wrappedRetriever != nil {
@@ -31,10 +45,7 @@ func Register[T any](ij types.Injector, bind types.Bind[T], keys ...string) erro
 		}
 	}
 
-	if key != "" {
-		return ij.BindNamed(elementType, key, value)
-	}
-	return ij.Bind(elementType, value)
+	return ij.BindElem(elementType, value, opts)
 }
 
 func checkSavedAsBind[T any](
@@ -114,15 +125,15 @@ func getByGuess[T any](
 	return
 }
 
-func Get[T any](retriever types.DependencyRetriever, keys ...string) (element T, err error) {
+func Get[T any](retriever types.DependencyRetriever, tags ...string) (element T, err error) {
 	var (
 		key         string
 		bind        any
 		elementType = utils.GetKey[T](injopts.KeyOptsFromStruct(retriever.ReflectOpts()))
 	)
 
-	if len(keys) > 0 {
-		key = keys[0]
+	if len(tags) > 0 {
+		key = tags[0]
 	}
 	if wrappedRetriever := retriever.WrapRetriever(); wrappedRetriever != nil {
 		retriever = wrappedRetriever
@@ -145,7 +156,7 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (element T,
 	}
 
 	// Start to search for every element if it is configured in this way
-	foundElement, accessAllError := getByGuess[T](retriever, keys...)
+	foundElement, accessAllError := getByGuess[T](retriever, tags...)
 	if accessAllError == nil {
 		element = foundElement
 		err = nil
@@ -157,13 +168,13 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (element T,
 	return
 }
 
-func TryGet[T any](retriever types.DependencyRetriever, keys ...string) (result T) {
-	result, _ = Get[T](retriever, keys...)
+func TryGet[T any](retriever types.DependencyRetriever, tags ...string) (result T) {
+	result, _ = Get[T](retriever, tags...)
 	return
 }
 
-func GetGen[T any](
-	retriever types.DependencyRetriever, elements []types.InstancePair[any], keys ...string,
+func GetWithPairs[T any](
+	retriever types.DependencyRetriever, elements []types.InstancePair[any], tags ...string,
 ) (result T, err error) {
 	subInjector := New(injopts.CacheOptNone, retriever.ReflectOpts(), retriever)
 	for _, element := range elements {
@@ -176,46 +187,25 @@ func GetGen[T any](
 			opts |= injopts.KeyOptIgnorePointer
 			typeSeeker = element.InterfaceValue
 		}
-		bindKey, err = utils.GetElemKey(typeSeeker, opts)
-		if err != nil {
+		if bindKey, err = utils.GetElemKey(typeSeeker, opts); err != nil {
 			return
 		}
 
-		if element.Key != "" {
-			if err = subInjector.BindNamed(bindKey, element.Key, element.Value); err != nil {
-				return
-			}
-		} else if err = subInjector.Bind(bindKey, element.Value); err != nil {
+		if err = subInjector.BindElem(bindKey, element.Value, types.BindOptions{Tag: element.Key}); err != nil {
 			return
 		}
 	}
 
-	return Get[T](subInjector, keys...)
+	return Get[T](subInjector, tags...)
 }
 
-func TryGetGen[T any](
-	retriever types.DependencyRetriever, elements []types.InstancePair[any], keys ...string,
-) (result T) {
-	result, _ = GetGen[T](retriever, elements, keys...)
-	return
-}
-
-func GetGenFunc[T any](
+func GetWith[T any](
 	retriever types.DependencyRetriever,
-	binder func(injector types.Injector) error, keys ...string,
+	binder func(injector types.Injector) error, tags ...string,
 ) (result T, err error) {
 	subInjector := New(injopts.CacheOptNone, retriever.ReflectOpts(), retriever)
 	if err = binder(subInjector); err != nil {
 		return
 	}
-	return Get[T](subInjector, keys...)
-}
-
-func TryGetGenFunc[T any](
-	retriever types.DependencyRetriever,
-	binder func(injector types.Injector) error,
-	keys ...string,
-) (result T) {
-	result, _ = GetGenFunc[T](retriever, binder, keys...)
-	return
+	return Get[T](subInjector, tags...)
 }

@@ -1,18 +1,17 @@
 package remy
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/injector"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
-	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 )
 
 type (
 	DependencyRetriever = types.DependencyRetriever
 	Injector            = types.Injector
 	InstancePairAny     = types.InstancePair[any]
+	BindOptions         = types.BindOptions
 
 	// BindKey is the internal type used to generate all type keys, and used to retrieve all types from the injector.
 	// Is not supposed to use directly without the remy library, as this remove the main use of the remy-generics methods
@@ -78,8 +77,8 @@ func NewInjector(configs ...Config) Injector {
 
 // Register must be called first, because the library doesn't support registering dependencies while get at same time.
 // This is not supported in multithreading applications because it does not have race protection
-func Register[T any](i Injector, bind Bind[T], keys ...string) {
-	if err := injector.Register[T](mustInjector(i), bind, keys...); err != nil {
+func Register[T any](i Injector, bind Bind[T], optTag ...string) {
+	if err := injector.Register[T](mustInjector(i), bind, optTag...); err != nil {
 		panic(err)
 	}
 }
@@ -89,56 +88,54 @@ func Register[T any](i Injector, bind Bind[T], keys ...string) {
 // the library doesn't support registering dependencies while get at same time.
 //
 // This is not supported in multithreading applications because it does not have race protection
-func Override[T any](i Injector, bind Bind[T], keys ...string) {
-	if err := injector.Register[T](mustInjector(i), bind, keys...); err != nil && !errors.Is(
-		err, utils.ErrAlreadyBound,
-	) {
+func Override[T any](i Injector, bind Bind[T], optTag ...string) {
+	if err := injector.RegisterWithOverride[T](mustInjector(i), bind, optTag...); err != nil {
 		panic(err)
 	}
 }
 
 // RegisterInstance directly generates an instance bind without needing to write it.
 //
-// Receives: Injector (required); value (required); key (optional)
-func RegisterInstance[T any](i Injector, value T, keys ...string) {
-	Register(mustInjector(i), Instance(value), keys...)
+// Receives: Injector (required); value (required); tag (optional)
+func RegisterInstance[T any](i Injector, value T, optTag ...string) {
+	Register(mustInjector(i), Instance(value), optTag...)
 }
 
 // RegisterSingleton directly generates a singleton bind without needing to write it.
 //
-// Receives: Injector (required); Binder (required); key (optional)
-func RegisterSingleton[T any](i Injector, binder types.Binder[T], keys ...string) {
-	Register(mustInjector(i), Singleton(binder), keys...)
+// Receives: Injector (required); Binder (required); tag (optional)
+func RegisterSingleton[T any](i Injector, binder types.Binder[T], optTag ...string) {
+	Register(mustInjector(i), Singleton(binder), optTag...)
 }
 
 // GetAll directly access a retriever and returns all instance types that was bound in it and match qualifier.
 //
-// Receives: DependencyRetriever (required); key (optional)
-func GetAll[T any](i DependencyRetriever, keys ...string) []T {
-	result, _ := injector.GetAll[T](mustRetriever(i), keys...)
+// Receives: DependencyRetriever (required); tag (optional)
+func GetAll[T any](i DependencyRetriever, optTag ...string) []T {
+	result, _ := injector.GetAll[T](mustRetriever(i), optTag...)
 	return result
 }
 
 // DoGetAll directly access a retriever and returns a list of element that match requested types that was bound in it.
 // Additionally, it returns an error which indicates if the instance was found or not.
 //
-// Receives: DependencyRetriever (required); key (optional)
-func DoGetAll[T any](i DependencyRetriever, keys ...string) (result []T, err error) {
-	return injector.GetAll[T](mustRetriever(i), keys...)
+// Receives: DependencyRetriever (required); tag (optional)
+func DoGetAll[T any](i DependencyRetriever, optTag ...string) (result []T, err error) {
+	return injector.GetAll[T](mustRetriever(i), optTag...)
 }
 
 // Get directly access a retriever and returns the type that was bound in it.
 //
-// Receives: DependencyRetriever (required); key (optional)
-func Get[T any](i DependencyRetriever, keys ...string) T {
-	return injector.TryGet[T](mustRetriever(i), keys...)
+// Receives: DependencyRetriever (required); tag (optional)
+func Get[T any](i DependencyRetriever, optTag ...string) T {
+	return injector.TryGet[T](mustRetriever(i), optTag...)
 }
 
 // DoGet directly access a retriever and returns the type that was bound in it.
 // Additionally, it returns an error which indicates if the bind was found or not.
 //
-// Receives: DependencyRetriever (required); key (optional)
-func DoGet[T any](i DependencyRetriever, keys ...string) (result T, err error) {
+// Receives: DependencyRetriever (required); tag (optional)
+func DoGet[T any](i DependencyRetriever, optTag ...string) (result T, err error) {
 	defer func() {
 		r := recover()
 		if r != nil {
@@ -146,23 +143,24 @@ func DoGet[T any](i DependencyRetriever, keys ...string) (result T, err error) {
 		}
 	}()
 
-	return injector.Get[T](mustRetriever(i), keys...)
+	return injector.Get[T](mustRetriever(i), optTag...)
 }
 
 // GetGen creates a sub-injector and access the retriever to generate and return a Factory bind
 //
-// Receives: DependencyRetriever (required); []InstancePairAny (required); key (optional)
-func GetGen[T any](i DependencyRetriever, elements []InstancePairAny, keys ...string) T {
-	return injector.TryGetGen[T](mustRetriever(i), elements, keys...)
+// Receives: DependencyRetriever (required); []InstancePairAny (required); tag (optional)
+func GetGen[T any](i DependencyRetriever, elements []InstancePairAny, optTag ...string) T {
+	result, _ := injector.GetWithPairs[T](mustRetriever(i), elements, optTag...)
+	return result
 }
 
 // DoGetGen creates a sub-injector and access the retriever to generate and return a Factory bind
 // Additionally, it returns an error which indicates if the bind was found or not.
 //
-// Receives: DependencyRetriever (required); []InstancePairAny (required); key (optional)
+// Receives: DependencyRetriever (required); []InstancePairAny (required); tag (optional)
 func DoGetGen[T any](
 	i DependencyRetriever, elements []InstancePairAny,
-	keys ...string,
+	optTag ...string,
 ) (result T, err error) {
 	defer func() {
 		r := recover()
@@ -171,23 +169,23 @@ func DoGetGen[T any](
 		}
 	}()
 
-	return injector.GetGen[T](mustRetriever(i), elements, keys...)
+	return injector.GetWithPairs[T](mustRetriever(i), elements, optTag...)
 }
 
 // GetGenFunc creates a sub-injector and access the retriever to generate and return a Factory bind
 //
-// Receives: DependencyRetriever (required); func(Injector) (required); key (optional)
-func GetGenFunc[T any](i DependencyRetriever, binder func(Injector) error, keys ...string) T {
-	return injector.TryGetGenFunc[T](mustRetriever(i), binder, keys...)
+// Receives: DependencyRetriever (required); func(Injector) (required); tag (optional)
+func GetGenFunc[T any](i DependencyRetriever, binder func(Injector) error, optTag ...string) T {
+	result, _ := injector.GetWith[T](mustRetriever(i), binder, optTag...)
+	return result
 }
 
 // DoGetGenFunc creates a sub-injector and access the retriever to generate and return a Factory bind
 // Additionally, it returns an error which indicates if the bind was found or not.
 //
-// Receives: DependencyRetriever (required); func(Injector) (required); key (optional)
+// Receives: DependencyRetriever (required); func(Injector) (required); tag (optional)
 func DoGetGenFunc[T any](
-	i DependencyRetriever, binder func(Injector) error,
-	keys ...string,
+	i DependencyRetriever, binder func(Injector) error, optTag ...string,
 ) (result T, err error) {
 	defer func() {
 		r := recover()
@@ -196,5 +194,5 @@ func DoGetGenFunc[T any](
 		}
 	}()
 
-	return injector.GetGenFunc[T](mustRetriever(i), binder, keys...)
+	return injector.GetWith[T](mustRetriever(i), binder, optTag...)
 }

@@ -101,10 +101,10 @@ func (cons ConstructorArg4[T, A, B, C, D]) Binder(retriever types.DependencyRetr
 // It uses the provided Injector and Bind function to register the constructor in a dependency injection container.
 func RegisterConstructorErr[T any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
-	constructor func() (T, error), keys ...string,
+	constructor func() (T, error), optTag ...string,
 ) {
 	var generator = ConstructorEmpty[T](constructor)
-	Register(mustInjector(i), bindFunc(generator.Binder), keys...)
+	Register(mustInjector(i), bindFunc(generator.Binder), optTag...)
 }
 
 // RegisterConstructor registers a constructor function with no arguments.
@@ -112,22 +112,22 @@ func RegisterConstructorErr[T any](
 // The constructor function does not return an error, so this function wraps it in a function that returns an error.
 func RegisterConstructor[T any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
-	constructor func() T, keys ...string,
+	constructor func() T, optTag ...string,
 ) {
 	var generator ConstructorEmpty[T] = func() (T, error) {
 		return constructor(), nil
 	}
-	RegisterConstructorErr(i, bindFunc, generator, keys...)
+	RegisterConstructorErr(i, bindFunc, generator, optTag...)
 }
 
 // RegisterConstructorArgs1Err registers a constructor function with one argument and an error return.
 // It uses the provided Injector and Bind function to register the constructor in a dependency injection container.
 func RegisterConstructorArgs1Err[T, A any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
-	constructor func(A) (T, error), keys ...string,
+	constructor func(A) (T, error), optTag ...string,
 ) {
 	generator := ConstructorArg1[T, A](constructor)
-	Register(mustInjector(i), bindFunc(generator.Binder), keys...)
+	Register(mustInjector(i), bindFunc(generator.Binder), optTag...)
 }
 
 // RegisterConstructorArgs1 registers a constructor function with one argument.
@@ -135,22 +135,22 @@ func RegisterConstructorArgs1Err[T, A any](
 // The constructor function does not return an error, so this function wraps it in a function that returns an error.
 func RegisterConstructorArgs1[T, A any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
-	constructor func(A) T, keys ...string,
+	constructor func(A) T, optTag ...string,
 ) {
 	generator := func(arg A) (T, error) {
 		return constructor(arg), nil
 	}
-	RegisterConstructorArgs1Err(i, bindFunc, generator, keys...)
+	RegisterConstructorArgs1Err(i, bindFunc, generator, optTag...)
 }
 
 // RegisterConstructorArgs2Err registers a constructor function with two arguments and an error return.
 // It uses the provided Injector and Bind function to register the constructor in a dependency injection container.
 func RegisterConstructorArgs2Err[T, A, B any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
-	constructor func(A, B) (T, error), keys ...string,
+	constructor func(A, B) (T, error), optTag ...string,
 ) {
 	generator := ConstructorArg2[T, A, B](constructor)
-	Register(mustInjector(i), bindFunc(generator.Binder), keys...)
+	Register(mustInjector(i), bindFunc(generator.Binder), optTag...)
 }
 
 // RegisterConstructorArgs2 registers a constructor function with two arguments.
@@ -158,22 +158,22 @@ func RegisterConstructorArgs2Err[T, A, B any](
 // The constructor function does not return an error, so this function wraps it in a function that returns an error.
 func RegisterConstructorArgs2[T, A, B any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
-	constructor func(A, B) T, keys ...string,
+	constructor func(A, B) T, optTag ...string,
 ) {
 	generator := func(arg1 A, arg2 B) (T, error) {
 		return constructor(arg1, arg2), nil
 	}
-	RegisterConstructorArgs2Err(i, bindFunc, generator, keys...)
+	RegisterConstructorArgs2Err(i, bindFunc, generator, optTag...)
 }
 
 // RegisterConstructorArgs3Err registers a constructor function with three arguments and error return.
 // It uses the provided Injector and Bind function to register the constructor in a dependency injection container.
 func RegisterConstructorArgs3Err[T, A, B, C any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
-	constructor func(A, B, C) (T, error), keys ...string,
+	constructor func(A, B, C) (T, error), optTag ...string,
 ) {
 	generator := ConstructorArg3[T, A, B, C](constructor)
-	Register(mustInjector(i), bindFunc(generator.Binder), keys...)
+	Register(mustInjector(i), bindFunc(generator.Binder), optTag...)
 }
 
 // RegisterConstructorArgs3 registers a constructor function with three arguments.
@@ -181,22 +181,22 @@ func RegisterConstructorArgs3Err[T, A, B, C any](
 // The constructor function does not return an error, so this function wraps it in a function that returns an error.
 func RegisterConstructorArgs3[T, A, B, C any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
-	constructor func(A, B, C) T, keys ...string,
+	constructor func(A, B, C) T, optTag ...string,
 ) {
 	generator := func(arg1 A, arg2 B, arg3 C) (T, error) {
 		return constructor(arg1, arg2, arg3), nil
 	}
-	RegisterConstructorArgs3Err(i, bindFunc, generator, keys...)
+	RegisterConstructorArgs3Err(i, bindFunc, generator, optTag...)
 }
 
 // RegisterConstructorArgs4Err registers a constructor function with four arguments and error return.
 // It uses the provided Injector and Bind function to register the constructor in a dependency injection container.
 func RegisterConstructorArgs4Err[T, A, B, C, D any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
-	constructor func(A, B, C, D) (T, error), keys ...string,
+	constructor func(A, B, C, D) (T, error), optTag ...string,
 ) {
 	generator := ConstructorArg4[T, A, B, C, D](constructor)
-	Register(mustInjector(i), bindFunc(generator.Binder), keys...)
+	Register(mustInjector(i), bindFunc(generator.Binder), optTag...)
 }
 
 // RegisterConstructorArgs4 registers a constructor function with four arguments.
@@ -204,10 +204,10 @@ func RegisterConstructorArgs4Err[T, A, B, C, D any](
 // The constructor function does not return an error, so this function wraps it in a function that returns an error.
 func RegisterConstructorArgs4[T, A, B, C, D any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
-	constructor func(A, B, C, D) T, keys ...string,
+	constructor func(A, B, C, D) T, optTag ...string,
 ) {
 	generator := func(arg1 A, arg2 B, arg3 C, arg4 D) (T, error) {
 		return constructor(arg1, arg2, arg3, arg4), nil
 	}
-	RegisterConstructorArgs4Err(i, bindFunc, generator, keys...)
+	RegisterConstructorArgs4Err(i, bindFunc, generator, optTag...)
 }
