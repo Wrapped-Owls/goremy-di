@@ -19,11 +19,11 @@ func main() {
 	// Registering injections
 	registerInjections(inj)
 
-	folderChecker := remy.GetGenFunc[FolderChecker](inj, func(injector remy.Injector) error {
+	folderChecker := remy.MustGetWith[FolderChecker](inj, func(injector remy.Injector) error {
 		remy.RegisterInstance(injector, "Trying to retrieve program current folder")
 		return nil
 	})
 	absPath := folderChecker.RunningAbsolute()
 	log.Println(absPath)
-	log.Println(remy.Get[string](inj))
+	log.Println(remy.MustGet[string](inj))
 }

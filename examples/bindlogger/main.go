@@ -24,7 +24,7 @@ func main() {
 		lInject, remy.Factory(
 			func(retriever remy.DependencyRetriever) (result string, err error) {
 				var movieName string
-				movieName, err = remy.DoGet[string](retriever, "movie")
+				movieName, err = remy.Get[string](retriever, "movie")
 				result = fmt.Sprintf("I love this movie with name `%s`", movieName)
 				return
 			},
@@ -32,13 +32,13 @@ func main() {
 	)
 
 	// Start retrieving the elements
-	phrase := remy.Get[string](lInject)
+	phrase := remy.MustGet[string](lInject)
 	fmt.Println(phrase)
 
 	if len(phrase) >= 2^5 {
-		fmt.Println(remy.Get[bool](lInject))
+		fmt.Println(remy.MaybeGet[bool](lInject))
 	}
 
-	result := remy.Get[error](lInject)
+	result := remy.MaybeGet[error](lInject)
 	fmt.Println(result)
 }

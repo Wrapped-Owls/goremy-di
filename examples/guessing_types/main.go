@@ -22,7 +22,7 @@ func guessBindType(i remy.Injector) {
 		}),
 	)
 
-	if _, err := remy.DoGet[fixtures.Language](i); err != nil {
+	if _, err := remy.Get[fixtures.Language](i); err != nil {
 		log.Printf("As said before, it shouldn't work. Received error `%v`", err)
 	}
 }
@@ -43,13 +43,13 @@ func main() {
 
 	// Perform calculator that should be fibonacci
 	{
-		calculator := remy.Get[Calculator[uint64]](i)
+		calculator := remy.MustGet[Calculator[uint64]](i)
 		fmt.Println("Fibonacci: ", calculator.Calculate(11))
 	}
 
 	// Perform calculator that should be a square
 	{
-		calculator := remy.Get[Calculator[float64]](i)
+		calculator := remy.MustGet[Calculator[float64]](i)
 		fmt.Println("Square: ", calculator.Calculate(1764))
 	}
 
@@ -60,7 +60,7 @@ func main() {
 	remy.RegisterInstance(i, models.SineCalculator{})
 
 	{
-		calculator, err := remy.DoGet[Calculator[float64]](i)
+		calculator, err := remy.Get[Calculator[float64]](i)
 		if err == nil {
 			fmt.Println("Sine: ", calculator.Calculate(180))
 		} else {
@@ -70,7 +70,7 @@ func main() {
 
 	// If you want to get and find more than one element, use remy.GetAll
 	{
-		listOfCalculators, err := remy.DoGetAll[Calculator[float64]](i)
+		listOfCalculators, err := remy.GetAll[Calculator[float64]](i)
 		if err != nil {
 			log.Printf("An error was raised, it is not expected")
 		} else {
@@ -94,7 +94,7 @@ func main() {
 	// Once we register anything as the actual interface, it will start to get only it
 	remy.RegisterInstance[Calculator[uint64]](i, models.FactorialCalculator{})
 	{
-		calculator, err := remy.DoGet[Calculator[uint64]](i)
+		calculator, err := remy.Get[Calculator[uint64]](i)
 		if err == nil {
 			fmt.Printf("Perform operation in type %T: %v\n", calculator, calculator.Calculate(5))
 		} else {

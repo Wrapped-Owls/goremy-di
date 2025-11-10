@@ -49,25 +49,14 @@ func (c loggerInjector) WrapRetriever() remy.Injector {
 	return nil
 }
 
-func (c loggerInjector) GetNamed(key remy.BindKey, name string) (result any, err error) {
-	c.logger.Infof("Injector[GetNamed](%v, %s) - Starting\n", key, name)
-	result, err = c.ij.GetNamed(key, name)
-	if err != nil {
-		c.logger.Errorf("Injector[GetNamed]<%v:%s> - Error: `%v`\n", key, name, err)
+func (c loggerInjector) RetrieveBind(bindKey remy.BindKey, tag string) (result any, err error) {
+	c.logger.Infof("Injector[RetrieveBind](%v, %s) - Starting\n", bindKey, tag)
+	if result, err = c.ij.RetrieveBind(bindKey, tag); err != nil {
+		c.logger.Errorf("Injector[RetrieveBind]<%v:%s> - Error: `%v`\n", bindKey, tag, err)
+		return
 	}
 
-	c.logger.Infof("Injector[GetNamed](%v, %s) - Found `%+v`\n", key, name, result)
-	return
-}
-
-func (c loggerInjector) Get(key remy.BindKey) (result any, err error) {
-	c.logger.Infof("Injector[Get](%v) - Starting\n", key)
-	result, err = c.ij.Get(key)
-	if err != nil {
-		c.logger.Errorf("Injector[Get]<%v> - Error: `%v`\n", key, err)
-	}
-
-	c.logger.Infof("Injector[Get](%v) - Found `%+v`\n", key, result)
+	c.logger.Infof("Injector[RetrieveBind](%v, %s) - Found `%+v`\n", bindKey, tag, result)
 	return
 }
 

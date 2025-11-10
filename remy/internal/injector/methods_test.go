@@ -215,12 +215,13 @@ func TestGetWith(t *testing.T) {
 			getGenCallback: func(i types.Injector) string {
 				result, _ := GetWith[string](
 					i, func(ij types.Injector) error {
-						err := Register(ij, binds.Instance[uint8](42))
-						err = Register(ij, binds.Instance("Go"), "lang")
-						err = Register(ij, binds.Instance(true))
-						err = Register[fixtures.Language](
-							ij,
-							binds.Instance[fixtures.Language](interfaceValue),
+						err := errors.Join(
+							Register(ij, binds.Instance[uint8](42)),
+							Register(ij, binds.Instance("Go"), "lang"),
+							Register(ij, binds.Instance(true)),
+							Register[fixtures.Language](
+								ij, binds.Instance[fixtures.Language](interfaceValue),
+							),
 						)
 						return err
 					},

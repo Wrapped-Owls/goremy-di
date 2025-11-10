@@ -128,7 +128,6 @@ func getByGuess[T any](
 func Get[T any](retriever types.DependencyRetriever, tags ...string) (element T, err error) {
 	var (
 		key         string
-		bind        any
 		elementType = utils.GetKey[T](injopts.KeyOptsFromStruct(retriever.ReflectOpts()))
 	)
 
@@ -138,14 +137,10 @@ func Get[T any](retriever types.DependencyRetriever, tags ...string) (element T,
 	if wrappedRetriever := retriever.WrapRetriever(); wrappedRetriever != nil {
 		retriever = wrappedRetriever
 	}
-	// search in dynamic injections that needed to run a given function
-	if key != "" {
-		bind, err = retriever.GetNamed(elementType, key)
-	} else {
-		bind, err = retriever.Get(elementType)
-	}
 
-	if err == nil {
+	var bind any
+	// search in dynamic injections that needed to run a given function
+	if bind, err = retriever.RetrieveBind(elementType, key); err == nil {
 		if typedBind, assertOk := bind.(types.Bind[T]); assertOk {
 			return typedBind.Generates(retriever)
 		}

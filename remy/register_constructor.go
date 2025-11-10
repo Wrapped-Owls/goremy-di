@@ -31,7 +31,7 @@ func (cons ConstructorArg1[T, A]) Binder(retriever types.DependencyRetriever) (v
 	var (
 		first A
 	)
-	if first, err = DoGet[A](retriever); err != nil {
+	if first, err = Get[A](retriever); err != nil {
 		return
 	}
 	return cons(first)
@@ -43,10 +43,10 @@ func (cons ConstructorArg2[T, A, B]) Binder(retriever types.DependencyRetriever)
 		first  A
 		second B
 	)
-	if first, err = DoGet[A](retriever); err != nil {
+	if first, err = Get[A](retriever); err != nil {
 		return
 	}
-	if second, err = DoGet[B](retriever); err != nil {
+	if second, err = Get[B](retriever); err != nil {
 		return
 	}
 
@@ -60,13 +60,13 @@ func (cons ConstructorArg3[T, A, B, C]) Binder(retriever types.DependencyRetriev
 		second B
 		third  C
 	)
-	if first, err = DoGet[A](retriever); err != nil {
+	if first, err = Get[A](retriever); err != nil {
 		return
 	}
-	if second, err = DoGet[B](retriever); err != nil {
+	if second, err = Get[B](retriever); err != nil {
 		return
 	}
-	if third, err = DoGet[C](retriever); err != nil {
+	if third, err = Get[C](retriever); err != nil {
 		return
 	}
 
@@ -81,16 +81,16 @@ func (cons ConstructorArg4[T, A, B, C, D]) Binder(retriever types.DependencyRetr
 		third  C
 		fourth D
 	)
-	if first, err = DoGet[A](retriever); err != nil {
+	if first, err = Get[A](retriever); err != nil {
 		return
 	}
-	if second, err = DoGet[B](retriever); err != nil {
+	if second, err = Get[B](retriever); err != nil {
 		return
 	}
-	if third, err = DoGet[C](retriever); err != nil {
+	if third, err = Get[C](retriever); err != nil {
 		return
 	}
-	if fourth, err = DoGet[D](retriever); err != nil {
+	if fourth, err = Get[D](retriever); err != nil {
 		return
 	}
 

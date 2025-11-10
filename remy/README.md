@@ -55,7 +55,7 @@ different ways, bt setting a custom one using the method `SetGlobalInjector`, or
 the **remy** package.
 
 To use the global injector, you must pass a _nil_ as the `Injector` parameter
-in `Get[T]`/`Register[T]`/`GetGen[T]` functions.
+in `Get[T]`/`Register[T]`/`GetWithPairs[T]` functions.
 
 ### Register bind elements
 
@@ -242,7 +242,7 @@ import (
 )
 
 func main() {
-  result := remy.GetGen[string](
+  result := remy.MustGetWithPairs[string](
     injector,
     []remy.InstancePairAny{
       {
@@ -274,11 +274,11 @@ package main
 import "github.com/wrapped-owls/goremy-di/remy"
 
 func main() {
-	remy.GetGenFunc[string](
+	remy.MustGetWith[string](
 		injector, func(injector remy.Injector) error {
-			remy.Register(ij, remy.Instance[uint8](42))
-			remy.Register(ij, remy.Instance("Go"), "lang")
-			remy.Register(ij, remy.Instance(true))
+			remy.Register(injector, remy.Instance[uint8](42))
+			remy.Register(injector, remy.Instance("Go"), "lang")
+			remy.Register(injector, remy.Instance(true))
 			return nil
 		},
 	)
@@ -315,7 +315,7 @@ func createInjections(injector remy.Injector) {
 func TestCycles(t *testing.T) {
 	ij := remy.NewCycleDetectorInjector()
 	createInjections(ij)
-	if _, err := remy.DoGet[string](ij); err != nil {
+	if _, err := remy.Get[string](ij); err != nil {
 		t.Error(err)
 	}
 }

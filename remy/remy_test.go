@@ -52,7 +52,7 @@ func TestRegisterGet(t *testing.T) {
 	i := NewInjector(Config{DuckTypeElements: true})
 	t.Run("Int bind with GetAll", func(t *testing.T) {
 		RegisterInstance[int](i, 42)
-		result := GetAll[int](i)
+		result := MustGetAll[int](i)
 		if len(result) != 1 || result[0] != 42 {
 			t.Errorf("Unexpected result: %v", result)
 		}
@@ -60,7 +60,7 @@ func TestRegisterGet(t *testing.T) {
 
 	t.Run("String bind with Get", func(t *testing.T) {
 		RegisterInstance(i, "hello", "greeting")
-		result := Get[string](i, "greeting")
+		result := MustGet[string](i, "greeting")
 		if result != "hello" {
 			t.Errorf("Unexpected result: %v", result)
 		}
@@ -82,7 +82,7 @@ func TestRegisterSingleton(t *testing.T) {
 
 	// Get the value multiple times and verify that it's always 1
 	for index := 0; index < 10; index++ {
-		value := Get[uint16](i)
+		value := MustGet[uint16](i)
 		if value != 1 {
 			t.Errorf("Expected value to be 1, but got %d", value)
 		}
