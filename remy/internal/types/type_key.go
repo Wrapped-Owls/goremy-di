@@ -15,6 +15,10 @@ type (
 	StrKeyElem     string
 )
 
-func (k KeyElem[T]) comparable() { return }
+func (k KeyElem[T]) comparable() {
+	// Just a stub function
+}
 
-func (k StrKeyElem) comparable() { return }
+func (k StrKeyElem) comparable() {
+	// Just a stub function
+}
