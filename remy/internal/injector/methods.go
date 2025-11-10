@@ -25,7 +25,7 @@ func RegisterWithOverride[T any](ij types.Injector, bind types.Bind[T], optTag .
 		tag = optTag[0]
 	}
 
-	return registerNewDep[T](ij, bind, types.BindOptions{Tag: tag, ExpectOverride: true})
+	return registerNewDep[T](ij, bind, types.BindOptions{Tag: tag, SoftOverride: true})
 }
 
 func registerNewDep[T any](ij types.Injector, bind types.Bind[T], opts types.BindOptions) error {

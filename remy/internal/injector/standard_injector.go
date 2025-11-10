@@ -77,7 +77,7 @@ func (s *StdInjector) BindElem(bType types.BindKey, value any, opts types.BindOp
 		return err
 	}
 
-	return s.checkValidOverride(bType, opts.ExpectOverride, wasOverridden)
+	return s.checkValidOverride(bType, opts.SoftOverride, wasOverridden)
 }
 
 func (s *StdInjector) Get(key types.BindKey) (result any, err error) {

@@ -17,6 +17,6 @@ const (
 )
 
 type BindOptions struct {
-	Tag            string
-	ExpectOverride bool
+	Tag          string
+	SoftOverride bool
 }
