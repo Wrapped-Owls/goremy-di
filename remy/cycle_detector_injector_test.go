@@ -25,7 +25,7 @@ func TestCycleDetectorInjector_Register(t *testing.T) {
 	Register(
 		ij, Factory(
 			func(retriever DependencyRetriever) (result string, err error) {
-				result = Get[string](retriever, cycleKey[0]) + " is awesome"
+				result = MustGet[string](retriever, cycleKey[0]) + " is awesome"
 				return
 			},
 		),
@@ -33,7 +33,7 @@ func TestCycleDetectorInjector_Register(t *testing.T) {
 	Register(
 		ij, Factory(
 			func(retriever DependencyRetriever) (result string, err error) {
-				result = "git" + Get[string](retriever)
+				result = "git" + MustGet[string](retriever)
 				return
 			},
 		), cycleKey[1],
@@ -41,7 +41,7 @@ func TestCycleDetectorInjector_Register(t *testing.T) {
 	Register(
 		ij, Factory(
 			func(retriever DependencyRetriever) (result string, err error) {
-				result = "Go + " + Get[string](retriever, cycleKey[1])
+				result = "Go + " + MustGet[string](retriever, cycleKey[1])
 				return
 			},
 		), cycleKey[0],
@@ -49,7 +49,7 @@ func TestCycleDetectorInjector_Register(t *testing.T) {
 	Register(
 		ij, Singleton(
 			func(retriever DependencyRetriever) (result int, err error) {
-				result = len(Get[string](retriever, cycleKey[0]))
+				result = len(MustGet[string](retriever, cycleKey[0]))
 				return
 			},
 		),
@@ -66,14 +66,14 @@ func TestCycleDetectorInjector_Get(t *testing.T) {
 			func(retriever DependencyRetriever) (result string, err error) {
 				result = fmt.Sprintf(
 					"The lenght for the string `%s` is %d ",
-					Get[string](retriever), Get[uint8](retriever),
+					MustGet[string](retriever), MustGet[uint8](retriever),
 				)
 				return
 			},
 		), cycleKey,
 	)
 
-	if _, err := DoGet[string](ij, cycleKey); err != nil {
+	if _, err := Get[string](ij, cycleKey); err != nil {
 		t.Errorf("Something went wrong during normal utilization, raise: %v", err)
 	}
 
@@ -81,12 +81,21 @@ func TestCycleDetectorInjector_Get(t *testing.T) {
 	Override(
 		ij, Factory(
 			func(retriever DependencyRetriever) (uint8, error) {
-				return uint8(len(Get[string](retriever, cycleKey))), nil
+				val, err := Get[string](retriever, cycleKey)
+				if err != nil {
+					return 0, err
+				}
+				return uint8(len(val)), nil
 			},
 		),
 	)
-	_, err := DoGet[string](ij, cycleKey)
+	_, err := Get[string](ij, cycleKey)
 	if err == nil {
 		t.Error("function executes normally when it should raise an error")
+		t.FailNow()
+	}
+
+	if !errors.Is(err, ErrCycleDependencyDetected) {
+		t.Errorf("The returned error is not ErrCycleDependencyDetected")
 	}
 }

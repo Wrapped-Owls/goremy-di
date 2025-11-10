@@ -82,7 +82,7 @@ func TestRegisterConstructor(t *testing.T) {
 			var calledTimes uint16
 			tCase.injectionRegister(inj, &calledTimes)
 
-			value, err := DoGet[string](inj, registerKey)
+			value, err := Get[string](inj, registerKey)
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -12,7 +12,7 @@ func TestGlobal_GetWithConcurrency(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			if len(Get[string](nil)) != 0 {
+			if len(MaybeGet[string](nil)) != 0 {
 				t.Error("string retrieved from global injector should be empty")
 			}
 		}()
@@ -32,12 +32,12 @@ func TestSetGlobalInjector(t *testing.T) {
 		),
 	)
 
-	value := Get[uint8](ij)
+	value := MustGet[uint8](ij)
 	if value != 1 {
 		t.Errorf("value should be 1, got %d", value)
 	}
 	SetGlobalInjector(ij)
-	value = Get[uint8](nil)
+	value = MustGet[uint8](nil)
 	if value != 2 {
 		t.Errorf("value should be 2, got %d", value)
 	}
