@@ -86,7 +86,7 @@ func (s *ElementsStorage[T]) Get(key T) (result any, err error) {
 
 func (s *ElementsStorage[T]) GetAll(optKey ...string) (resultList []any, err error) {
 	if !s.opts.Is(injopts.CacheOptReturnAll) {
-		err = remyErrs.ErrElementNotRegisteredSentinel
+		err = remyErrs.ErrConfigNotAllowReturnAll
 		return
 	}
 

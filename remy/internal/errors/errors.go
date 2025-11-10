@@ -9,13 +9,18 @@ import (
 
 // Sentinel errors for backward compatibility and easier error checking
 var (
-	ErrAlreadyBoundSentinel                    = &ErrAlreadyBound{}
-	ErrImpossibleIdentifyTypeSentinel          = &ErrImpossibleIdentifyType{}
-	ErrElementNotRegisteredSentinel            = &ErrElementNotRegistered{}
+	ErrAlreadyBoundSentinel           = &ErrAlreadyBound{}
+	ErrImpossibleIdentifyTypeSentinel = &ErrImpossibleIdentifyType{}
+	ErrElementNotRegisteredSentinel   = &ErrElementNotRegistered{}
+	ErrConfigNotAllowReturnAll        = errors.New(
+		"the current injector config does not allow returning all elements",
+	)
 	ErrCycleDependencyDetectedSentinel         = &ErrCycleDependencyDetected{}
 	ErrTypeCastInRuntimeSentinel               = &ErrTypeCastInRuntime{}
 	ErrFoundMoreThanOneValidDISentinel         = &ErrMultipleDIDuckTypingCandidates{}
-	ErrGetElementTypeRequiresReflectionEnabled = errors.New("to execute runtime type detection from object, the reflection option must be enabled")
+	ErrGetElementTypeRequiresReflectionEnabled = errors.New(
+		"to execute runtime type detection from object, the reflection option must be enabled",
+	)
 )
 
 func genDebugKeyTypeName(typeKey any) (givenType string) {

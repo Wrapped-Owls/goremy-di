@@ -345,7 +345,7 @@ func TestGetGen_raiseCastError(t *testing.T) {
 				t.FailNow()
 			}
 
-			if !errors.Is(err, remyErrs.ErrTypeCastInRuntimeSentinel) {
+			if !errors.Is(err, remyErrs.ErrConfigNotAllowReturnAll) {
 				t.Errorf("Unknown error raised: `%v`\n", err)
 			}
 		},
