@@ -33,17 +33,17 @@ attributes:
 package core
 
 import (
-  "log"
+	"log"
 
-  "github.com/wrapped-owls/goremy-di/remy"
+	"github.com/wrapped-owls/goremy-di/remy"
 )
 
 var Injector remy.Injector
 
 // create a new instance of the injector
 func init() {
-  log.Println("Initializing injector")
-  Injector = remy.NewInjector()
+	log.Println("Initializing injector")
+	Injector = remy.NewInjector()
 }
 
 ```
@@ -67,22 +67,22 @@ a `DependencyRetriever` as parameter, which can be used to get another values th
 package main
 
 import (
-  "database/sql"
+	"database/sql"
 
-  "github.com/wrapped-owls/goremy-di/examples/basic/core"
-  "github.com/wrapped-owls/goremy-di/remy"
+	"github.com/wrapped-owls/goremy-di/examples/basic/core"
+	"github.com/wrapped-owls/goremy-di/remy"
 )
 
 // Create an instance of the database connection
 func init() {
-  remy.Register(
-    core.Injector,
-    remy.Singleton(
-      func(retriever remy.DependencyRetriever) (*sql.DB, error) {
-        return sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
-      },
-    ),
-  )
+	remy.Register(
+		core.Injector,
+		remy.Singleton(
+			func(retriever remy.DependencyRetriever) (*sql.DB, error) {
+				return sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
+			},
+		),
+	)
 }
 
 ```
@@ -94,19 +94,19 @@ closure. To make it cleaner to read, we can rewrite this using the `RegisterSing
 package main
 
 import (
-  "database/sql"
+	"database/sql"
 
-  "github.com/wrapped-owls/goremy-di/examples/basic/core"
-  "github.com/wrapped-owls/goremy-di/remy"
+	"github.com/wrapped-owls/goremy-di/examples/basic/core"
+	"github.com/wrapped-owls/goremy-di/remy"
 )
 
 // Create an instance of the database connection
 func init() {
-  remy.RegisterSingleton(
-    core.Injector, func(retriever remy.DependencyRetriever) (*sql.DB, error) {
-      return sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
-    },
-  )
+	remy.RegisterSingleton(
+		core.Injector, func(retriever remy.DependencyRetriever) (*sql.DB, error) {
+			return sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
+		},
+	)
 }
 
 ```
@@ -128,13 +128,17 @@ to generate and inject.
 
 While registering a bind with a `Binder` closure, is possible to retrieve other registered binds by using
 the `DependencyRetriever` parameter. So, it can be used in the same way the injector is used to retrieve registered
-elements, it is, using the `Get[T]` function.
+elements, it is, using the `Get[T]` function (which returns an error) or `MustGet[T]` (which panics on error).
 
 ### Retrieve injected elements
 
 Using the main feature added in Go1.18, we can retrieve all closures/instances using directly the type, instead of a
-key. In order to retrieve the element, you must use the function `Get[T]`, which will search the bind in the given
-injector, and then return the element in the type T.
+key. There are three main ways to retrieve elements:
+
+- **`Get[T]`**: Returns the element and an error. Use when you need to handle errors explicitly.
+- **`MustGet[T]`**: Returns the element and panics if an error occurs. Use when you're certain the element exists.
+- **`MaybeGet[T]`**: Returns the element or the zero value if an error occurs. Use when you want to ignore errors
+  gracefully.
 
 As for an example, if we want to retrieve a database connection to create a factory of repositories, we can do this by
 calling the Get function:
@@ -143,22 +147,26 @@ calling the Get function:
 package main
 
 import (
-  "database/sql"
+	"database/sql"
 
-  "github.com/wrapped-owls/goremy-di/examples/basic/core"
-  "github.com/wrapped-owls/goremy-di/remy"
+	"github.com/wrapped-owls/goremy-di/examples/basic/core"
+	"github.com/wrapped-owls/goremy-di/remy"
 )
 
 func init() {
-  remy.Register(
-    core.Injector,
-    remy.Factory(
-      func(retriever remy.DependencyRetriever) (repo core.GenericRepository, err error) {
-        repo = repositories.NewGenericDbRepository(remy.Get[*sql.DB](retriever))
-        return
-      },
-    ),
-  )
+	remy.Register(
+		core.Injector,
+		remy.Factory(
+			func(retriever remy.DependencyRetriever) (repo core.GenericRepository, err error) {
+				db, err := remy.Get[*sql.DB](retriever)
+				if err != nil {
+					return
+				}
+				repo = repositories.NewGenericDbRepository(db)
+				return
+			},
+		),
+	)
 }
 
 ```
@@ -170,19 +178,19 @@ local_ one.
 package main
 
 import (
-  "database/sql"
-  "log"
+	"database/sql"
+	"log"
 
-  "github.com/wrapped-owls/goremy-di/examples/basic/core"
-  "github.com/wrapped-owls/goremy-di/remy"
+	"github.com/wrapped-owls/goremy-di/examples/basic/core"
+	"github.com/wrapped-owls/goremy-di/remy"
 )
 
 func main() {
-  // Executing create table query
-  dbConn := remy.Get[*sql.DB](core.Injector)
-  if _, err := dbConn.Exec("CREATE TABLE programming_languages(id INTEGER, name VARCHAR(60))"); err != nil {
-    log.Fatalln(err)
-  }
+	// Executing create table query
+	dbConn := remy.MustGet[*sql.DB](core.Injector)
+	if _, err := dbConn.Exec("CREATE TABLE programming_languages(id INTEGER, name VARCHAR(60))"); err != nil {
+		log.Fatalln(err)
+	}
 }
 
 ```
@@ -208,28 +216,43 @@ Using as example a factory bind registered in the init function:
 ```go
 package main
 
-import "github.com/wrapped-owls/goremy-di/remy"
+import (
+	"fmt"
+
+	"github.com/wrapped-owls/goremy-di/remy"
+)
 
 func init() {
 	remy.Register(
 		nil, remy.Factory(
 			func(injector remy.DependencyRetriever) (result string, err error) {
+				var lang string
+				var boolVal bool
+				var uintVal uint8
+				if lang, err = remy.Get[string](injector, "lang"); err != nil {
+					return
+				}
+				if boolVal, err = remy.Get[bool](injector); err != nil {
+					return
+				}
+				if uintVal, err = remy.Get[uint8](injector); err != nil {
+					return
+				}
 				result = fmt.Sprintf(
 					"I love %s, yes this is %v, as the answer %d",
-					remy.Get[string](injector, "lang"), remy.Get[bool](injector), remy.Get[uint8](injector),
+					lang, boolVal, uintVal,
 				)
 				return
 			},
 		),
 	)
 }
-```
 
 The requested values can be passed by two forms:
 
 ##### Using InstancePair array
 
-This is the most straightforward way to register temporary binds that will only be used in the `Get` call. When use this
+This is the most straightforward way to register temporary binds that will only be used in the `Get` call.When use this
 way to register interface types, double of the attention is required, as it doesn't have compile-time type assertion.
 
 ```go
