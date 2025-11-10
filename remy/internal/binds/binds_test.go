@@ -14,7 +14,7 @@ func TestSingletonBind_Generates(t *testing.T) {
 		wg       sync.WaitGroup
 	)
 
-	bind := Singleton[*string](
+	bind := Singleton(
 		func(retriever types.DependencyRetriever) (*string, error) {
 			counter += 1
 			return &expected, nil

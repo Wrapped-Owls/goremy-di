@@ -73,30 +73,29 @@ func (c cycleDetectorInjector) WrapRetriever() Injector {
 	return inj
 }
 
-func (c cycleDetectorInjector) GetNamed(key types.BindKey, name string) (any, error) {
+func (c cycleDetectorInjector) RetrieveBind(bindKey types.BindKey, tag string) (any, error) {
 	if c.dependencyGraph != nil {
-		nameMap, ok := c.dependencyGraph.NamedDependency[key]
-		if !ok {
-			nameMap = map[string]bool{}
-		}
-		if _, hasKey := nameMap[name]; hasKey {
-			panic(remyErrs.ErrCycleDependencyDetected{Path: c.dependencyGraph})
-		}
-		nameMap[name] = true
-		c.dependencyGraph.NamedDependency[key] = nameMap
-	}
-	return c.ij.GetNamed(key, name)
-}
-
-func (c cycleDetectorInjector) Get(key types.BindKey) (any, error) {
-	if c.dependencyGraph != nil {
-		if _, hasKey := c.dependencyGraph.UnnamedDependency[key]; hasKey {
-			panic(&remyErrs.ErrCycleDependencyDetected{Path: c.dependencyGraph})
+		var hasKey bool
+		if tag == "" {
+			// Unnamed dependency
+			_, hasKey = c.dependencyGraph.UnnamedDependency[bindKey]
+			c.dependencyGraph.UnnamedDependency[bindKey] = true
 		} else {
-			c.dependencyGraph.UnnamedDependency[key] = true
+			// Named dependency
+			nameMap, ok := c.dependencyGraph.NamedDependency[bindKey]
+			if !ok {
+				nameMap = map[string]bool{}
+				c.dependencyGraph.NamedDependency[bindKey] = nameMap
+			}
+			_, hasKey = nameMap[tag]
+			nameMap[tag] = true
+		}
+
+		if hasKey {
+			panic(&remyErrs.ErrCycleDependencyDetected{Path: c.dependencyGraph})
 		}
 	}
-	return c.ij.Get(key)
+	return c.ij.RetrieveBind(bindKey, tag)
 }
 
 func (c cycleDetectorInjector) GetAll(optKey ...string) ([]any, error) {

@@ -80,26 +80,21 @@ func (s *StdInjector) BindElem(bType types.BindKey, value any, opts types.BindOp
 	return s.checkValidOverride(bType, opts.SoftOverride, wasOverridden)
 }
 
-func (s *StdInjector) Get(key types.BindKey) (result any, err error) {
-	if result, err = s.cacheStorage.Get(key); err != nil && s.parentInjector != nil {
-		cacheErr := err
-		result, err = s.parentInjector.Get(key)
-		if err != nil {
-			err = remyErrs.ErrWrapParentSubErrors{MainError: cacheErr, SubError: err}
-		}
+func (s *StdInjector) RetrieveBind(bindKey types.BindKey, tag string) (result any, err error) {
+	if tag == "" {
+		result, err = s.cacheStorage.Get(bindKey)
+	} else {
+		result, err = s.cacheStorage.GetNamed(bindKey, tag)
 	}
-	return
-}
 
-func (s *StdInjector) GetNamed(bType types.BindKey, name string) (result any, err error) {
-	if result, err = s.cacheStorage.GetNamed(bType, name); err != nil && s.parentInjector != nil {
+	if err != nil && s.parentInjector != nil {
 		cacheErr := err
-		result, err = s.parentInjector.GetNamed(bType, name)
+		result, err = s.parentInjector.RetrieveBind(bindKey, tag)
 		if err != nil {
 			err = remyErrs.ErrWrapParentSubErrors{MainError: cacheErr, SubError: err}
 		}
 	}
-	return
+	return result, err
 }
 
 func (s *StdInjector) GetAll(optKey ...string) (resultList []any, err error) {
