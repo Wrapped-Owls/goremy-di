@@ -11,6 +11,7 @@ type (
 	DependencyRetriever = types.DependencyRetriever
 	Injector            = types.Injector
 	InstancePairAny     = types.InstancePair[any]
+	BindOptions         = types.BindOptions
 
 	// BindKey is the internal type used to generate all type keys, and used to retrieve all types from the injector.
 	// Is not supposed to use directly without the remy library, as this remove the main use of the remy-generics methods
