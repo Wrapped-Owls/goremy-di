@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+
+	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 )
 
 func buildDuckInterfaceType(elementType reflect.Type) string {
@@ -30,7 +32,7 @@ func buildDuckInterfaceType(elementType reflect.Type) string {
 }
 
 // TypeNameByReflection returns a string that defines the name of the given generic type.
-func TypeNameByReflection[T any](generifyInterface, identifyPointer bool, elements ...T) string {
+func TypeNameByReflection[T any](generifyInterface, identifyPointer bool, elements ...T) (string, error) {
 	var (
 		elementType reflect.Type
 		isInterface bool
@@ -43,11 +45,11 @@ func TypeNameByReflection[T any](generifyInterface, identifyPointer bool, elemen
 		elementType, isInterface = GetType[T]()
 	}
 	if elementType == nil {
-		panic(ErrImpossibleIdentifyType)
+		return "", &remyErrs.ErrImpossibleIdentifyType{Type: new(T)}
 	}
 
 	if isInterface && generifyInterface {
-		return buildDuckInterfaceType(elementType)
+		return buildDuckInterfaceType(elementType), nil
 	}
 
 	name := elementType.PkgPath() + "/" + elementType.Name() + "{###}" + elementType.String()
@@ -57,7 +59,7 @@ func TypeNameByReflection[T any](generifyInterface, identifyPointer bool, elemen
 			name = "pointer_&" + name
 		}
 	}
-	return name
+	return name, nil
 }
 
 func GetElemType[T any](element T) (foundType reflect.Type, isInterface bool) {

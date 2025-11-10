@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
+	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
-	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 	"github.com/wrapped-owls/goremy-di/remy/test/fixtures"
 )
 
@@ -349,7 +349,7 @@ func TestGetGen_raiseCastError(t *testing.T) {
 				t.FailNow()
 			}
 
-			if !errors.Is(err, utils.ErrTypeCastInRuntime) {
+			if !errors.Is(err, remyErrs.ErrTypeCastInRuntimeSentinel) {
 				t.Errorf("Unknown error raised: `%v`\n", err)
 			}
 		},
@@ -379,13 +379,13 @@ func TestGet_duckTypeInterface(t *testing.T) {
 				name:            "Failed to find dependency bind",
 				registerSubject: 0,
 				expected:        "",
-				expectedError:   utils.ErrElementNotRegistered,
+				expectedError:   remyErrs.ErrElementNotRegisteredSentinel,
 			},
 			{
 				name:            "Inject multiple elements that implements interface",
 				registerSubject: 2,
 				expected:        "",
-				expectedError:   utils.ErrFoundMoreThanOneValidDI,
+				expectedError:   remyErrs.ErrFoundMoreThanOneValidDISentinel,
 			},
 		}
 	)

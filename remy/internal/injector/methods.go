@@ -3,6 +3,7 @@ package injector
 import (
 	"errors"
 
+	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
@@ -83,7 +84,8 @@ func GetAll[T any](
 	}
 
 	if len(resultList) == 0 {
-		err = utils.ErrElementNotRegistered
+		bindKey := utils.GetKey[T](injopts.KeyOptNone)
+		err = remyErrs.ErrElementNotRegistered{Key: bindKey}
 	}
 
 	return
@@ -103,9 +105,10 @@ func getByGuess[T any](
 		return
 	}
 
-	err = utils.ErrFoundMoreThanOneValidDI
+	bindKey := utils.GetKey[T](injopts.KeyOptNone)
+	err = remyErrs.ErrMultipleDIDuckTypingCandidates{Type: bindKey, Count: totalFound}
 	if totalFound == 0 {
-		err = utils.ErrElementNotRegistered
+		err = remyErrs.ErrElementNotRegistered{Key: bindKey}
 	}
 
 	return
@@ -138,7 +141,7 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (element T,
 		if instanceBind, assertOk := bind.(T); assertOk {
 			return instanceBind, nil
 		}
-		err = utils.ErrTypeCastInRuntime
+		err = remyErrs.ErrTypeCastInRuntime{ActualValue: bind, Expected: new(T)}
 	}
 
 	// Start to search for every element if it is configured in this way
@@ -146,7 +149,7 @@ func Get[T any](retriever types.DependencyRetriever, keys ...string) (element T,
 	if accessAllError == nil {
 		element = foundElement
 		err = nil
-	} else if !errors.Is(accessAllError, utils.ErrElementNotRegistered) {
+	} else if !errors.Is(accessAllError, remyErrs.ErrElementNotRegisteredSentinel) {
 		err = accessAllError
 	}
 
@@ -167,12 +170,16 @@ func GetGen[T any](
 		var (
 			opts       = injopts.KeyOptsFromStruct(subInjector.ReflectOpts())
 			typeSeeker = element.Value
+			bindKey    types.BindKey
 		)
 		if element.InterfaceValue != nil {
 			opts |= injopts.KeyOptIgnorePointer
 			typeSeeker = element.InterfaceValue
 		}
-		bindKey := utils.GetElemKey(typeSeeker, opts)
+		bindKey, err = utils.GetElemKey(typeSeeker, opts)
+		if err != nil {
+			return
+		}
 
 		if element.Key != "" {
 			if err = subInjector.BindNamed(bindKey, element.Key, element.Value); err != nil {

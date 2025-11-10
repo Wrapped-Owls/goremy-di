@@ -1,8 +1,8 @@
 package remy
 
 import (
+	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
-	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 )
 
 // cycleDetectorInjector is the injector to be used in test file, to check if
@@ -80,7 +80,7 @@ func (c cycleDetectorInjector) GetNamed(key types.BindKey, name string) (any, er
 			nameMap = map[string]bool{}
 		}
 		if _, hasKey := nameMap[name]; hasKey {
-			panic(utils.ErrCycleDependencyDetected)
+			panic(remyErrs.ErrCycleDependencyDetected{Path: c.dependencyGraph})
 		}
 		nameMap[name] = true
 		c.dependencyGraph.NamedDependency[key] = nameMap
@@ -91,7 +91,7 @@ func (c cycleDetectorInjector) GetNamed(key types.BindKey, name string) (any, er
 func (c cycleDetectorInjector) Get(key types.BindKey) (any, error) {
 	if c.dependencyGraph != nil {
 		if _, hasKey := c.dependencyGraph.UnnamedDependency[key]; hasKey {
-			panic(utils.ErrCycleDependencyDetected)
+			panic(&remyErrs.ErrCycleDependencyDetected{Path: c.dependencyGraph})
 		} else {
 			c.dependencyGraph.UnnamedDependency[key] = true
 		}

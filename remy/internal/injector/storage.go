@@ -1,6 +1,7 @@
 package injector
 
 import (
+	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
@@ -67,24 +68,24 @@ func (s *ElementsStorage[T]) GetNamed(elementType T, name string) (result any, e
 	if elementMap, ok := s.namedElements[name]; ok && elementMap != nil {
 		result, ok = elementMap[elementType]
 		if !ok {
-			err = utils.ErrElementNotRegistered
+			err = remyErrs.ErrElementNotRegistered{Key: elementType}
 		}
-		return
+		return result, err
 	}
-	return nil, utils.ErrElementNotRegistered
+	return nil, remyErrs.ErrElementNotRegistered{Key: elementType}
 }
 
 func (s *ElementsStorage[T]) Get(key T) (result any, err error) {
 	var ok bool
 	if result, ok = s.elements[key]; !ok {
-		err = utils.ErrElementNotRegistered
+		err = remyErrs.ErrElementNotRegistered{Key: key}
 	}
 	return
 }
 
 func (s *ElementsStorage[T]) GetAll(optKey ...string) (resultList []any, err error) {
 	if !s.opts.Is(injopts.CacheOptReturnAll) {
-		err = utils.ErrElementNotRegistered
+		err = remyErrs.ErrElementNotRegisteredSentinel
 		return
 	}
 

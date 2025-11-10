@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 )
@@ -75,9 +76,14 @@ func TestTypeNameByReflect__DifferPointerFromInterface(t *testing.T) {
 	}
 
 	for _, generifyInterface := range [...]bool{true, false} {
-		interfaceTypeResult := TypeNameByReflection[testInterface](generifyInterface, true)
-		pointerTypeResult := TypeNameByReflection[*testInterface](generifyInterface, true)
-		doublePointerTypeResult := TypeNameByReflection[**testInterface](generifyInterface, true)
+		interfaceTypeResult, errFirst := TypeNameByReflection[testInterface](generifyInterface, true)
+		pointerTypeResult, errSecond := TypeNameByReflection[*testInterface](generifyInterface, true)
+		doublePointerTypeResult, errThird := TypeNameByReflection[**testInterface](generifyInterface, true)
+		if err := errors.Join(errFirst, errSecond, errThird); err != nil {
+			t.Errorf("Unexpected error: %v", err)
+			continue
+		}
+
 		if interfaceTypeResult == pointerTypeResult {
 			t.Error(typeNameErr)
 		}

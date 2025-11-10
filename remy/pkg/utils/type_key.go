@@ -1,6 +1,7 @@
 package utils
 
 import (
+	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 )
@@ -20,17 +21,19 @@ func shouldPrefixPointer(options injopts.KeyGenOption) bool {
 func GetKey[T any](options injopts.KeyGenOption) types.BindKey {
 	generifyInterface := shouldGenerify(options)
 	if shouldUseReflection(options) || generifyInterface {
-		return types.StrKeyElem(
-			TypeNameByReflection[T](generifyInterface, shouldPrefixPointer(options)),
-		)
+		keyVal, _ := TypeNameByReflection[T](generifyInterface, shouldPrefixPointer(options))
+		return types.StrKeyElem(keyVal)
 	}
 
 	return types.KeyElem[T]{}
 }
 
-func GetElemKey(element any, options injopts.KeyGenOption) types.BindKey {
+func GetElemKey(element any, options injopts.KeyGenOption) (types.BindKey, error) {
+	if !shouldUseReflection(options) {
+		return types.StrKeyElem(""), remyErrs.ErrGetElementTypeRequiresReflectionEnabled
+	}
+
 	generifyInterface := shouldGenerify(options)
-	return types.StrKeyElem(
-		TypeNameByReflection(generifyInterface, shouldPrefixPointer(options), element),
-	)
+	keyVal, err := TypeNameByReflection(generifyInterface, shouldPrefixPointer(options), element)
+	return types.StrKeyElem(keyVal), err
 }
