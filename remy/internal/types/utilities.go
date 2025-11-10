@@ -2,11 +2,14 @@ package types
 
 type (
 	InstancePair[T any] struct {
+		// Key is the direct generated BindKey without the automation provided by remy default functions
+		Key BindKey
+
 		// Value that will be injected directly. (required)
 		Value T
 
-		// Key must be used when registering the value as a bind
-		Key string
+		// Tag must be used when registering the value as a bind
+		Tag string
 
 		// InterfaceValue is just a pointer to an interface that will be used to register the value properly.
 		//
@@ -23,3 +26,8 @@ type (
 		UseReflectionType bool
 	}
 )
+
+type BindOptions struct {
+	Tag          string
+	SoftOverride bool
+}

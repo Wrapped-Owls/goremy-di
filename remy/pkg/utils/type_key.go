@@ -25,6 +25,10 @@ func GetKey[T any](options injopts.KeyGenOption) types.BindKey {
 		return types.StrKeyElem(keyVal)
 	}
 
+	return NewKeyElem[T]()
+}
+
+func NewKeyElem[T any]() types.KeyElem[T] {
 	return types.KeyElem[T]{}
 }
 

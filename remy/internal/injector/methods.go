@@ -173,20 +173,21 @@ func GetWithPairs[T any](
 ) (result T, err error) {
 	subInjector := New(injopts.CacheOptNone, retriever.ReflectOpts(), retriever)
 	for _, element := range elements {
-		var (
-			opts       = injopts.KeyOptsFromStruct(subInjector.ReflectOpts())
-			typeSeeker = element.Value
-			bindKey    types.BindKey
-		)
-		if element.InterfaceValue != nil {
-			opts |= injopts.KeyOptIgnorePointer
-			typeSeeker = element.InterfaceValue
+		bindKey := element.Key
+		if bindKey == nil { // Gen a bindKey if none is provided
+			var (
+				opts       = injopts.KeyOptsFromStruct(subInjector.ReflectOpts())
+				typeSeeker = element.Value
+			)
+			if element.InterfaceValue != nil {
+				opts |= injopts.KeyOptIgnorePointer
+				typeSeeker = element.InterfaceValue
+			}
+			if bindKey, err = utils.GetElemKey(typeSeeker, opts); err != nil {
+				return
+			}
 		}
-		if bindKey, err = utils.GetElemKey(typeSeeker, opts); err != nil {
-			return
-		}
-
-		if err = subInjector.BindElem(bindKey, element.Value, types.BindOptions{Tag: element.Key}); err != nil {
+		if err = subInjector.BindElem(bindKey, element.Value, types.BindOptions{Tag: element.Tag}); err != nil {
 			return
 		}
 	}

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
@@ -199,7 +200,7 @@ func TestGetWith(t *testing.T) {
 					ij,
 					[]types.InstancePair[any]{
 						{Value: uint8(42)},
-						{Value: "Go", Key: "lang"},
+						{Value: "Go", Tag: "lang"},
 						{Value: true},
 						{
 							Value:          interfaceValue,
@@ -285,6 +286,84 @@ func TestGetWith(t *testing.T) {
 				}
 			},
 		)
+	}
+}
+
+func TestGetWithPairs_withDirectBindKey(t *testing.T) {
+	// Regular Show themed: Mordecai and Rigby work at the park at 3 PM
+	const expected = "Mordecai and Rigby work at the park at 3 PM, during: 42 minutes, is weekend: true"
+
+	i := New(
+		injopts.CacheOptAllowOverride,
+		types.ReflectionOptions{UseReflectionType: false, GenerifyInterface: false},
+	)
+
+	errFirstRegister := errors.Join(
+		Register(
+			i, binds.Factory(
+				func(retriever types.DependencyRetriever) (result string, err error) {
+					workTime := TryGet[time.Time](retriever)
+					timeStr := workTime.Format("3 PM")
+					result = fmt.Sprintf(
+						"%s and %s work at the park at %s, during: %d minutes, is weekend: %v",
+						TryGet[string](
+							retriever,
+							"employee1",
+						),
+						TryGet[string](retriever, "employee2"),
+						timeStr,
+						TryGet[uint8](retriever),
+						TryGet[bool](retriever),
+					)
+					return
+				},
+			),
+		),
+
+		// register a bool bind to check if it will be replaced during parameter passing
+		Register(i, binds.Instance(false)),
+		Register(i, binds.Instance(time.Time{})),
+	)
+	if errFirstRegister != nil {
+		t.Fatal(errFirstRegister)
+	}
+
+	// Test with direct BindKey provided - when Key is provided, InterfaceValue is not needed
+	// This test specifically validates that providing a direct Key works even with reflection disabled
+	result, err := GetWithPairs[string](
+		i, []types.InstancePair[any]{
+			{Key: types.KeyElem[uint8]{}, Value: uint8(42)},
+			{Key: types.KeyElem[string]{}, Value: "Mordecai", Tag: "employee1"},
+			{Key: types.KeyElem[string]{}, Value: "Rigby", Tag: "employee2"},
+			{Key: types.KeyElem[time.Time]{}, Value: time.Date(2024, 1, 1, 15, 0, 0, 0, time.UTC)},
+			{Key: types.KeyElem[bool]{}, Value: true},
+		},
+	)
+	if err != nil {
+		t.Errorf("GetWithPairs failed with error: %v", err)
+		t.FailNow()
+	}
+
+	if result != expected {
+		t.Errorf(
+			"The direct params was not injected correctly.\nExpected: `%s`\nReceived: `%s`",
+			expected,
+			result,
+		)
+		t.FailNow()
+	}
+
+	// Check if the binds doesn't exist after do the GetWithPairs
+	var (
+		uintResult, _      = Get[uint8](i)
+		boolResult, _      = Get[bool](i)
+		employee1Result, _ = Get[string](i, "employee1")
+		employee2Result, _ = Get[string](i, "employee2")
+		timeResult, _      = Get[time.Time](i)
+	)
+	if uintResult != 0 || boolResult || len(employee1Result) > 0 ||
+		len(employee2Result) > 0 || !timeResult.IsZero() {
+		t.Error("Parameter injection values override the original injector")
 	}
 }
 

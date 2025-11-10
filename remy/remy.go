@@ -3,6 +3,7 @@ package remy
 import (
 	"github.com/wrapped-owls/goremy-di/remy/internal/injector"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 )
 
 type (
@@ -51,6 +52,10 @@ type (
 		UseReflectionType bool
 	}
 )
+
+func NewBindKey[T any](_ ...T) BindKey {
+	return utils.NewKeyElem[T]()
+}
 
 func NewInjector(configs ...Config) Injector {
 	cfg := Config{

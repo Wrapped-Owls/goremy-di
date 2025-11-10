@@ -28,9 +28,7 @@ func (cons ConstructorEmpty[T]) Binder(types.DependencyRetriever) (T, error) {
 
 // Binder retrieves the dependency of type A, then calls the constructor function for ConstructorArg1 and returns the constructed value and any error encountered.
 func (cons ConstructorArg1[T, A]) Binder(retriever types.DependencyRetriever) (value T, err error) {
-	var (
-		first A
-	)
+	var first A
 	if first, err = Get[A](retriever); err != nil {
 		return
 	}
@@ -38,7 +36,9 @@ func (cons ConstructorArg1[T, A]) Binder(retriever types.DependencyRetriever) (v
 }
 
 // Binder retrieves the dependencies of types A and B, then calls the constructor function for ConstructorArg2 and returns the constructed value and any error encountered.
-func (cons ConstructorArg2[T, A, B]) Binder(retriever types.DependencyRetriever) (value T, err error) {
+func (cons ConstructorArg2[T, A, B]) Binder(
+	retriever types.DependencyRetriever,
+) (value T, err error) {
 	var (
 		first  A
 		second B
@@ -54,7 +54,9 @@ func (cons ConstructorArg2[T, A, B]) Binder(retriever types.DependencyRetriever)
 }
 
 // Binder resolves the dependencies of the types A, B, C using the provided retriever and then calls the constructor function with these dependencies.
-func (cons ConstructorArg3[T, A, B, C]) Binder(retriever types.DependencyRetriever) (value T, err error) {
+func (cons ConstructorArg3[T, A, B, C]) Binder(
+	retriever types.DependencyRetriever,
+) (value T, err error) {
 	var (
 		first  A
 		second B
@@ -74,7 +76,9 @@ func (cons ConstructorArg3[T, A, B, C]) Binder(retriever types.DependencyRetriev
 }
 
 // Binder resolves the dependencies of the types A, B, C, D using the provided retriever and then calls the constructor function with these dependencies.
-func (cons ConstructorArg4[T, A, B, C, D]) Binder(retriever types.DependencyRetriever) (value T, err error) {
+func (cons ConstructorArg4[T, A, B, C, D]) Binder(
+	retriever types.DependencyRetriever,
+) (value T, err error) {
 	var (
 		first  A
 		second B
@@ -103,7 +107,7 @@ func RegisterConstructorErr[T any](
 	i Injector, bindFunc func(binder types.Binder[T]) Bind[T],
 	constructor func() (T, error), optTag ...string,
 ) {
-	var generator = ConstructorEmpty[T](constructor)
+	generator := ConstructorEmpty[T](constructor)
 	Register(mustInjector(i), bindFunc(generator.Binder), optTag...)
 }
 

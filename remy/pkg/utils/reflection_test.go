@@ -41,7 +41,10 @@ func TestBuildDuckInterfaceType(t *testing.T) {
 	for _, typeCase := range typeElements {
 		result := buildDuckInterfaceType(typeCase.reflectType)
 		if result != typeCase.expectedStr {
-			t.Errorf("Duck typing was not correct: Expected `%s`\nReceived: `%s`", typeCase.expectedStr, result)
+			t.Errorf(
+				"Duck typing was not correct: Expected `%s`\nReceived: `%s`",
+				typeCase.expectedStr, result,
+			)
 		}
 	}
 }
@@ -76,9 +79,15 @@ func TestTypeNameByReflect__DifferPointerFromInterface(t *testing.T) {
 	}
 
 	for _, generifyInterface := range [...]bool{true, false} {
-		interfaceTypeResult, errFirst := TypeNameByReflection[testInterface](generifyInterface, true)
-		pointerTypeResult, errSecond := TypeNameByReflection[*testInterface](generifyInterface, true)
-		doublePointerTypeResult, errThird := TypeNameByReflection[**testInterface](generifyInterface, true)
+		interfaceTypeResult, errFirst := TypeNameByReflection[testInterface](
+			generifyInterface, true,
+		)
+		pointerTypeResult, errSecond := TypeNameByReflection[*testInterface](
+			generifyInterface, true,
+		)
+		doublePointerTypeResult, errThird := TypeNameByReflection[**testInterface](
+			generifyInterface, true,
+		)
 		if err := errors.Join(errFirst, errSecond, errThird); err != nil {
 			t.Errorf("Unexpected error: %v", err)
 			continue
@@ -95,7 +104,7 @@ func TestTypeNameByReflect__DifferPointerFromInterface(t *testing.T) {
 
 func TestGetType(t *testing.T) {
 	/* Build test cases when getting type using generics alongside reflection */
-	var testCases = [...]TypeTestCase{
+	testCases := [...]TypeTestCase{
 		{expectedStr: typeElements[0].expectedStr, reflectType: extractType[empty](false)},
 		{expectedStr: typeElements[1].expectedStr, reflectType: extractType[a](false)},
 		{expectedStr: typeElements[2].expectedStr, reflectType: extractType[b](false)},

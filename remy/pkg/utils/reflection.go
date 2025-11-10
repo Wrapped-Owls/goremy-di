@@ -32,7 +32,9 @@ func buildDuckInterfaceType(elementType reflect.Type) string {
 }
 
 // TypeNameByReflection returns a string that defines the name of the given generic type.
-func TypeNameByReflection[T any](generifyInterface, identifyPointer bool, elements ...T) (string, error) {
+func TypeNameByReflection[T any](
+	generifyInterface, identifyPointer bool, elements ...T,
+) (string, error) {
 	var (
 		elementType reflect.Type
 		isInterface bool

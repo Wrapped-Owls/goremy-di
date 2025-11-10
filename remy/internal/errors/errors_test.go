@@ -38,8 +38,10 @@ func TestBaseErrorCheckerIs_Comprehensive(t *testing.T) {
 			want:   true,
 		},
 		{
-			name:   "same error as pointer type",
-			err:    customTestErrorChecker{mockTestError: mockTestError{Message: "not nil-pointer"}},
+			name: "same error as pointer type",
+			err: customTestErrorChecker{
+				mockTestError: mockTestError{Message: "not nil-pointer"},
+			},
 			target: &customTestErrorChecker{},
 			want:   true,
 		},
