@@ -1,0 +1,59 @@
+{{define "value_call_args"}}
+	{{- if .Dependencies -}}({{range $index, $dep := .Dependencies}}{{if $index}}, {{end}}{{if $dep.ValueVar}}{{$dep.ValueVar}}{{else}}{{$dep.Type.VarName}}{{end}}{{end}}){{else}}(){{end}}
+{{end}}
+
+{{define "register_value_return"}}
+	{{- if .ValueVar}}{{.ValueVar}}{{else}}{{.Type.VarName}}{{end}}
+{{end}}
+
+{{define "op_init_container"}}
+	container := dig.New()
+{{end}}
+
+{{define "op_register_singleton"}}
+	if err := container.Provide({{.Type.Constructor}}); err != nil {
+		b.Fatal(err)
+	}
+{{end}}
+
+{{define "op_register_factory"}}
+	if err := container.Provide({{.Type.Constructor}}); err != nil {
+		b.Fatal(err)
+	}
+{{end}}
+
+{{define "op_register_instance"}}
+	if err := container.Provide(func() {{.Type.Type}} {
+		return {{template "register_value_return" .}}
+	}); err != nil {
+		b.Fatal(err)
+	}
+{{end}}
+
+{{define "op_create_value"}}
+	{{.ValueVar}} := {{.Type.Constructor}}{{template "value_call_args" .}}
+{{end}}
+
+{{define "op_retrieve"}}
+	if err := container.Invoke(func(value {{.Type.Type}}) {
+		_ = value
+	}); err != nil {
+		b.Fatal(err)
+	}
+{{end}}
+
+{{define "dispatch_op"}}
+{{- if eq .Kind "init_container" -}}
+	{{template "op_init_container" .}}
+{{- else if eq .Kind "register_singleton" -}}
+	{{template "op_register_singleton" .}}
+{{- else if eq .Kind "register_factory" -}}
+	{{template "op_register_factory" .}}
+{{- else if eq .Kind "register_instance" -}}
+	{{template "op_register_instance" .}}
+{{- else if eq .Kind "create_value" -}}
+	{{template "op_create_value" .}}
+{{- else if eq .Kind "retrieve" -}}
+	{{template "op_retrieve" .}}
+{{- end}}
+{{end}}
