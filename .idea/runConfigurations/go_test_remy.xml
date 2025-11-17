@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="go test remy" type="GoTestRunConfiguration" factoryName="Go Test" nameIsGenerated="true">
-    <module name="talaria-di" />
+    <module name="goremy-di" />
     <working_directory value="$PROJECT_DIR$/remy" />
     <go_parameters value="-coverpkg=./... -race" />
     <kind value="DIRECTORY" />
