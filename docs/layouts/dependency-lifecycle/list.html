@@ -1,0 +1,8 @@
+{{ define "main" }}
+    <article>
+        <h1>{{ if .Params.icon }}{{ .Params.icon }}{{ end }} {{ .Title }}</h1>
+        <div class="content">
+            {{ .Content }}
+        </div>
+    </article>
+{{ end }}
