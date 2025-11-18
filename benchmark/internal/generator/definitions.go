@@ -3,13 +3,14 @@ package main
 type operationKind string
 
 const (
-	opInitContainer     operationKind = "init_container"
-	opRegisterSingleton operationKind = "register_singleton"
-	opRegisterFactory   operationKind = "register_factory"
-	opRegisterInstance  operationKind = "register_instance"
-	opCreateValue       operationKind = "create_value"
-	opRetrieve          operationKind = "retrieve"
-	opRetrieveMultiple  operationKind = "retrieve_multiple"
+	opInitContainer       operationKind = "init_container"
+	opRegisterSingleton   operationKind = "register_singleton"
+	opRegisterFactory     operationKind = "register_factory"
+	opRegisterInstance    operationKind = "register_instance"
+	opCreateValue         operationKind = "create_value"
+	opRetrieve            operationKind = "retrieve"
+	opRetrieveMultiple    operationKind = "retrieve_multiple"
+	opRetrieveIgnoreError operationKind = "retrieve_ignore_error"
 )
 
 type operation struct {
