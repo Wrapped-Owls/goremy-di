@@ -3,9 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"reflect"
-	"slices"
-	"strings"
 
 	"github.com/wrapped-owls/goremy-di/remy"
 	"github.com/wrapped-owls/goremy-di/remy/test/fixtures"
@@ -78,11 +75,7 @@ func main() {
 				value             float64 = 19980707
 				totalCalculations uint8
 			)
-			slices.SortFunc(listOfCalculators, func(a, b Calculator[float64]) int {
-				aType := reflect.TypeOf(a)
-				bType := reflect.TypeOf(b)
-				return strings.Compare(aType.Name(), bType.Name())
-			})
+			sortByReflection(listOfCalculators)
 			for _, calculator := range listOfCalculators {
 				value = calculator.Calculate(value)
 				totalCalculations += 1
