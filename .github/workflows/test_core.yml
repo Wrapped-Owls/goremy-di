@@ -3,14 +3,14 @@ name: Test Remy
 on:
   push:
     branches:
-      - $default-branch
+      - main
       - develop
     paths:
       - 'remy/**'
       - '.github/workflows/test_core.yml'
   pull_request:
     branches:
-      - $default-branch
+      - main
       - develop
     paths:
       - 'remy/**'

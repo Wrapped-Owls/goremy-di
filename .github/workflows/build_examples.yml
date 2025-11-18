@@ -3,7 +3,7 @@ name: Test goremy examples
 on:
   push:
     branches:
-      - $default-branch
+      - main
       - develop
     paths:
       - 'remy/**'
@@ -11,7 +11,7 @@ on:
       - '.github/workflows/build_examples.yml'
   pull_request:
     branches:
-      - $default-branch
+      - main
       - develop
     paths:
       - 'remy/**'
