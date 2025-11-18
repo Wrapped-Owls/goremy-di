@@ -116,4 +116,22 @@ var benchmarkDefinitions = []benchmarkDefinition{
 			{Kind: opRetrieveMultiple, Target: varTypeServiceC, Count: 5},
 		},
 	},
+	{
+		Name: "UnregisteredTypeRetrieval",
+		SetupOps: []operation{
+			{Kind: opInitContainer},
+			{Kind: opRegisterSingleton, Target: varTypeConfig},
+			{Kind: opRegisterSingleton, Target: varTypeRepository},
+			{Kind: opRegisterSingleton, Target: varTypeServiceA},
+			{Kind: opRegisterSingleton, Target: varTypeServiceB},
+			// ServiceC is intentionally not registered
+		},
+		LoopOps: []operation{
+			{Kind: opRetrieveIgnoreError, Target: varTypeServiceC},
+			{Kind: opRetrieveIgnoreError, Target: varTypeString},
+			{Kind: opRetrieveIgnoreError, Target: varTypeBoolean},
+			{Kind: opRetrieveIgnoreError, Target: varTypeStructEmpty},
+			{Kind: opRetrieveIgnoreError, Target: varTypeByteArray},
+		},
+	},
 }
