@@ -1,0 +1,21 @@
+baseURL = 'https://wrapped-owls.github.io/goremy-di/'
+languageCode = 'en-us'
+title = 'Remy DI - Dependency Injection for Go'
+theme = 'remy'
+
+[params]
+description = 'A powerful dependency injection library for Go using generics'
+github_repo = 'https://github.com/Wrapped-Owls/goremy-di'
+github_branch = 'main'
+
+
+[markup]
+[markup.goldmark]
+[markup.goldmark.renderer]
+unsafe = true
+[markup.highlight]
+style = 'github-dark'
+codeFences = true
+lineNos = true
+lineNumbersInTable = true
+noClasses = false
