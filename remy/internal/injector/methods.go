@@ -107,13 +107,13 @@ func getByGuess[T any](
 ) (element T, err error) {
 	var elementList []T
 	if elementList, err = GetAll[T](retriever, optKey...); err != nil {
-		return
+		return element, err
 	}
 
 	totalFound := len(elementList)
 	if totalFound == 1 {
 		element = elementList[0]
-		return
+		return element, nil
 	}
 
 	bindKey := utils.GetKey[T](injopts.KeyOptNone)
@@ -122,7 +122,7 @@ func getByGuess[T any](
 		err = remyErrs.ErrElementNotRegistered{Key: bindKey}
 	}
 
-	return
+	return element, err
 }
 
 func Get[T any](retriever types.DependencyRetriever, tags ...string) (element T, err error) {
@@ -155,7 +155,8 @@ func Get[T any](retriever types.DependencyRetriever, tags ...string) (element T,
 	if accessAllError == nil {
 		element = foundElement
 		err = nil
-	} else if !errors.Is(accessAllError, remyErrs.ErrElementNotRegisteredSentinel) {
+	} else if !(errors.Is(accessAllError, remyErrs.ErrElementNotRegisteredSentinel) ||
+		errors.Is(accessAllError, remyErrs.ErrConfigNotAllowReturnAll)) {
 		err = accessAllError
 	}
 
