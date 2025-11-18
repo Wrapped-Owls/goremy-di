@@ -8,39 +8,75 @@ type TypeInfo struct {
 	VarName      string
 }
 
+const (
+	varTypeString      = "String"
+	varTypeStructEmpty = "EmptyStruct"
+	varTypeBoolean     = "Boolean"
+	varTypeByteArray   = "ByteArray"
+	varTypeConfig      = "Config"
+	varTypeRepository  = "Repository"
+	varTypeServiceA    = "ServiceA"
+	varTypeServiceB    = "ServiceB"
+	varTypeServiceC    = "ServiceC"
+)
+
 var typesInfo = map[string]TypeInfo{
-	"Config": {
-		Name:        "Config",
+	varTypeString: {
+		Name:        varTypeString,
+		Type:        "string",
+		Constructor: `func() string { return "string?" }`,
+		VarName:     "sampleSTR",
+	},
+	varTypeBoolean: {
+		Name:        varTypeBoolean,
+		Type:        "bool",
+		Constructor: "func() bool { return true }",
+		VarName:     "sampleBOOL",
+	},
+	varTypeStructEmpty: {
+		Name:        varTypeStructEmpty,
+		Type:        "struct{}",
+		Constructor: "func() (empty struct{}) { return empty }",
+		VarName:     "sampleEmptyStruct",
+	},
+	varTypeByteArray: {
+		Name:        varTypeByteArray,
+		Type:        "[]byte",
+		Constructor: "func() []byte { return []byte{} }",
+		VarName:     "sampleByteArr",
+	},
+	varTypeConfig: {
+		Name:        varTypeConfig,
 		Type:        "*fixtures.Config",
 		Constructor: "fixtures.NewConfig",
 		VarName:     "cfg",
 	},
-	"Repository": {
-		Name:         "Repository",
+	varTypeRepository: {
+		Name:         varTypeRepository,
 		Type:         "fixtures.Repository",
 		Constructor:  "fixtures.NewRepository",
-		Dependencies: []string{"Config"},
+		Dependencies: []string{varTypeConfig},
 		VarName:      "repo",
 	},
-	"ServiceA": {
-		Name:         "ServiceA",
+	varTypeServiceA: {
+		Name:         varTypeServiceA,
 		Type:         "fixtures.ServiceA",
 		Constructor:  "fixtures.NewServiceA",
-		Dependencies: []string{"Repository", "Config"},
+		Dependencies: []string{varTypeRepository, varTypeConfig},
 		VarName:      "serviceA",
 	},
-	"ServiceB": {
-		Name:         "ServiceB",
+	varTypeServiceB: {
+		Name:         varTypeServiceB,
 		Type:         "fixtures.ServiceB",
 		Constructor:  "fixtures.NewServiceB",
-		Dependencies: []string{"ServiceA", "Config"},
+		Dependencies: []string{varTypeServiceA, varTypeConfig},
 		VarName:      "serviceB",
 	},
-	"ServiceC": {
-		Name:         "ServiceC",
+	varTypeServiceC: {
+		Name:         varTypeServiceC,
 		Type:         "fixtures.ServiceC",
 		Constructor:  "fixtures.NewServiceC",
-		Dependencies: []string{"ServiceA", "ServiceB", "Config"},
+		Dependencies: []string{varTypeServiceA, varTypeServiceB, varTypeConfig},
 		VarName:      "serviceC",
 	},
 }
