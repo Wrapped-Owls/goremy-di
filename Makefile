@@ -40,5 +40,26 @@ examples:
 	@echo "\nRunning guessing_types example..."
 	@cd examples/guessing_types && go run .
 
+# Download Geekdoc theme (pre-built bundle with compiled assets)
+docs-theme:
+	@echo "Downloading Geekdoc theme..."
+	@mkdir -p docs/themes/hugo-geekdoc/
+	@curl -L https://github.com/thegeeklab/hugo-geekdoc/releases/latest/download/hugo-geekdoc.tar.gz | tar -xz -C docs/themes/hugo-geekdoc/ --strip-components=1
+	@echo "Theme downloaded successfully!"
+
+# Run Hugo development server (downloads theme if needed)
+docs-serve: docs-theme-check
+	@cd docs && hugo server
+
+# Build Hugo site (downloads theme if needed)
+docs-build: docs-theme-check
+	@cd docs && hugo
+
+# Check if theme exists, download if missing
+docs-theme-check:
+	@if [ ! -d "docs/themes/hugo-geekdoc" ]; then \
+		$(MAKE) docs-theme; \
+	fi
+
 # Default target
 .DEFAULT_GOAL := test

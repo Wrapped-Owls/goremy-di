@@ -1,0 +1,24 @@
+{{ define "main" }}
+    <article>
+        <h1>{{ if .Params.icon }}{{ .Params.icon }} {{ end }}{{ .Title }}</h1>
+        <div class="content">
+            {{ .Content }}
+            {{ range .Pages.GroupByDate "2006" }}
+                <div class="changelog-year">
+                    <h2>{{ .Key }}</h2>
+                    {{ range .Pages.ByDate.Reverse }}
+                        <div class="changelog-entry">
+                            <h3>
+                                <span class="changelog-date">{{ .Date.Format "2006-01-02" }}</span>
+                                <span class="changelog-version">{{ .Params.version }}</span>
+                            </h3>
+                            <div class="changelog-content">
+                                {{ .Content }}
+                            </div>
+                        </div>
+                    {{ end }}
+                </div>
+            {{ end }}
+        </div>
+    </article>
+{{ end }}

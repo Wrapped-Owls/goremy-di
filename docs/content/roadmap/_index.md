@@ -1,4 +1,7 @@
-# Roadmap
+---
+title: "Roadmap"
+weight: 7
+---
 
 - [x] Create the injector using go1.18 generics
 - [x] Allow creating sub-injectors
