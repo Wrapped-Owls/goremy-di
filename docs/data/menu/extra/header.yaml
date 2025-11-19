@@ -1,0 +1,5 @@
+- name: GitHub
+  ref: https://github.com/Wrapped-Owls/goremy-di
+  icon: gdoc_github
+  weight: 10
+  external: true
