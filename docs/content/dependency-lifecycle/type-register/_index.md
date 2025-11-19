@@ -5,7 +5,6 @@ menu:
   main:
     parent: dependency-lifecycle
     identifier: type-register
-    weight: 1
     params:
       icon: "📝"
 ---

@@ -1,3 +1,12 @@
+---
+title: "Roadmap"
+weight: 7
+menu:
+  main:
+    params:
+      icon: "🗺️"
+---
+
 # Roadmap
 
 - [x] Create the injector using go1.18 generics

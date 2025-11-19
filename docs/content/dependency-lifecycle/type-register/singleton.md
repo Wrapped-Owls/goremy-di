@@ -4,7 +4,6 @@ weight: 2
 menu:
   main:
     parent: type-register
-    weight: 2
     params:
       icon: "⚡"
 ---

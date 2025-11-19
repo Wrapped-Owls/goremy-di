@@ -4,7 +4,6 @@ weight: 1
 menu:
   main:
     parent: type-register
-    weight: 1
     params:
       icon: "🚀"
 ---

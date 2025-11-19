@@ -4,7 +4,6 @@ weight: 3
 menu:
   main:
     identifier: dependency-lifecycle
-    weight: 3
     params:
       icon: "🔄"
 ---

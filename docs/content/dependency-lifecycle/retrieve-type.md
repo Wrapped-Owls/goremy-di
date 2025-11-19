@@ -4,7 +4,6 @@ weight: 3
 menu:
   main:
     parent: dependency-lifecycle
-    weight: 2
     params:
       icon: "🔍"
 ---
