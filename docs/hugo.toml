@@ -1,12 +1,18 @@
 baseURL = 'https://wrapped-owls.github.io/goremy-di/'
 languageCode = 'en-us'
 title = 'Remy DI - Dependency Injection for Go'
-theme = 'remy'
+theme = 'hugo-geekdoc'
 
 [params]
 description = 'A powerful dependency injection library for Go using generics'
 github_repo = 'https://github.com/Wrapped-Owls/goremy-di'
 github_branch = 'main'
+
+[params.geekdoc]
+# Geekdoc required configuration
+pygmentsUseClasses = true
+pygmentsCodeFences = true
+disablePathToLower = false
 
 
 [markup]
@@ -19,3 +25,6 @@ codeFences = true
 lineNos = true
 lineNumbersInTable = true
 noClasses = false
+
+[taxonomies]
+tag = "tags"
