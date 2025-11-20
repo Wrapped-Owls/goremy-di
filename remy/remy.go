@@ -1,6 +1,8 @@
 package remy
 
 import (
+	"context"
+
 	"github.com/wrapped-owls/goremy-di/remy/internal/injector"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
@@ -239,4 +241,14 @@ func MustGetWith[T any](i DependencyRetriever, binder func(Injector) error, optT
 func MaybeGetWith[T any](i DependencyRetriever, binder func(Injector) error, optTag ...string) T {
 	result, _ := GetWith[T](i, binder, optTag...)
 	return result
+}
+
+func GetWithContext[T any](
+	i DependencyRetriever, ctx context.Context, optTag ...string,
+) (result T, err error) {
+	defer recoverInjectorPanic(&err)
+	result, err = injector.GetWithPairs[T](
+		i, []InstancePairAny{{Key: NewBindKey[context.Context](), Value: ctx}}, optTag...,
+	)
+	return result, err
 }

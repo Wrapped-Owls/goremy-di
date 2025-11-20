@@ -1,6 +1,10 @@
 package remy
 
-import "testing"
+import (
+	"context"
+	"errors"
+	"testing"
+)
 
 func TestOverride(t *testing.T) {
 	var checkpoints uint8 = 0
@@ -86,5 +90,38 @@ func TestRegisterSingleton(t *testing.T) {
 		if value != 1 {
 			t.Errorf("Expected value to be 1, but got %d", value)
 		}
+	}
+}
+
+func TestGetWithContext_ReturnsValue(t *testing.T) {
+	ctxKey := struct{}{}
+	inj := NewInjector()
+
+	RegisterConstructorArgs1(inj, Factory[string], func(ctx context.Context) string {
+		val, _ := ctx.Value(ctxKey).(string)
+		return val
+	})
+
+	const injectedValue = "the-Blade+!"
+	ctx := context.WithValue(context.Background(), ctxKey, injectedValue)
+
+	result, err := GetWithContext[string](inj, ctx)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result != injectedValue {
+		t.Fatalf("unexpected value: %s", result)
+	}
+}
+
+func TestGetWithContext_Error(t *testing.T) {
+	inj := NewInjector()
+
+	_, err := GetWithContext[string](inj, context.Background())
+	if err == nil {
+		t.Fatalf("expected error but got nil")
+	}
+	if !errors.Is(err, ErrElementNotRegistered) {
+		t.Fatalf("expected ErrElementNotRegistered but got %v", err)
 	}
 }
