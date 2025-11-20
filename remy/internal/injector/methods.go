@@ -57,7 +57,8 @@ func checkSavedAsBind[T any](
 	}); assertOk {
 		// Check if the returned value can implement the requested interface
 		if _, ok := genericBind.PointerValue().(T); !ok {
-			return
+			// Value is not applicable to the type
+			return nil, nil
 		}
 		var anyVal any
 		if anyVal, err = genericBind.GenAsAny(retriever); err != nil {

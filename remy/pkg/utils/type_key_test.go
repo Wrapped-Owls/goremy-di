@@ -35,6 +35,31 @@ func TestGetKey__Generify(t *testing.T) {
 	}
 }
 
+func TestGetKey_GenerifyWithoutReflection(t *testing.T) {
+	type (
+		super interface{ Do() string }
+		sub   interface{ Do() string }
+		concr struct{ value string } // Lint:ignore U1000 just to test the concrete type
+	)
+
+	options := injopts.KeyOptGenerifyInterface
+
+	if GetKey[super](options) != GetKey[sub](options) {
+		t.Fatalf("expected generified interfaces to share same key")
+	}
+
+	if _, isStrKey := GetKey[super](options).(types.StrKeyElem); !isStrKey {
+		t.Fatalf("expected interface key to be StrKeyElem when generify is on")
+	}
+
+	if _, isStrKey := GetKey[concr](options).(types.StrKeyElem); isStrKey {
+		t.Fatalf("expected concrete type to keep KeyElem when reflection disabled")
+	}
+	if _, ok := GetKey[concr](options).(types.KeyElem[concr]); !ok {
+		t.Fatalf("expected concrete type to return KeyElem when reflection disabled")
+	}
+}
+
 func TestGetKey__SameStructWithDifferentPackage(t *testing.T) {
 	options := injopts.KeyOptUseReflectionType
 	if GetKey[aTypes.Syringe](options) == GetKey[bTypes.Syringe](options) {

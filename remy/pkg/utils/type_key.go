@@ -20,11 +20,16 @@ func shouldPrefixPointer(options injopts.KeyGenOption) bool {
 
 func GetKey[T any](options injopts.KeyGenOption) types.BindKey {
 	generifyInterface := shouldGenerify(options)
-	if shouldUseReflection(options) || generifyInterface {
-		keyVal, _ := TypeNameByReflection[T](generifyInterface, shouldPrefixPointer(options))
-		return types.StrKeyElem(keyVal)
+	var keyVal string
+	if useReflection := shouldUseReflection(options); useReflection {
+		keyVal, _ = TypeNameByReflection[T](generifyInterface, shouldPrefixPointer(options))
+	} else if generifyInterface && IsInterface[T]() { // Only retrieve key if is an interface
+		keyVal, _ = TypeNameByReflection[T](true, shouldPrefixPointer(options))
 	}
 
+	if keyVal != "" {
+		return types.StrKeyElem(keyVal)
+	}
 	return NewKeyElem[T]()
 }
 
