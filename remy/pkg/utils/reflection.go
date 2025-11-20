@@ -47,7 +47,7 @@ func TypeNameByReflection[T any](
 		elementType, isInterface = GetType[T]()
 	}
 	if elementType == nil {
-		return "", &remyErrs.ErrImpossibleIdentifyType{Type: new(T)}
+		return "", &remyErrs.ErrImpossibleIdentifyType{Type: (*T)(nil)}
 	}
 
 	if isInterface && generifyInterface {

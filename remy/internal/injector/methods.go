@@ -147,7 +147,7 @@ func Get[T any](retriever types.DependencyRetriever, tags ...string) (element T,
 		if instanceBind, assertOk := bind.(T); assertOk {
 			return instanceBind, nil
 		}
-		err = remyErrs.ErrTypeCastInRuntime{ActualValue: bind, Expected: new(T)}
+		err = remyErrs.ErrTypeCastInRuntime{ActualValue: bind, Expected: (*T)(nil)}
 	}
 
 	// Start to search for every element if it is configured in this way

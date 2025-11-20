@@ -7,7 +7,7 @@ type bindWrapper[T any] struct {
 }
 
 func (b bindWrapper[T]) PointerValue() any {
-	return new(T)
+	return (*T)(nil)
 }
 
 func (b bindWrapper[T]) GenAsAny(retriever types.DependencyRetriever) (any, error) {
