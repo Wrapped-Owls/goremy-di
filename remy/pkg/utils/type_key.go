@@ -28,6 +28,23 @@ func GetKey[T any](options injopts.KeyGenOption) types.BindKey {
 	return NewKeyElem[T]()
 }
 
+// IsInterface reports whether T is an interface type.
+func IsInterface[T any]() bool {
+	var zero T
+
+	// Converting zero to `any` gives:
+	//   - true nil  → (nil, nil)        → only happens when T is an interface
+	//   - non-nil   → (type != nil, nil) → happens for pointer/slice/map/chan/func
+	//
+	// Even nil pointers like (*int)(nil) become ( *int, nil ) and are NOT equal to nil.
+	// Therefore, only interface types produce a nil interface value.
+	if any(zero) != nil {
+		return false // concrete type (non-pointer, non-interface)
+	}
+
+	return true // must be an interface
+}
+
 func NewKeyElem[T any]() types.KeyElem[T] {
 	return types.KeyElem[T]{}
 }

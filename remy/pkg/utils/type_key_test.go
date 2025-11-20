@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"testing"
+	"unsafe"
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
@@ -117,5 +118,91 @@ func TestGetKey__Functions(t *testing.T) {
 		if GetKey[namedStringCallback](optCase) == GetKey[*namedStringCallback](optCase) {
 			t.Error("Function pointer should be different than function type")
 		}
+	}
+}
+
+func TestIsInterface(t *testing.T) {
+	type myStruct struct{}
+	type myInterface interface{ Foo() }
+	type embedded interface {
+		error
+	}
+
+	// pointer alias
+	type ptrInt = *int
+
+	tests := []struct {
+		name     string
+		fn       any
+		expected bool
+	}{
+		// primitive
+		{"int", IsInterface[int], false},
+		{"string", IsInterface[string], false},
+		{"bool", IsInterface[bool], false},
+		{"float64", IsInterface[float64], false},
+		{"uintptr", IsInterface[uintptr], false},
+
+		// struct + named struct
+		{"struct{}", IsInterface[struct{}], false},
+		{"named struct", IsInterface[myStruct], false},
+
+		// pointer types
+		{"*int", IsInterface[*int], false},
+		{"pointer alias", IsInterface[ptrInt], false},
+		{"pointer to struct", IsInterface[*myStruct], false},
+		{"pointer to interface type", IsInterface[*error], false},
+		{"pointer to slice", IsInterface[*[]int], false},
+		{"unsafe.Pointer", IsInterface[unsafe.Pointer], false},
+
+		// slice / array / map
+		{"slice", IsInterface[[]int], false},
+		{"array", IsInterface[[3]int], false},
+		{"map", IsInterface[map[string]int], false},
+
+		// chan
+		{"chan", IsInterface[chan int], false},
+		{"receive-only chan", IsInterface[<-chan int], false},
+		{"send-only chan", IsInterface[chan<- int], false},
+
+		// funcs
+		{"func()", IsInterface[func()], false},
+		{"func returning int", IsInterface[func() int], false},
+		{"nilable func", IsInterface[func(int) error], false},
+
+		// empty interface
+		{"any", IsInterface[any], true},
+		// built-in interface
+		{"error", IsInterface[error], true},
+		{"testing.TB", IsInterface[testing.TB], true},
+
+		// custom interfaces
+		{"myInterface", IsInterface[myInterface], true},
+		{"embedded interface", IsInterface[embedded], true},
+		{"interface{ Foo() }", IsInterface[interface{ Foo() }], true},
+
+		// union of interface types
+		{
+			"multiple methods interface",
+			IsInterface[interface {
+				String() string
+				Error() string
+			}],
+			true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// call generic fn by asserting to correct type
+			switch fn := tt.fn.(type) {
+			case func() bool:
+				if got := fn(); got != tt.expected {
+					t.Fatalf("expected %v, got %v", tt.expected, got)
+				}
+			default:
+				t.Fatalf("invalid test fn")
+			}
+		})
 	}
 }
