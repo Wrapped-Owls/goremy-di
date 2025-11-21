@@ -1,5 +1,5 @@
 ---
-title: "Named Bindings"
+title: "Tagged Bindings"
 weight: 5
 menu:
   main:
@@ -8,7 +8,7 @@ menu:
       icon: "🏷️"
 ---
 
-You can register and retrieve elements with tags for named bindings. This is useful when you have multiple instances of
+You can register and retrieve elements with tags for tagged bindings. This is useful when you have multiple instances of
 the same type and need to distinguish between them.
 
 ## Registering with Tags

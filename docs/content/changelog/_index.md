@@ -1,6 +1,6 @@
 ---
 title: "Changelog"
-weight: 6
+weight: 98
 geekdocCollapseSection: true
 menu:
   main:

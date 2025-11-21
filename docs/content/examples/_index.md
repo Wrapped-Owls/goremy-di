@@ -1,6 +1,6 @@
 ---
 title: "Examples"
-weight: 5
+weight: 97
 ---
 
 Complete working examples are available in
