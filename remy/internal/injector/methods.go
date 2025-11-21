@@ -151,6 +151,10 @@ func Get[T any](retriever types.DependencyRetriever, tags ...string) (element T,
 		err = remyErrs.ErrTypeCastInRuntime{ActualValue: bind, Expected: (*T)(nil)}
 	}
 
+	if !utils.IsInterface[T]() {
+		return // If the element is indeed an interface, we skip the guess recover
+	}
+
 	// Start to search for every element if it is configured in this way
 	foundElement, accessAllError := getByGuess[T](retriever, tags...)
 	if accessAllError == nil {
