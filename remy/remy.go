@@ -106,11 +106,25 @@ func RegisterInstance[T any](i Injector, value T, optTag ...string) {
 	Register(mustInjector(i), Instance(value), optTag...)
 }
 
+// RegisterFactory directly generates a factory bind without needing to write it.
+//
+// Receives: Injector (required); Binder (required); tag (optional)
+func RegisterFactory[T any](i Injector, binder types.Binder[T], optTag ...string) {
+	Register(mustInjector(i), Factory(binder), optTag...)
+}
+
 // RegisterSingleton directly generates a singleton bind without needing to write it.
 //
 // Receives: Injector (required); Binder (required); tag (optional)
 func RegisterSingleton[T any](i Injector, binder types.Binder[T], optTag ...string) {
 	Register(mustInjector(i), Singleton(binder), optTag...)
+}
+
+// RegisterLazySingleton directly generates a lazy-singleton bind without needing to write it.
+//
+// Receives: Injector (required); Binder (required); tag (optional)
+func RegisterLazySingleton[T any](i Injector, binder types.Binder[T], optTag ...string) {
+	Register(mustInjector(i), LazySingleton(binder), optTag...)
 }
 
 // GetAll directly access a retriever and returns a list of element that match requested types that was bound in it.
