@@ -23,6 +23,13 @@ There are three main categories of retrieval functions:
 Each category provides the same functionality but with different error handling strategies, allowing you to choose the
 approach that best fits your use case.
 
+### Retrieving interfaces (duck typing)
+
+If you enable duck typing in the injector configuration (`Config.DuckTypeElements = true`), you can retrieve an
+interface from a registered concrete type that implements it. See:
+
+→ [Retrieving Interfaces (Duck Typing)](./interface-retrieval-with-interfaces/)
+
 ### Choosing the Right Retrieval Method
 
 1. **Use `Get`** when you need explicit error handling

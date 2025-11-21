@@ -53,3 +53,24 @@ if db != nil {
 // Use db...
 }
 ```
+
+## Retrieving Multiple Matches
+
+When you expect multiple registered elements to match the same requested type (for example, several implementations of
+an interface while duck typing is enabled), use the `GetAll` family:
+
+- `GetAll[T]` returns `([]T, error)`
+- `MustGetAll[T]` panics on error
+- `MaybeGetAll[T]` returns an empty slice on error
+
+```
+// Example: retrieve all encoders implementing the same interface
+type Encoder interface{ Encode([]byte) []byte }
+
+encoders := remy.MustGetAll[Encoder](injector)
+for _, enc := range encoders {
+    _ = enc.Encode([]byte("payload"))
+}
+```
+
+If you only need one specific implementation among many, prefer registering and retrieving with tags to disambiguate.

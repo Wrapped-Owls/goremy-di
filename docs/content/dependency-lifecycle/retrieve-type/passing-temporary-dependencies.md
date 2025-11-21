@@ -115,7 +115,7 @@ result, err := remy.GetWith[string](
     },
 )
 if err != nil {
-log.Fatal(err)
+    log.Fatal(err)
 }
 ```
 
