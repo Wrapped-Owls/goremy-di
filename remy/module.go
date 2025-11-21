@@ -1,17 +1,46 @@
 package remy
 
+import remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
+
+// Module represents a dependency-injection module.
+// A module encapsulates a set of provider registrations and is expected to register all of its bindings when
+// Register is called with the given Injector.
 type Module interface {
 	Register(injector Injector)
 }
 
-func RegisterModule(inj Injector, modules ...Module) (err error) {
+// RegisterModuleFunc registers one or more registration functions against the provided Injector.
+// Each function receives the Injector instance and is expected to perform its own provider registrations.
+func RegisterModuleFunc(inj Injector, modules ...func(Injector)) (err error) {
+	if inj == nil {
+		return remyErrs.NewErrModuleRegisterErrors("injector is required")
+	}
 	defer recoverInjectorPanic(&err)
-	inj = mustInjector(inj)
+
 	for _, module := range modules {
-		module.Register(inj)
+		if module != nil {
+			module(inj)
+		}
 	}
 
 	return nil
+}
+
+// RegisterModule registers one or more Module instances using the provided Injector.
+// Each Module's Register method is adapted and delegated to RegisterModuleFunc.
+func RegisterModule(inj Injector, modules ...Module) (err error) {
+	inj = mustInjector(inj)
+	var errList []error
+	for _, module := range modules {
+		if err = RegisterModuleFunc(inj, module.Register); err != nil {
+			errList = append(errList, err)
+		}
+	}
+	if len(errList) > 0 {
+		return remyErrs.NewErrModuleRegisterErrors("", errList...)
+	}
+
+	return err
 }
 
 // ModuleRegister is a helper function signature that can be passed to NewModule.

@@ -47,21 +47,21 @@ func WithConstructor1[T any, A any](
 	return func(i Injector) { RegisterConstructorArgs1Err(i, bindFunc, constructor, optTag...) }
 }
 
-func WithConstructor2[T any, A any, B any](
+func WithConstructor2[T any, A, B any](
 	bindFunc func(binder types.Binder[T]) Bind[T],
 	constructor func(A, B) (T, error), optTag ...string,
 ) ModuleRegister {
 	return func(i Injector) { RegisterConstructorArgs2Err(i, bindFunc, constructor, optTag...) }
 }
 
-func WithConstructor3[T any, A any, B any, C any](
+func WithConstructor3[T any, A, B, C any](
 	bindFunc func(binder types.Binder[T]) Bind[T],
 	constructor func(A, B, C) (T, error), optTag ...string,
 ) ModuleRegister {
 	return func(i Injector) { RegisterConstructorArgs3Err(i, bindFunc, constructor, optTag...) }
 }
 
-func WithConstructor4[T any, A any, B any, C any, D any](
+func WithConstructor4[T any, A, B, C, D any](
 	bindFunc func(binder types.Binder[T]) Bind[T],
 	constructor func(A, B, C, D) (T, error), optTag ...string,
 ) ModuleRegister {
