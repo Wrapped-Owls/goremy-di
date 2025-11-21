@@ -39,7 +39,7 @@ func TestGetKey_GenerifyWithoutReflection(t *testing.T) {
 	type (
 		super interface{ Do() string }
 		sub   interface{ Do() string }
-		concr struct{ value string } // Lint:ignore U1000 just to test the concrete type
+		concr struct{ value string } //nolint:unused // only used to test concrete type
 	)
 
 	options := injopts.KeyOptGenerifyInterface

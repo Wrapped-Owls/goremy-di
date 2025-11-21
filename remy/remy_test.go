@@ -94,7 +94,8 @@ func TestRegisterSingleton(t *testing.T) {
 }
 
 func TestGetWithContext_ReturnsValue(t *testing.T) {
-	ctxKey := struct{}{}
+	type testKey struct{}
+	ctxKey := testKey{}
 	inj := NewInjector()
 
 	RegisterConstructorArgs1(inj, Factory[string], func(ctx context.Context) string {

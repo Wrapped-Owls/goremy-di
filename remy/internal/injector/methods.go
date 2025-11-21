@@ -156,8 +156,8 @@ func Get[T any](retriever types.DependencyRetriever, tags ...string) (element T,
 	if accessAllError == nil {
 		element = foundElement
 		err = nil
-	} else if !(errors.Is(accessAllError, remyErrs.ErrElementNotRegisteredSentinel) ||
-		errors.Is(accessAllError, remyErrs.ErrConfigNotAllowReturnAll)) {
+	} else if !errors.Is(accessAllError, remyErrs.ErrElementNotRegisteredSentinel) &&
+		!errors.Is(accessAllError, remyErrs.ErrConfigNotAllowReturnAll) {
 		err = accessAllError
 	}
 
