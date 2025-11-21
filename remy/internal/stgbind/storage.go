@@ -1,4 +1,4 @@
-package injector
+package stgbind
 
 import (
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"

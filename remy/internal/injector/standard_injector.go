@@ -2,6 +2,7 @@ package injector
 
 import (
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
+	"github.com/wrapped-owls/goremy-di/remy/internal/stgbind"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 )
@@ -29,7 +30,7 @@ func New(
 		cacheOpts:      opts,
 		parentInjector: parentInjector,
 		reflectOpts:    reflectOpts,
-		cacheStorage:   NewElementsStorage[types.BindKey](opts, reflectOpts),
+		cacheStorage:   stgbind.NewElementsStorage[types.BindKey](opts, reflectOpts),
 	}
 }
 
