@@ -12,7 +12,7 @@ weight: 99
     - [x] Implement a method to get the type of `element` without using `reflect.TypeOf`
     - [x] Only use reflection if explicitly requested by the user
 - [x] Create an example directory showing how the injector can be used (v1.0.0)
-- [ ] Add context-aware resolution (`WithContext`)
+- [x] Add context-aware resolution (`WithContext`)  (v1.10.0)
     - Works like the current GetWithPairs method, but it will explicitly pass a only the context.Context
 - [ ] Create an injector bind generator package using `//go:generate` comments
 
@@ -25,7 +25,7 @@ weight: 99
     - [x] Allow registering a provider under multiple tags
     - [x] Support multiple implementations of the same interface
 - [ ] Add RegisterConstructorVariadic wrapper, to allow constructors like NewValue(...T)
-- [ ] Add module pattern support
+- [x] Add module pattern support  (v1.10.0)
 
 ---
 
