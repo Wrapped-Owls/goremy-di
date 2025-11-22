@@ -1,3 +1,8 @@
+- name: Go Docs
+  ref: https://pkg.go.dev/github.com/wrapped-owls/goremy-di/remy
+  icon: gdoc_link
+  weight: 5
+  external: true
 - name: GitHub
   ref: https://github.com/Wrapped-Owls/goremy-di
   icon: gdoc_github

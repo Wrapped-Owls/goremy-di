@@ -167,12 +167,11 @@ You can use the callback to conditionally register dependencies:
 result := remy.MustGetWith[string](
     injector,
     func (injector remy.Injector) error {
+        environment := "development"
         if isProduction {
-            remy.RegisterInstance(injector, "production", "env")
-        } else {
-            remy.RegisterInstance(injector, "development", "env")
+            environment = "production"
         }
-
+        remy.RegisterInstance(injector, environment, "env")
         remy.RegisterInstance(injector, getConfigValue())
         return nil
     },
