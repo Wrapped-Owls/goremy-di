@@ -40,3 +40,14 @@ func init() {
 	)
 }
 ```
+
+You can also use the convenience function:
+
+```go
+remy.RegisterFactory(
+    nil,
+    func (retriever remy.DependencyRetriever) (RequestID, error) {
+        return RequestID(generateUniqueID()), nil
+    },
+)
+```

@@ -8,8 +8,6 @@ menu:
       icon: "🦆"
 ---
 
-# Retrieving Interfaces via Duck Typing
-
 Remy can resolve an **interface** from a **concrete implementation** you registered, as long as duck typing is enabled
 in the injector configuration.
 

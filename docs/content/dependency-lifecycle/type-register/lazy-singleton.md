@@ -41,4 +41,15 @@ func init() {
 }
 ```
 
+You can also use the convenience function:
+
+```go
+remy.RegisterLazySingleton(
+    nil,
+    func (retriever remy.DependencyRetriever) (*sql.DB, error) {
+        return sql.Open("sqlite3", "file:locked.sqlite?cache=shared&mode=memory")
+    },
+)
+```
+
 The database connection will only be established when `Get[*sql.DB]` is called for the first time.

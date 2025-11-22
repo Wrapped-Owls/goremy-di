@@ -20,6 +20,7 @@ package main
 
 import (
 	"log"
+
 	"github.com/wrapped-owls/goremy-di/remy"
 )
 
@@ -27,7 +28,7 @@ var Injector = remy.NewInjector()
 
 func init() {
 	// Register a service as singleton
-	remy.RegisterSingleton(Injector, func() (string, error) {
+	remy.RegisterSingleton(Injector, func(retriever remy.DependencyRetriever) (string, error) {
 		return "Hello, Remy!", nil
 	})
 }
@@ -37,6 +38,7 @@ func main() {
 	message := remy.MustGet[string](Injector)
 	log.Println(message) // Output: Hello, Remy!
 }
+
 ```
 
 ## Key Concepts
