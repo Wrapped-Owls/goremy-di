@@ -8,8 +8,8 @@ github.com/samber/go-type-to-string v1.8.0 h1:5z6tDTjtXxkIAoAuHAZYMYR8mkBZjVgeSH
 github.com/samber/go-type-to-string v1.8.0/go.mod h1:jpU77vIDoIxkahknKDoEx9C8bQ1ADnh2sotZ8I4QqBU=
 github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
-github.com/wrapped-owls/goremy-di/remy v1.9.0 h1:NPci0mMoxzbEWf7BVNPTHpvyliG+HX5tCa0EuCs1a9A=
-github.com/wrapped-owls/goremy-di/remy v1.9.0/go.mod h1:u3y4TeiYnQNaEhKRbl3tyKPFpH8m/bV5wRenf4KmaDs=
+github.com/wrapped-owls/goremy-di/remy v1.10.0 h1:ADjGMrPzXr5cjXwuol84yRQacNFpaC22qlaNG9Bszto=
+github.com/wrapped-owls/goremy-di/remy v1.10.0/go.mod h1:u3y4TeiYnQNaEhKRbl3tyKPFpH8m/bV5wRenf4KmaDs=
 go.uber.org/dig v1.19.0 h1:BACLhebsYdpQ7IROQ1AGPjrXcP5dF80U3gKoFzbaq/4=
 go.uber.org/dig v1.19.0/go.mod h1:Us0rSJiThwCv2GteUN0Q7OKvU7n5J4dxZ9JKUXozFdE=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
