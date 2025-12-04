@@ -2,6 +2,7 @@ package stgbind
 
 import (
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
+	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 )
 
@@ -12,58 +13,38 @@ type (
 		comparable
 	}
 	genericAnyMap[T comparable] map[T]any
-	ElementsStorage[T mapKey]   struct {
-		namedElements map[string]genericAnyMap[T]
-		elements      genericAnyMap[T]
-		opts          injopts.CacheConfOption
-	}
 )
 
-func NewElementsStorage[T mapKey](
-	opts injopts.CacheConfOption,
-) *ElementsStorage[T] {
-	return &ElementsStorage[T]{
-		opts:          opts,
-		namedElements: map[string]genericAnyMap[T]{},
-		elements:      genericAnyMap[T]{},
-	}
-}
-
 func (s *ElementsStorage[T]) Set(key T, value any) (wasOverridden bool, err error) {
-	if _, ok := s.elements[key]; ok {
+	if _, ok := s.elements[s.keyID(key)]; ok {
 		if !s.opts.Is(injopts.CacheOptAllowOverride) {
 			return false, remyErrs.ErrAlreadyBound{Key: key}
 		}
 		wasOverridden = true
 	}
-	s.elements[key] = value
+	s.elements[s.keyID(key)] = value
 	return
 }
 
 func (s *ElementsStorage[T]) SetNamed(
 	elementType T, name string, value any,
 ) (wasOverridden bool, err error) {
-	var namedBinds genericAnyMap[T]
-	if elementMap, ok := s.namedElements[name]; ok {
-		namedBinds = elementMap
-	} else {
-		namedBinds = genericAnyMap[T]{}
-	}
+	namedBinds := s.getNamedStorage(name)
 
-	if _, ok := namedBinds[elementType]; ok {
+	if _, ok := namedBinds[s.keyID(elementType)]; ok {
 		if !s.opts.Is(injopts.CacheOptAllowOverride) {
 			return false, remyErrs.ErrAlreadyBound{Key: elementType}
 		}
 		wasOverridden = true
 	}
-	namedBinds[elementType] = value
+	namedBinds[s.keyID(elementType)] = value
 	s.namedElements[name] = namedBinds
 	return
 }
 
 func (s *ElementsStorage[T]) GetNamed(elementType T, name string) (result any, err error) {
 	if elementMap, ok := s.namedElements[name]; ok && elementMap != nil {
-		result, ok = elementMap[elementType]
+		result, ok = elementMap[s.keyID(elementType)]
 		if !ok {
 			err = remyErrs.ErrElementNotRegistered{Key: elementType}
 		}
@@ -74,7 +55,7 @@ func (s *ElementsStorage[T]) GetNamed(elementType T, name string) (result any, e
 
 func (s *ElementsStorage[T]) Get(key T) (result any, err error) {
 	var ok bool
-	if result, ok = s.elements[key]; !ok {
+	if result, ok = s.elements[s.keyID(key)]; !ok {
 		err = remyErrs.ErrElementNotRegistered{Key: key}
 	}
 	return
