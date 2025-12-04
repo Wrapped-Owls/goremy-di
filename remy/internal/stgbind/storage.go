@@ -7,15 +7,19 @@ import (
 
 // ElementsStorage holds all dependencies
 type (
-	genericAnyMap[T comparable]   map[T]any
-	ElementsStorage[T comparable] struct {
+	mapKey interface {
+		types.BindKey
+		comparable
+	}
+	genericAnyMap[T comparable] map[T]any
+	ElementsStorage[T mapKey]   struct {
 		namedElements map[string]genericAnyMap[T]
 		elements      genericAnyMap[T]
 		opts          injopts.CacheConfOption
 	}
 )
 
-func NewElementsStorage[T comparable](
+func NewElementsStorage[T mapKey](
 	opts injopts.CacheConfOption,
 ) *ElementsStorage[T] {
 	return &ElementsStorage[T]{
