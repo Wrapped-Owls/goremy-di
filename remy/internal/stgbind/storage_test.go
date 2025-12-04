@@ -9,7 +9,7 @@ import (
 )
 
 func TestElementsStorage_Set(t *testing.T) {
-	stg := NewElementsStorage[string](injopts.CacheOptAllowOverride)
+	stg := NewElementsStorage[types.StrKeyElem](injopts.CacheOptAllowOverride)
 	var (
 		wasOverridden bool
 		err           error
@@ -39,7 +39,7 @@ func TestElementsStorage_Set(t *testing.T) {
 func TestElementsStorage_Set__Override(t *testing.T) {
 	testCases := generateStorageTestCases()
 
-	stg := NewElementsStorage[string](injopts.CacheOptNone)
+	stg := NewElementsStorage[types.StrKeyElem](injopts.CacheOptNone)
 	for _, toTest := range testCases {
 		t.Run(
 			toTest.name, func(t *testing.T) {
@@ -68,24 +68,24 @@ func TestElementsStorage_Set__Override(t *testing.T) {
 func generateStorageTestCases() []struct {
 	name       string
 	values     [2]any
-	setterFunc func(types.Storage[string], any) (bool, error)
+	setterFunc func(types.Storage[types.StrKeyElem], any) (bool, error)
 } {
 	return []struct {
 		name       string
 		values     [2]any
-		setterFunc func(types.Storage[string], any) (bool, error)
+		setterFunc func(types.Storage[types.StrKeyElem], any) (bool, error)
 	}{
 		{
 			name:   "Set Without Tag",
 			values: [2]any{7, 11},
-			setterFunc: func(stg types.Storage[string], receive any) (bool, error) {
+			setterFunc: func(stg types.Storage[types.StrKeyElem], receive any) (bool, error) {
 				return stg.Set("value", receive)
 			},
 		},
 		{
 			name:   "Set Named",
 			values: [2]any{"go", "flutter"},
-			setterFunc: func(stg types.Storage[string], receive any) (bool, error) {
+			setterFunc: func(stg types.Storage[types.StrKeyElem], receive any) (bool, error) {
 				return stg.SetNamed("value", "tool", receive)
 			},
 		},
