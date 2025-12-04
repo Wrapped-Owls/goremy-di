@@ -8,8 +8,12 @@ import (
 
 // ElementsStorage holds all dependencies
 type (
-	genericAnyMap[T comparable]   map[T]any
-	ElementsStorage[T comparable] struct {
+	mapKey interface {
+		types.BindKey
+		comparable
+	}
+	genericAnyMap[T comparable] map[T]any
+	ElementsStorage[T mapKey]   struct {
 		opts          injopts.CacheConfOption
 		reflectOpts   types.ReflectionOptions
 		namedElements map[string]genericAnyMap[T]
@@ -17,7 +21,7 @@ type (
 	}
 )
 
-func NewElementsStorage[T comparable](
+func NewElementsStorage[T mapKey](
 	opts injopts.CacheConfOption,
 	reflectionOptions types.ReflectionOptions,
 ) *ElementsStorage[T] {
