@@ -29,15 +29,10 @@ func (c loggerInjector) SubInjector(allowOverrides ...bool) remy.Injector {
 		shouldOverride = allowOverrides[0]
 	}
 
-	var (
-		parentConfig = c.ij.ReflectOpts()
-		config       = remy.Config{
-			ParentInjector:     c,
-			CanOverride:        shouldOverride,
-			GenerifyInterfaces: parentConfig.GenerifyInterface,
-			UseReflectionType:  parentConfig.UseReflectionType,
-		}
-	)
+	config := remy.Config{
+		ParentInjector: c,
+		CanOverride:    shouldOverride,
+	}
 
 	c.logger.Infof("Creating SubInjector with: `%+v`\n", config)
 	inj := NewLoggerInjector(c.logger, config)
@@ -68,11 +63,5 @@ func (c loggerInjector) GetAll(optKey ...string) (result []any, err error) {
 	}
 
 	c.logger.Infof("Injector[GetAll](%+v) - Found `%+v`\n", optKey, result)
-	return
-}
-
-func (c loggerInjector) ReflectOpts() (opts remy.ReflectionOptions) {
-	opts = c.ij.ReflectOpts()
-	c.logger.Infof("Injector[ReflectOpts] - Returning `%+v`\n", opts)
 	return
 }
