@@ -574,3 +574,42 @@ func TestGetAll_withGeneratedBind(t *testing.T) {
 		)
 	}
 }
+
+func TestGetWith_withParentDuckTyping(t *testing.T) {
+	// Create parent injector with CacheOptReturnAll enabled (allows GetAll)
+	parent := New(injopts.CacheOptReturnAll, types.ReflectionOptions{})
+
+	// Register an interface implementation in the parent injector
+	langImpl := fixtures.GoProgrammingLang{}
+	if err := Register(parent, binds.Instance(langImpl)); err != nil {
+		t.Fatalf("Failed to register language implementation: %v", err)
+	}
+
+	// Use GetWith which creates a sub-injector with CacheOptNone (doesn't allow GetAll)
+	// The sub-injector should be able to find the interface via duck typing by delegating to parent
+	result, err := GetWith[fixtures.Language](
+		parent, func(ij types.Injector) error {
+			// Sub-injector doesn't need to register anything
+			// It should find the interface from the parent via duck typing
+			return nil
+		},
+	)
+	if err != nil {
+		t.Fatalf("GetWith failed to find interface via duck typing: %v", err)
+	}
+
+	// Verify the result is correct
+	if result.Name() != langImpl.Name() {
+		t.Errorf(
+			"Language name mismatch. Expected: `%s`, Received: `%s`",
+			langImpl.Name(), result.Name(),
+		)
+	}
+
+	if result.Kind() != langImpl.Kind() {
+		t.Errorf(
+			"Language kind mismatch. Expected: `%s`, Received: `%s`",
+			langImpl.Kind(), result.Kind(),
+		)
+	}
+}

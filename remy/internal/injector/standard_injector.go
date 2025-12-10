@@ -1,6 +1,8 @@
 package injector
 
 import (
+	"errors"
+
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 	"github.com/wrapped-owls/goremy-di/remy/internal/stgbind"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
@@ -104,14 +106,19 @@ func (s *StdInjector) GetAll(optKey ...string) (resultList []any, err error) {
 		parentElements []any
 	)
 
-	if cachedElements, err = s.cacheStorage.GetAll(optKey...); err != nil {
+	if cachedElements, err = s.cacheStorage.GetAll(optKey...); err != nil &&
+		// Allow not allow return all temporarily for sub-injectors
+		!errors.Is(err, remyErrs.ErrConfigNotAllowReturnAll) {
 		return
 	}
 
 	if s.parentInjector != nil {
 		if parentElements, err = s.parentInjector.GetAll(optKey...); err != nil {
-			return nil, remyErrs.ErrWrapParentSubErrors{MainError: err}
+			err = remyErrs.ErrWrapParentSubErrors{MainError: err}
 		}
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	resultList = make([]any, len(cachedElements), len(cachedElements)+len(parentElements))
