@@ -651,4 +651,17 @@ func TestCheckSavedAsBind_pointerTypeDuckTyping(t *testing.T) {
 			langPtr.Kind(), (*result).Kind(),
 		)
 	}
+
+	interfaceBind := binds.Factory(
+		func(retriever types.DependencyRetriever) (fixtures.Language, error) {
+			return langPtr, nil
+		},
+	)
+	result, err = checkSavedAsBind[fixtures.Language](nil, interfaceBind)
+	if err != nil {
+		t.Fatalf("checkSavedAsBind failed with error: %v", err)
+	}
+	if result != nil {
+		t.Fatal("checkSavedAsBind returned no-nil result, expected a nil result")
+	}
 }
