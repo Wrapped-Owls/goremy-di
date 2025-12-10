@@ -113,8 +113,12 @@ func (s *StdInjector) GetAll(optKey ...string) (resultList []any, err error) {
 	}
 
 	if s.parentInjector != nil {
+		originalError := err
 		if parentElements, err = s.parentInjector.GetAll(optKey...); err != nil {
 			err = remyErrs.ErrWrapParentSubErrors{MainError: err}
+			if originalError != nil { // Restore original error in case the parent raises an error as well
+				err = originalError
+			}
 		}
 	}
 	if err != nil {
