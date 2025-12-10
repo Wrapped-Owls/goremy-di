@@ -10,6 +10,11 @@ func (b bindWrapper[T]) PointerValue() any {
 	return (*T)(nil)
 }
 
+func (b bindWrapper[T]) DefaultValue() any {
+	var defaultValue T
+	return defaultValue
+}
+
 func (b bindWrapper[T]) GenAsAny(retriever types.DependencyRetriever) (any, error) {
 	return b.Generates(retriever)
 }
@@ -27,9 +32,11 @@ func Factory[T any](binder types.Binder[T]) types.Bind[T] {
 }
 
 func Instance[T any](element T) types.Bind[T] {
-	return bindWrapper[T]{FactoryBind[T]{
-		binder: func(retriever types.DependencyRetriever) (T, error) {
-			return element, nil
+	return bindWrapper[T]{
+		FactoryBind[T]{
+			binder: func(retriever types.DependencyRetriever) (T, error) {
+				return element, nil
+			},
 		},
-	}}
+	}
 }

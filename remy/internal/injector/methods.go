@@ -53,14 +53,20 @@ func checkSavedAsBind[T any](
 ) (foundElem *T, err error) {
 	if genericBind, assertOk := checkElem.(interface {
 		PointerValue() any
+		DefaultValue() any
 		GenAsAny(injector types.DependencyRetriever) (any, error)
 	}); assertOk {
 		// Check if the returned value can implement the requested interface
-		if _, ok := genericBind.PointerValue().(T); !ok {
-			// Value is not applicable to the type
-			return nil, nil
+		anyVal := genericBind.DefaultValue()
+		if _, ok := anyVal.(T); !ok {
+			// Check again but now for pointer value, this fallback works because is known that
+			// the registered value cannot be an interface at this point
+			anyVal = genericBind.PointerValue()
+			if _, ok = anyVal.(T); !ok {
+				// Value is not applicable to the type
+				return nil, nil
+			}
 		}
-		var anyVal any
 		if anyVal, err = genericBind.GenAsAny(retriever); err != nil {
 			return
 		} else if bindElem, ok := anyVal.(T); ok {
