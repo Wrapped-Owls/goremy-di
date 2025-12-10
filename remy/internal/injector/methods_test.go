@@ -613,3 +613,42 @@ func TestGetWith_withParentDuckTyping(t *testing.T) {
 		)
 	}
 }
+
+func TestCheckSavedAsBind_pointerTypeDuckTyping(t *testing.T) {
+	// This test verifies that checkSavedAsBind correctly handles pointer types
+	// when checking against interfaces via duck typing.
+
+	// Register a pointer type using Factory so the bind is stored (not the generated value)
+	langPtr := &fixtures.GoProgrammingLang{}
+	bind := binds.Factory(
+		func(retriever types.DependencyRetriever) (*fixtures.GoProgrammingLang, error) {
+			return langPtr, nil
+		},
+	)
+
+	// Test checkSavedAsBind directly with interface Language
+	// This should succeed because PointerValue() fallback allows correct assertion
+	result, err := checkSavedAsBind[fixtures.Language](nil, bind)
+	if err != nil {
+		t.Fatalf("checkSavedAsBind failed with error: %v", err)
+	}
+
+	if result == nil {
+		t.Fatal("checkSavedAsBind returned nil result, expected valid Language interface")
+	}
+
+	// Verify the result is correct
+	if (*result).Name() != langPtr.Name() {
+		t.Errorf(
+			"Language name mismatch. Expected: `%s`, Received: `%s`",
+			langPtr.Name(), (*result).Name(),
+		)
+	}
+
+	if (*result).Kind() != langPtr.Kind() {
+		t.Errorf(
+			"Language kind mismatch. Expected: `%s`, Received: `%s`",
+			langPtr.Kind(), (*result).Kind(),
+		)
+	}
+}
