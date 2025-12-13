@@ -1,4 +1,4 @@
-//go:build go1.24 && nounsafe
+//go:build go1.24 && !nounsafe
 
 package stgbind
 
@@ -9,8 +9,8 @@ import (
 
 type ElementsStorage[T mapKey] struct {
 	opts          injopts.CacheConfOption
-	namedElements map[string]StorageBackend[T, any]
-	elements      StorageBackend[T, any]
+	namedElements map[string]StorageBackend[uint64, any]
+	elements      StorageBackend[uint64, any]
 }
 
 func NewElementsStorage[T mapKey](
@@ -18,17 +18,17 @@ func NewElementsStorage[T mapKey](
 ) *ElementsStorage[T] {
 	return &ElementsStorage[T]{
 		opts:          opts,
-		namedElements: make(map[string]StorageBackend[T, any]),
-		elements:      newMapBackendNounsafe[T](),
+		namedElements: make(map[string]StorageBackend[uint64, any]),
+		elements:      newMapBackendUnsafe(),
 	}
 }
 
-func (s *ElementsStorage[T]) keyID(key T) T {
-	return key
+func (s *ElementsStorage[T]) keyID(key T) uint64 {
+	return key.ID()
 }
 
-func (s *ElementsStorage[T]) newNamedBackend() StorageBackend[T, any] {
-	return newMapBackendNounsafe[T]()
+func (s *ElementsStorage[T]) newNamedBackend() StorageBackend[uint64, any] {
+	return newMapBackendUnsafe()
 }
 
 func (s *ElementsStorage[T]) GetAll(optKey ...string) (resultList []any, err error) {
@@ -37,7 +37,7 @@ func (s *ElementsStorage[T]) GetAll(optKey ...string) (resultList []any, err err
 		return
 	}
 
-	var backend StorageBackend[T, any]
+	var backend StorageBackend[uint64, any]
 	if len(optKey) > 0 && optKey[0] != "" {
 		var ok bool
 		if b, ok2 := s.namedElements[optKey[0]]; ok2 {

@@ -16,67 +16,47 @@ type (
 )
 
 func (s *ElementsStorage[T]) Set(key T, value any) (wasOverridden bool, err error) {
-	if _, ok := s.elements[s.keyID(key)]; ok {
-		if !s.opts.Is(injopts.CacheOptAllowOverride) {
-			return false, remyErrs.ErrAlreadyBound{Key: key}
-		}
-		wasOverridden = true
+	allowOverride := s.opts.Is(injopts.CacheOptAllowOverride)
+	triedOverride := s.elements.Set(s.keyID(key), value, allowOverride)
+
+	if triedOverride && !allowOverride {
+		return false, remyErrs.ErrAlreadyBound{Key: key}
 	}
-	s.elements[s.keyID(key)] = value
-	return
+
+	return triedOverride, nil
 }
 
 func (s *ElementsStorage[T]) SetNamed(
 	elementType T, name string, value any,
 ) (wasOverridden bool, err error) {
-	namedBinds := s.getNamedStorage(name)
-
-	if _, ok := namedBinds[s.keyID(elementType)]; ok {
-		if !s.opts.Is(injopts.CacheOptAllowOverride) {
-			return false, remyErrs.ErrAlreadyBound{Key: elementType}
-		}
-		wasOverridden = true
+	backend, ok := s.namedElements[name]
+	if !ok {
+		// Create new backend for this name
+		backend = s.newNamedBackend()
+		s.namedElements[name] = backend
 	}
-	namedBinds[s.keyID(elementType)] = value
-	s.namedElements[name] = namedBinds
-	return
+
+	allowOverride := s.opts.Is(injopts.CacheOptAllowOverride)
+	triedOverride := backend.Set(s.keyID(elementType), value, allowOverride)
+
+	if triedOverride && !allowOverride {
+		return false, remyErrs.ErrAlreadyBound{Key: elementType}
+	}
+
+	return triedOverride, nil
 }
 
 func (s *ElementsStorage[T]) GetNamed(elementType T, name string) (result any, err error) {
-	if elementMap, ok := s.namedElements[name]; ok && elementMap != nil {
-		result, ok = elementMap[s.keyID(elementType)]
-		if !ok {
-			err = remyErrs.ErrElementNotRegistered{Key: elementType}
-		}
-		return result, err
+	backend, ok := s.namedElements[name]
+	if !ok {
+		return nil, remyErrs.ErrElementNotRegistered{Key: elementType}
 	}
-	return nil, remyErrs.ErrElementNotRegistered{Key: elementType}
+	return backend.Get(s.keyID(elementType))
 }
 
 func (s *ElementsStorage[T]) Get(key T) (result any, err error) {
-	var ok bool
-	if result, ok = s.elements[s.keyID(key)]; !ok {
-		err = remyErrs.ErrElementNotRegistered{Key: key}
-	}
-	return
+	return s.elements.Get(s.keyID(key))
 }
 
-func (s *ElementsStorage[T]) GetAll(optKey ...string) (resultList []any, err error) {
-	if !s.opts.Is(injopts.CacheOptReturnAll) {
-		err = remyErrs.ErrConfigNotAllowReturnAll
-		return
-	}
-
-	fromList := s.elements
-	if len(optKey) > 0 {
-		if keyTag := optKey[0]; keyTag != "" {
-			fromList = s.namedElements[keyTag]
-		}
-	}
-
-	resultList = make([]any, 0, len(fromList))
-	for _, value := range fromList {
-		resultList = append(resultList, value)
-	}
-	return
-}
+// GetAll is implemented in key_type.go, key_type_go124.go, and key_type_nounsafe.go
+// with build tags to handle different backend types
