@@ -2,7 +2,6 @@ package stgbind
 
 import (
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
-	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 )
 
@@ -11,7 +10,6 @@ type (
 	genericAnyMap[T comparable]   map[T]any
 	ElementsStorage[T comparable] struct {
 		opts          injopts.CacheConfOption
-		reflectOpts   types.ReflectionOptions
 		namedElements map[string]genericAnyMap[T]
 		elements      genericAnyMap[T]
 	}
@@ -19,18 +17,12 @@ type (
 
 func NewElementsStorage[T comparable](
 	opts injopts.CacheConfOption,
-	reflectionOptions types.ReflectionOptions,
 ) *ElementsStorage[T] {
 	return &ElementsStorage[T]{
 		opts:          opts,
-		reflectOpts:   reflectionOptions,
 		namedElements: map[string]genericAnyMap[T]{},
 		elements:      genericAnyMap[T]{},
 	}
-}
-
-func (s *ElementsStorage[T]) ReflectOpts() types.ReflectionOptions {
-	return s.reflectOpts
 }
 
 func (s *ElementsStorage[T]) Set(key T, value any) (wasOverridden bool, err error) {

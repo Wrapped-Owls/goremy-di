@@ -15,7 +15,7 @@ func registerInjections(ij remy.Injector) {
 }
 
 func main() {
-	inj := remy.NewInjector(remy.Config{UseReflectionType: false, DuckTypeElements: true})
+	inj := remy.NewInjector(remy.Config{DuckTypeElements: true})
 	// Registering injections
 	registerInjections(inj)
 

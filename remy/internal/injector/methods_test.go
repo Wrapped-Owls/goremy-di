@@ -10,6 +10,7 @@ import (
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 	"github.com/wrapped-owls/goremy-di/remy/test/fixtures"
 )
 
@@ -56,7 +57,7 @@ func TestGenerateBind__InstanceFactory(testObj *testing.T) {
 					},
 				)
 
-				i := New(injopts.CacheOptAllowOverride, types.ReflectionOptions{})
+				i := New(injopts.CacheOptAllowOverride)
 				if err := Register(i, insBind); err != nil {
 					t.Error(err)
 					t.FailNow()
@@ -113,7 +114,7 @@ func TestRegister__Singleton(testObj *testing.T) {
 					},
 				)
 
-				i := New(injopts.CacheOptAllowOverride, types.ReflectionOptions{})
+				i := New(injopts.CacheOptAllowOverride)
 				if invocations != 0 {
 					t.Error("Singleton was generated before register")
 				}
@@ -148,7 +149,7 @@ func TestRegister__Singleton(testObj *testing.T) {
 
 // TestRegister__overrideInstanceByBind verify if when overriding a instance
 func TestRegister__overrideInstanceByBind(t *testing.T) {
-	inj := New(injopts.CacheOptNone, types.ReflectionOptions{})
+	inj := New(injopts.CacheOptNone)
 	const (
 		expectedString   = "avocado"
 		unexpectedString = "banana"
@@ -190,22 +191,17 @@ func TestGetWith(t *testing.T) {
 	testCases := [...]struct {
 		name           string
 		getGenCallback func(ij types.Injector) string
-		useReflection  bool
 	}{
 		{
-			name:          "GetWithPairs[string]",
-			useReflection: true,
+			name: "GetWithPairs[string]",
 			getGenCallback: func(ij types.Injector) string {
 				result, _ := GetWithPairs[string](
 					ij,
-					[]types.InstancePair[any]{
-						{Value: uint8(42)},
-						{Value: "Go", Tag: "lang"},
-						{Value: true},
-						{
-							Value:          interfaceValue,
-							InterfaceValue: (*fixtures.Language)(nil),
-						},
+					[]types.BindEntry{
+						types.NewBindPair(uint8(42), ""),
+						types.NewBindPair("Go", "lang"),
+						types.NewBindPair(true, ""),
+						types.NewBindPair[fixtures.Language](interfaceValue, ""),
 					},
 				)
 				return result
@@ -234,10 +230,7 @@ func TestGetWith(t *testing.T) {
 	}
 
 	for _, tCase := range testCases {
-		i := New(
-			injopts.CacheOptAllowOverride,
-			types.ReflectionOptions{UseReflectionType: tCase.useReflection},
-		)
+		i := New(injopts.CacheOptAllowOverride)
 		_ = Register(
 			i, binds.Factory(
 				func(retriever types.DependencyRetriever) (result string, err error) {
@@ -293,10 +286,7 @@ func TestGetWithPairs_withDirectBindKey(t *testing.T) {
 	// Regular Show themed: Mordecai and Rigby work at the park at 3 PM
 	const expected = "Mordecai and Rigby work at the park at 3 PM, during: 42 minutes, is weekend: true"
 
-	i := New(
-		injopts.CacheOptAllowOverride,
-		types.ReflectionOptions{UseReflectionType: false, GenerifyInterface: false},
-	)
+	i := New(injopts.CacheOptAllowOverride)
 
 	errFirstRegister := errors.Join(
 		Register(
@@ -329,14 +319,13 @@ func TestGetWithPairs_withDirectBindKey(t *testing.T) {
 	}
 
 	// Test with direct BindKey provided - when Key is provided, InterfaceValue is not needed
-	// This test specifically validates that providing a direct Key works even with reflection disabled
 	result, err := GetWithPairs[string](
-		i, []types.InstancePair[any]{
-			{Key: types.KeyElem[uint8]{}, Value: uint8(42)},
-			{Key: types.KeyElem[string]{}, Value: "Mordecai", Tag: "employee1"},
-			{Key: types.KeyElem[string]{}, Value: "Rigby", Tag: "employee2"},
-			{Key: types.KeyElem[time.Time]{}, Value: time.Date(2024, 1, 1, 15, 0, 0, 0, time.UTC)},
-			{Key: types.KeyElem[bool]{}, Value: true},
+		i, []types.BindEntry{
+			types.NewBindPair(uint8(42), ""),
+			types.NewBindPair("Mordecai", "employee1"),
+			types.NewBindPair("Rigby", "employee2"),
+			types.NewBindPair(time.Date(2024, 1, 1, 15, 0, 0, 0, time.UTC), ""),
+			types.NewBindPair(true, ""),
 		},
 	)
 	if err != nil {
@@ -369,10 +358,7 @@ func TestGetWithPairs_withDirectBindKey(t *testing.T) {
 
 func TestGetGen_raiseCastError(t *testing.T) {
 	var (
-		i = New(
-			injopts.CacheOptAllowOverride,
-			types.ReflectionOptions{UseReflectionType: true},
-		)
+		i                                = New(injopts.CacheOptAllowOverride)
 		interfaceValue fixtures.Language = fixtures.GoProgrammingLang{}
 	)
 	err := Register(
@@ -394,13 +380,7 @@ func TestGetGen_raiseCastError(t *testing.T) {
 	t.Run(
 		"Correctly bind registration", func(t *testing.T) {
 			_, err = GetWithPairs[string](
-				i,
-				[]types.InstancePair[any]{
-					{
-						Value:          interfaceValue,
-						InterfaceValue: (*fixtures.Language)(nil),
-					},
-				},
+				i, []types.BindEntry{types.NewBindPair[fixtures.Language](interfaceValue, "")},
 			)
 			if err != nil {
 				t.Error(err)
@@ -413,10 +393,10 @@ func TestGetGen_raiseCastError(t *testing.T) {
 		"Register pointer interface value", func(t *testing.T) {
 			_, err = GetWithPairs[string](
 				i,
-				[]types.InstancePair[any]{
-					{
-						Value:          &interfaceValue,
-						InterfaceValue: (*fixtures.Language)(nil),
+				[]types.BindEntry{
+					types.InstancePair[*fixtures.Language]{
+						Key:   utils.NewKeyElem[fixtures.Language](),
+						Value: &interfaceValue,
 					},
 				},
 			)
@@ -469,7 +449,7 @@ func TestGet_duckTypeInterface(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(
 			tt.name, func(t *testing.T) {
-				i := New(injopts.CacheOptReturnAll, types.ReflectionOptions{})
+				i := New(injopts.CacheOptReturnAll)
 				err := Register(
 					i, binds.Factory(
 						func(retriever types.DependencyRetriever) (result string, getErr error) {
@@ -514,7 +494,7 @@ func TestGet_duckTypeInterface(t *testing.T) {
 }
 
 func testGuestSubtype[T, K interface{ ~int32 | ~uint8 | ~float64 }](t *testing.T) {
-	i := New(injopts.CacheOptReturnAll, types.ReflectionOptions{})
+	i := New(injopts.CacheOptReturnAll)
 	var (
 		registerElement K = 0b101010
 		expectedElement T // zero value
@@ -551,7 +531,7 @@ func TestGet_guessSubtypes(t *testing.T) {
 
 func TestGetAll_withGeneratedBind(t *testing.T) {
 	const expectedLanguage = "Portuguese"
-	i := New(injopts.CacheOptReturnAll, types.ReflectionOptions{})
+	i := New(injopts.CacheOptReturnAll)
 	err := Register(
 		i,
 		binds.Factory(func(retriever types.DependencyRetriever) (fixtures.CountryLanguage, error) {
@@ -577,7 +557,7 @@ func TestGetAll_withGeneratedBind(t *testing.T) {
 
 func TestGetWith_withParentDuckTyping(t *testing.T) {
 	// Create parent injector with CacheOptReturnAll enabled (allows GetAll)
-	parent := New(injopts.CacheOptReturnAll, types.ReflectionOptions{})
+	parent := New(injopts.CacheOptReturnAll)
 
 	// Register an interface implementation in the parent injector
 	langImpl := fixtures.GoProgrammingLang{}

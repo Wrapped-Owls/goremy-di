@@ -1,17 +1,15 @@
 package utils
 
 import (
-	"fmt"
 	"testing"
 	"unsafe"
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
-	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 	aTypes "github.com/wrapped-owls/goremy-di/remy/test/fixtures/a/testtypes"
 	bTypes "github.com/wrapped-owls/goremy-di/remy/test/fixtures/b/testtypes"
 )
 
-func TestGetKey__Generify(t *testing.T) {
+func TestNewKeyElem__Generify(t *testing.T) {
 	type (
 		super interface {
 			a() bool
@@ -24,61 +22,50 @@ func TestGetKey__Generify(t *testing.T) {
 		}
 	)
 
-	options := injopts.KeyOptNone
-	if GetKey[super](options) == GetKey[sub](options) {
-		t.Error("type names was the same when should not generify")
+	keys := struct{ super, sub types.BindKey }{
+		sub:   NewKeyElem[sub](),
+		super: NewKeyElem[super](),
 	}
-
-	options = injopts.KeyOptGenerifyInterface
-	if GetKey[super](options) != GetKey[sub](options) {
-		t.Error("generified type name should be the same")
+	if keys.super == keys.sub {
+		t.Error("type names was the same when should not generify")
 	}
 }
 
-func TestGetKey_GenerifyWithoutReflection(t *testing.T) {
+func TestNewKeyElem_GenerifyWithSameDeclaration(t *testing.T) {
 	type (
 		super interface{ Do() string }
 		sub   interface{ Do() string }
 		concr struct{ value string } //nolint:unused // only used to test concrete type
 	)
 
-	options := injopts.KeyOptGenerifyInterface
-
-	if GetKey[super](options) != GetKey[sub](options) {
-		t.Fatalf("expected generified interfaces to share same key")
+	keys := struct{ super, sub, concr types.BindKey }{
+		sub:   NewKeyElem[sub](),
+		super: NewKeyElem[super](),
+		concr: NewKeyElem[concr](),
+	}
+	if keys.super == keys.sub {
+		t.Fatalf("expected interfaces to have different keys (generification removed)")
 	}
 
-	if _, isStrKey := GetKey[super](options).(types.StrKeyElem); !isStrKey {
-		t.Fatalf("expected interface key to be StrKeyElem when generify is on")
-	}
-
-	if _, isStrKey := GetKey[concr](options).(types.StrKeyElem); isStrKey {
-		t.Fatalf("expected concrete type to keep KeyElem when reflection disabled")
-	}
-	if _, ok := GetKey[concr](options).(types.KeyElem[concr]); !ok {
-		t.Fatalf("expected concrete type to return KeyElem when reflection disabled")
+	if keys.sub == keys.concr {
+		t.Fatalf("expected concrete type to be different from interface type")
 	}
 }
 
-func TestGetKey__SameStructWithDifferentPackage(t *testing.T) {
-	options := injopts.KeyOptUseReflectionType
-	if GetKey[aTypes.Syringe](options) == GetKey[bTypes.Syringe](options) {
+func TestNewKeyElem__SameStructWithDifferentPackage(t *testing.T) {
+	// types from different packages will have different keys
+	keys := struct{ a, b types.BindKey }{
+		a: NewKeyElem[aTypes.Syringe](),
+		b: NewKeyElem[bTypes.Syringe](),
+	}
+	if keys.a == keys.b {
 		t.Error(
 			"type names was the same, when it should be different, because of different packages",
 		)
 	}
-
-	options = injopts.KeyOptUseReflectionType
-	elemKey, err := GetElemKey(t, options)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if elemKey != GetKey[*testing.T](options) {
-		t.Error("element type should be the same from type and object")
-	}
 }
 
-func TestGetKey__Functions(t *testing.T) {
+func TestNewKeyElem__Functions(t *testing.T) {
 	type (
 		voidCallback        = func()
 		stringCallback      = func() string
@@ -91,58 +78,55 @@ func TestGetKey__Functions(t *testing.T) {
 		namedBoolCheckerCallback = func(languages ...string) bool
 	)
 
-	optionsCases := [...]injopts.KeyGenOption{
-		injopts.KeyOptNone, injopts.KeyOptUseReflectionType,
-	}
-
-	for _, optCase := range optionsCases {
-		// Check for named and unnamed functions
-		t.Run(
-			fmt.Sprintf("NamedUnnamed functions - %+v", optCase), func(t *testing.T) {
-				cases := [...][2]types.BindKey{
-					{GetKey[namedStringCallback](optCase), GetKey[stringCallback](optCase)},
-					{GetKey[namedMultiArgsCallback](optCase), GetKey[multiArgsCallback](optCase)},
-					{
-						GetKey[namedBoolCheckerCallback](optCase),
-						GetKey[boolCheckerCallback](optCase),
-					},
+	// Check for named and unnamed functions
+	t.Run(
+		"NamedUnnamed functions", func(t *testing.T) {
+			cases := [...][2]types.BindKey{
+				{NewKeyElem[namedStringCallback](), NewKeyElem[stringCallback]()},
+				{NewKeyElem[namedMultiArgsCallback](), NewKeyElem[multiArgsCallback]()},
+				{
+					NewKeyElem[namedBoolCheckerCallback](),
+					NewKeyElem[boolCheckerCallback](),
+				},
+			}
+			for _, results := range cases {
+				if results[0] != results[1] {
+					t.Errorf(
+						"Named and unnamed functions have been identified as different\nExpected: `%s`\nReceived: `%s`",
+						results[0],
+						results[1],
+					)
 				}
-				for _, results := range cases {
-					if results[0] != results[1] {
-						t.Errorf(
-							"Named and unnamed functions have been identified as different\nExpected: `%s`\nReceived: `%s`",
-							results[0],
-							results[1],
-						)
-					}
-				}
-			},
-		)
+			}
+		},
+	)
 
-		// Check for function types that are different
-		t.Run(
-			fmt.Sprintf("Different function types - %+v", optCase), func(t *testing.T) {
-				cases := [...][2]types.BindKey{
-					{GetKey[namedStringCallback](optCase), GetKey[voidCallback](optCase)},
-					{GetKey[stringCallback](optCase), GetKey[multiArgsCallback](optCase)},
-					{GetKey[voidCallback](optCase), GetKey[boolCheckerCallback](optCase)},
-				}
+	// Check for function types that are different
+	t.Run(
+		"Different function types", func(t *testing.T) {
+			cases := [...][2]types.BindKey{
+				{NewKeyElem[namedStringCallback](), NewKeyElem[voidCallback]()},
+				{NewKeyElem[stringCallback](), NewKeyElem[multiArgsCallback]()},
+				{NewKeyElem[voidCallback](), NewKeyElem[boolCheckerCallback]()},
+			}
 
-				for _, results := range cases {
-					if results[0] == results[1] {
-						t.Errorf(
-							"Function types should be different\nFunc_1: `%s`\nFunc_2: `%s`",
-							results[0], results[1],
-						)
-					}
+			for _, results := range cases {
+				if results[0] == results[1] {
+					t.Errorf(
+						"Function types should be different\nFunc_1: `%s`\nFunc_2: `%s`",
+						results[0], results[1],
+					)
 				}
-			},
-		)
+			}
+		},
+	)
 
-		// Check for function pointers
-		if GetKey[namedStringCallback](optCase) == GetKey[*namedStringCallback](optCase) {
-			t.Error("Function pointer should be different than function type")
-		}
+	// Check for function pointers
+	var keys struct{ raw, ptr types.BindKey }
+	keys.raw = NewKeyElem[namedStringCallback]()
+	keys.ptr = NewKeyElem[*namedStringCallback]()
+	if keys.raw == keys.ptr {
+		t.Error("Function pointer should be different than function type")
 	}
 }
 

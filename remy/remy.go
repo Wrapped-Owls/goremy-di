@@ -11,20 +11,7 @@ import (
 type (
 	DependencyRetriever = types.DependencyRetriever
 	Injector            = types.Injector
-	InstancePairAny     = types.InstancePair[any]
 	BindOptions         = types.BindOptions
-
-	// BindKey is the internal type used to generate all type keys, and used to retrieve all types from the injector.
-	// Is not supposed to use directly without the remy library, as this remove the main use of the remy-generics methods
-	BindKey = types.BindKey
-
-	// ReflectionOptions All options internally used to know how and when to use the `reflect` package
-	ReflectionOptions = types.ReflectionOptions
-
-	// Bind is directly copy from types.Bind
-	Bind[T any] interface {
-		types.Bind[T]
-	}
 
 	// Config defines needed configuration to instantiate a new injector
 	Config struct {
@@ -40,18 +27,6 @@ type (
 		//
 		// CAUTION: It costly a lot, since it will try to discover all registered elements
 		DuckTypeElements bool
-
-		// GenerifyInterfaces defines the method to check for interface binds.
-		// If this parameter is true, then an interface that is defined in two different packages,
-		// but has the same signature methods, will generate the same key. If is false, all interfaces will generate
-		// a different key.
-		GenerifyInterfaces bool
-
-		// UseReflectionType defines the injector to use reflection when saving and retrieving types.
-		// This parameter is useful when you want to use types with different modules but the same name and package names.
-		//
-		// Optional, default is false.
-		UseReflectionType bool
 	}
 )
 
@@ -60,24 +35,17 @@ func NewBindKey[T any](_ ...T) BindKey {
 }
 
 func NewInjector(configs ...Config) Injector {
-	cfg := Config{
-		CanOverride:        false,
-		GenerifyInterfaces: false,
-	}
+	cfg := Config{}
 	if len(configs) > 0 {
 		cfg = configs[0]
 	}
 
-	reflectOpts := types.ReflectionOptions{
-		GenerifyInterface: cfg.GenerifyInterfaces,
-		UseReflectionType: cfg.UseReflectionType,
-	}
 	cacheOpts := cacheOptsFromConfig(cfg)
 
 	if cfg.ParentInjector != nil {
-		return injector.New(cacheOpts, reflectOpts, cfg.ParentInjector)
+		return injector.New(cacheOpts, cfg.ParentInjector)
 	}
-	return injector.New(cacheOpts, reflectOpts)
+	return injector.New(cacheOpts)
 }
 
 // Register must be called first, because the library doesn't support registering dependencies while get at same time.
@@ -187,24 +155,24 @@ func MaybeGet[T any](i DependencyRetriever, optTag ...string) T {
 	return result
 }
 
-// GetWithPairs creates a sub-injector and access the retriever to generate and return a Factory bind.
+// GetWithPairs creates a sub-injector and accesses the retriever to generate and return a Factory bind.
 // Additionally, it returns an error which indicates if the bind was found or not.
 //
-// Receives: DependencyRetriever (required); []InstancePairAny (required); tag (optional)
+// Receives: DependencyRetriever (required); []BindEntry (required); tag (optional)
 func GetWithPairs[T any](
-	i DependencyRetriever, elements []InstancePairAny, optTag ...string,
+	i DependencyRetriever, elements []BindEntry, optTag ...string,
 ) (result T, err error) {
 	defer recoverInjectorPanic(&err)
 	result, err = injector.GetWithPairs[T](mustRetriever(i), elements, optTag...)
 	return result, err
 }
 
-// MustGetWithPairs creates a sub-injector and access the retriever to generate and return a Factory bind.
+// MustGetWithPairs creates a sub-injector and accesses the retriever to generate and return a Factory bind.
 // Panics if an error occurs.
 //
-// Receives: DependencyRetriever (required); []InstancePairAny (required); tag (optional)
+// Receives: DependencyRetriever (required); []BindEntry (required); tag (optional)
 func MustGetWithPairs[T any](
-	i DependencyRetriever, elements []InstancePairAny, optTag ...string,
+	i DependencyRetriever, elements []BindEntry, optTag ...string,
 ) T {
 	result, err := GetWithPairs[T](i, elements, optTag...)
 	if err != nil {
@@ -213,18 +181,18 @@ func MustGetWithPairs[T any](
 	return result
 }
 
-// MaybeGetWithPairs creates a sub-injector and access the retriever to generate and return a Factory bind.
+// MaybeGetWithPairs creates a sub-injector and accesses the retriever to generate and return a Factory bind.
 // Returns the zero value of the type if an error occurs.
 //
-// Receives: DependencyRetriever (required); []InstancePairAny (required); tag (optional)
+// Receives: DependencyRetriever (required); []BindEntry (required); tag (optional)
 func MaybeGetWithPairs[T any](
-	i DependencyRetriever, elements []InstancePairAny, optTag ...string,
+	i DependencyRetriever, elements []BindEntry, optTag ...string,
 ) T {
 	result, _ := GetWithPairs[T](i, elements, optTag...)
 	return result
 }
 
-// GetWith creates a sub-injector and access the retriever to generate and return a Factory bind.
+// GetWith creates a sub-injector and accesses the retriever to generate and return a Factory bind.
 // Additionally, it returns an error which indicates if the bind was found or not.
 //
 // Receives: DependencyRetriever (required); func(Injector) (required); tag (optional)
@@ -236,7 +204,7 @@ func GetWith[T any](
 	return result, err
 }
 
-// MustGetWith creates a sub-injector and access the retriever to generate and return a Factory bind.
+// MustGetWith creates a sub-injector and accesses the retriever to generate and return a Factory bind.
 // Panics if an error occurs.
 //
 // Receives: DependencyRetriever (required); func(Injector) (required); tag (optional)
@@ -248,7 +216,7 @@ func MustGetWith[T any](i DependencyRetriever, binder func(Injector) error, optT
 	return result
 }
 
-// MaybeGetWith creates a sub-injector and access the retriever to generate and return a Factory bind.
+// MaybeGetWith creates a sub-injector and accesses the retriever to generate and return a Factory bind.
 // Returns the zero value of the type if an error occurs.
 //
 // Receives: DependencyRetriever (required); func(Injector) (required); tag (optional)
@@ -262,7 +230,7 @@ func GetWithContext[T any](
 ) (result T, err error) {
 	defer recoverInjectorPanic(&err)
 	result, err = injector.GetWithPairs[T](
-		i, []InstancePairAny{{Key: NewBindKey[context.Context](), Value: ctx}}, optTag...,
+		i, []types.BindEntry{NewBindEntry(ctx)}, optTag...,
 	)
 	return result, err
 }

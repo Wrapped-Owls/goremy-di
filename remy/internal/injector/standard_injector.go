@@ -12,7 +12,6 @@ import (
 type (
 	StdInjector struct {
 		cacheOpts      injopts.CacheConfOption
-		reflectOpts    types.ReflectionOptions
 		parentInjector types.DependencyRetriever
 		cacheStorage   types.Storage[types.BindKey]
 	}
@@ -20,7 +19,6 @@ type (
 
 func New(
 	opts injopts.CacheConfOption,
-	reflectOpts types.ReflectionOptions,
 	parent ...types.DependencyRetriever,
 ) *StdInjector {
 	var parentInjector types.DependencyRetriever
@@ -31,8 +29,7 @@ func New(
 	return &StdInjector{
 		cacheOpts:      opts,
 		parentInjector: parentInjector,
-		reflectOpts:    reflectOpts,
-		cacheStorage:   stgbind.NewElementsStorage[types.BindKey](opts, reflectOpts),
+		cacheStorage:   stgbind.NewElementsStorage[types.BindKey](opts),
 	}
 }
 
@@ -49,15 +46,11 @@ func (s *StdInjector) SubInjector(overrides ...bool) types.Injector {
 		subOpts -= injopts.CacheOptAllowOverride
 	}
 
-	return New(subOpts, s.reflectOpts, s)
+	return New(subOpts, s)
 }
 
 func (s *StdInjector) WrapRetriever() types.Injector {
 	return nil
-}
-
-func (s *StdInjector) ReflectOpts() types.ReflectionOptions {
-	return s.reflectOpts
 }
 
 func (s *StdInjector) checkValidOverride(
