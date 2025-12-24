@@ -29,7 +29,7 @@ func RegisterWithOverride[T any](ij types.Injector, bind types.Bind[T], optTag .
 }
 
 func registerNewDep[T any](ij types.Injector, bind types.Bind[T], opts types.BindOptions) error {
-	elementType := utils.GetKey[T](injopts.KeyOptsFromStruct(ij.ReflectOpts()))
+	elementType := utils.NewKeyElem[T]()
 	var retriever types.DependencyRetriever = ij
 	if wrappedRetriever := retriever.WrapRetriever(); wrappedRetriever != nil {
 		retriever = wrappedRetriever
@@ -102,7 +102,7 @@ func GetAll[T any](
 	}
 
 	if len(resultList) == 0 {
-		bindKey := utils.GetKey[T](injopts.KeyOptNone)
+		bindKey := utils.NewKeyElem[T]()
 		err = remyErrs.ErrElementNotRegistered{Key: bindKey}
 	}
 
@@ -123,7 +123,7 @@ func getByGuess[T any](
 		return element, nil
 	}
 
-	bindKey := utils.GetKey[T](injopts.KeyOptNone)
+	bindKey := utils.NewKeyElem[T]()
 	err = remyErrs.ErrMultipleDIDuckTypingCandidates{Type: bindKey, Count: totalFound}
 	if totalFound == 0 {
 		err = remyErrs.ErrElementNotRegistered{Key: bindKey}
@@ -135,7 +135,7 @@ func getByGuess[T any](
 func Get[T any](retriever types.DependencyRetriever, tags ...string) (element T, err error) {
 	var (
 		key         string
-		elementType = utils.GetKey[T](injopts.KeyOptsFromStruct(retriever.ReflectOpts()))
+		elementType = utils.NewKeyElem[T]()
 	)
 
 	if len(tags) > 0 {
@@ -183,21 +183,12 @@ func TryGet[T any](retriever types.DependencyRetriever, tags ...string) (result 
 func GetWithPairs[T any](
 	retriever types.DependencyRetriever, elements []types.InstancePair[any], tags ...string,
 ) (result T, err error) {
-	subInjector := New(injopts.CacheOptNone, retriever.ReflectOpts(), retriever)
+	subInjector := New(injopts.CacheOptNone, retriever)
 	for _, element := range elements {
 		bindKey := element.Key
 		if bindKey == nil { // Gen a bindKey if none is provided
-			var (
-				opts       = injopts.KeyOptsFromStruct(subInjector.ReflectOpts())
-				typeSeeker = element.Value
-			)
-			if element.InterfaceValue != nil {
-				opts |= injopts.KeyOptIgnorePointer
-				typeSeeker = element.InterfaceValue
-			}
-			if bindKey, err = utils.GetElemKey(typeSeeker, opts); err != nil {
-				return
-			}
+			err = remyErrs.ErrImpossibleIdentifyType{Type: new(T)}
+			return
 		}
 		if err = subInjector.BindElem(bindKey, element.Value, types.BindOptions{Tag: element.Tag}); err != nil {
 			return
@@ -211,7 +202,7 @@ func GetWith[T any](
 	retriever types.DependencyRetriever,
 	binder func(injector types.Injector) error, tags ...string,
 ) (result T, err error) {
-	subInjector := New(injopts.CacheOptNone, retriever.ReflectOpts(), retriever)
+	subInjector := New(injopts.CacheOptNone, retriever)
 	if err = binder(subInjector); err != nil {
 		return
 	}
