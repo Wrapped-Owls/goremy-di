@@ -15,12 +15,9 @@ var (
 	ErrConfigNotAllowReturnAll        = errors.New(
 		"the current injector config does not allow returning all elements",
 	)
-	ErrCycleDependencyDetectedSentinel         = &ErrCycleDependencyDetected{}
-	ErrTypeCastInRuntimeSentinel               = &ErrTypeCastInRuntime{}
-	ErrFoundMoreThanOneValidDISentinel         = &ErrMultipleDIDuckTypingCandidates{}
-	ErrGetElementTypeRequiresReflectionEnabled = errors.New(
-		"to execute runtime type detection from object, the reflection option must be enabled",
-	)
+	ErrCycleDependencyDetectedSentinel = &ErrCycleDependencyDetected{}
+	ErrTypeCastInRuntimeSentinel       = &ErrTypeCastInRuntime{}
+	ErrFoundMoreThanOneValidDISentinel = &ErrMultipleDIDuckTypingCandidates{}
 )
 
 func genDebugKeyTypeName(typeKey any) (givenType string) {

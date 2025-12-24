@@ -319,7 +319,6 @@ func TestGetWithPairs_withDirectBindKey(t *testing.T) {
 	}
 
 	// Test with direct BindKey provided - when Key is provided, InterfaceValue is not needed
-	// This test specifically validates that providing a direct Key works even with reflection disabled
 	result, err := GetWithPairs[string](
 		i, []types.InstancePair[any]{
 			{Key: types.KeyElem[uint8]{}, Value: uint8(42)},

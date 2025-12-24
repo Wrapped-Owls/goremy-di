@@ -53,7 +53,7 @@ func TestNewKeyElem_GenerifyWithSameDeclaration(t *testing.T) {
 }
 
 func TestNewKeyElem__SameStructWithDifferentPackage(t *testing.T) {
-	// Without reflection, types from different packages will have different keys
+	// types from different packages will have different keys
 	keys := struct{ a, b types.BindKey }{
 		a: NewKeyElem[aTypes.Syringe](),
 		b: NewKeyElem[bTypes.Syringe](),

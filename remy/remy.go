@@ -18,9 +18,6 @@ type (
 	// Is not supposed to use directly without the remy library, as this remove the main use of the remy-generics methods
 	BindKey = types.BindKey
 
-	// ReflectionOptions All options internally used to know how and when to use the `reflect` package
-	ReflectionOptions = types.ReflectionOptions
-
 	// Bind is directly copy from types.Bind
 	Bind[T any] interface {
 		types.Bind[T]
@@ -40,18 +37,6 @@ type (
 		//
 		// CAUTION: It costly a lot, since it will try to discover all registered elements
 		DuckTypeElements bool
-
-		// GenerifyInterfaces defines the method to check for interface binds.
-		// If this parameter is true, then an interface that is defined in two different packages,
-		// but has the same signature methods, will generate the same key. If is false, all interfaces will generate
-		// a different key.
-		GenerifyInterfaces bool
-
-		// UseReflectionType defines the injector to use reflection when saving and retrieving types.
-		// This parameter is useful when you want to use types with different modules but the same name and package names.
-		//
-		// Optional, default is false.
-		UseReflectionType bool
 	}
 )
 
@@ -60,24 +45,17 @@ func NewBindKey[T any](_ ...T) BindKey {
 }
 
 func NewInjector(configs ...Config) Injector {
-	cfg := Config{
-		CanOverride:        false,
-		GenerifyInterfaces: false,
-	}
+	cfg := Config{}
 	if len(configs) > 0 {
 		cfg = configs[0]
 	}
 
-	reflectOpts := types.ReflectionOptions{
-		GenerifyInterface: cfg.GenerifyInterfaces,
-		UseReflectionType: cfg.UseReflectionType,
-	}
 	cacheOpts := cacheOptsFromConfig(cfg)
 
 	if cfg.ParentInjector != nil {
-		return injector.New(cacheOpts, reflectOpts, cfg.ParentInjector)
+		return injector.New(cacheOpts, cfg.ParentInjector)
 	}
-	return injector.New(cacheOpts, reflectOpts)
+	return injector.New(cacheOpts)
 }
 
 // Register must be called first, because the library doesn't support registering dependencies while get at same time.
