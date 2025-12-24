@@ -1,9 +1,6 @@
 package types
 
 type (
-	CheckReflectionOptions interface {
-		ReflectOpts() ReflectionOptions
-	}
 	ValuesSetter[K comparable, T any] interface {
 		// Set uses the T key given to save the value.
 		// If the key is already bound, it returns a boolean with value true.
@@ -14,7 +11,6 @@ type (
 		// If the key is already bound, it returns a boolean with value true.
 		// Returns an error if the key cannot be set (e.g., override not allowed).
 		SetNamed(K, string, T) (wasOverridden bool, err error)
-		CheckReflectionOptions
 	}
 	AllValuesGetter[T any] interface {
 		// GetAll returns all elements from the storage that hasn't a key
@@ -28,7 +24,6 @@ type (
 		Get(K) (T, error)
 
 		AllValuesGetter[T]
-		CheckReflectionOptions
 	}
 
 	// Storage is the main cache interface that is used by the injector to store the values
@@ -43,7 +38,6 @@ type (
 		RetrieveBind(bindKey BindKey, tag string) (any, error)
 
 		AllValuesGetter[any]
-		CheckReflectionOptions
 	}
 
 	// Injector is the main interface that contains all needed methods to make an injector work
