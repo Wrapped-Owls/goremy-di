@@ -5,6 +5,17 @@ import (
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 )
 
+type (
+	// BindKey is the internal type used to generate all type keys, and used to retrieve all types from the injector.
+	// Is not supposed to use directly without the remy library, as this remove the main use of the remy-generics methods
+	BindKey = types.BindKey
+
+	// Bind is directly copy from types.Bind
+	Bind[T any] interface {
+		types.Bind[T]
+	}
+)
+
 // Instance generates a bind that will be registered as a single instance during bind register in the Injector.
 //
 // This bind type has no protection over concurrency, so it's not recommended to be used a struct that performs some
@@ -42,4 +53,14 @@ func Singleton[T any](binder types.Binder[T]) Bind[T] {
 // It is useful in cases that you want to instantiate heavier objects only when it's needed.
 func LazySingleton[T any](binder types.Binder[T]) Bind[T] {
 	return binds.LazySingleton(binder)
+}
+
+type BindEntry = types.BindEntry
+
+func NewBindEntry[T any](value T) BindEntry {
+	return types.NewBindPair(value, "")
+}
+
+func NewBindEntryTagged[T any](value T, tag string) BindEntry {
+	return types.NewBindPair(value, tag)
 }
