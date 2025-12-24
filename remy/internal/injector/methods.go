@@ -181,16 +181,16 @@ func TryGet[T any](retriever types.DependencyRetriever, tags ...string) (result 
 }
 
 func GetWithPairs[T any](
-	retriever types.DependencyRetriever, elements []types.InstancePair[any], tags ...string,
+	retriever types.DependencyRetriever, elements []types.BindEntry, tags ...string,
 ) (result T, err error) {
 	subInjector := New(injopts.CacheOptNone, retriever)
 	for _, element := range elements {
-		bindKey := element.Key
+		value, bindKey := element.Entry()
 		if bindKey == nil { // Gen a bindKey if none is provided
 			err = remyErrs.ErrImpossibleIdentifyType{Type: new(T)}
 			return
 		}
-		if err = subInjector.BindElem(bindKey, element.Value, types.BindOptions{Tag: element.Tag}); err != nil {
+		if err = subInjector.BindElem(bindKey, value, types.BindOptions{Tag: element.Tag()}); err != nil {
 			return
 		}
 	}
