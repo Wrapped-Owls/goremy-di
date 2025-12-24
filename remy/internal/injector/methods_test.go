@@ -197,11 +197,11 @@ func TestGetWith(t *testing.T) {
 			getGenCallback: func(ij types.Injector) string {
 				result, _ := GetWithPairs[string](
 					ij,
-					[]types.InstancePair[any]{
-						{Key: utils.NewKeyElem[uint8](), Value: uint8(42)},
-						{Key: utils.NewKeyElem[string](), Value: "Go", Tag: "lang"},
-						{Key: utils.NewKeyElem[bool](), Value: true},
-						{Key: utils.NewKeyElem[fixtures.Language](), Value: interfaceValue},
+					[]types.BindEntry{
+						types.NewBindPair(uint8(42), ""),
+						types.NewBindPair("Go", "lang"),
+						types.NewBindPair(true, ""),
+						types.NewBindPair[fixtures.Language](interfaceValue, ""),
 					},
 				)
 				return result
@@ -320,12 +320,12 @@ func TestGetWithPairs_withDirectBindKey(t *testing.T) {
 
 	// Test with direct BindKey provided - when Key is provided, InterfaceValue is not needed
 	result, err := GetWithPairs[string](
-		i, []types.InstancePair[any]{
-			{Key: types.KeyElem[uint8]{}, Value: uint8(42)},
-			{Key: types.KeyElem[string]{}, Value: "Mordecai", Tag: "employee1"},
-			{Key: types.KeyElem[string]{}, Value: "Rigby", Tag: "employee2"},
-			{Key: types.KeyElem[time.Time]{}, Value: time.Date(2024, 1, 1, 15, 0, 0, 0, time.UTC)},
-			{Key: types.KeyElem[bool]{}, Value: true},
+		i, []types.BindEntry{
+			types.NewBindPair(uint8(42), ""),
+			types.NewBindPair("Mordecai", "employee1"),
+			types.NewBindPair("Rigby", "employee2"),
+			types.NewBindPair(time.Date(2024, 1, 1, 15, 0, 0, 0, time.UTC), ""),
+			types.NewBindPair(true, ""),
 		},
 	)
 	if err != nil {
@@ -380,13 +380,7 @@ func TestGetGen_raiseCastError(t *testing.T) {
 	t.Run(
 		"Correctly bind registration", func(t *testing.T) {
 			_, err = GetWithPairs[string](
-				i,
-				[]types.InstancePair[any]{
-					{
-						Key:   utils.NewKeyElem[fixtures.Language](),
-						Value: interfaceValue,
-					},
-				},
+				i, []types.BindEntry{types.NewBindPair[fixtures.Language](interfaceValue, "")},
 			)
 			if err != nil {
 				t.Error(err)
@@ -399,8 +393,8 @@ func TestGetGen_raiseCastError(t *testing.T) {
 		"Register pointer interface value", func(t *testing.T) {
 			_, err = GetWithPairs[string](
 				i,
-				[]types.InstancePair[any]{
-					{
+				[]types.BindEntry{
+					types.InstancePair[*fixtures.Language]{
 						Key:   utils.NewKeyElem[fixtures.Language](),
 						Value: &interfaceValue,
 					},
