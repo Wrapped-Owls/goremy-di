@@ -39,10 +39,8 @@ func (c cycleDetectorInjector) SubInjector(allowOverrides ...bool) types.Injecto
 	}
 	inj := NewCycleDetectorInjector(
 		Config{
-			ParentInjector:     c,
-			CanOverride:        shouldOverride,
-			GenerifyInterfaces: c.config.GenerifyInterfaces,
-			UseReflectionType:  c.config.UseReflectionType,
+			ParentInjector: c,
+			CanOverride:    shouldOverride,
 		},
 	)
 	return inj
@@ -100,11 +98,4 @@ func (c cycleDetectorInjector) RetrieveBind(bindKey types.BindKey, tag string) (
 
 func (c cycleDetectorInjector) GetAll(optKey ...string) ([]any, error) {
 	return c.ij.GetAll(optKey...)
-}
-
-func (c cycleDetectorInjector) ReflectOpts() types.ReflectionOptions {
-	return types.ReflectionOptions{
-		GenerifyInterface: c.config.GenerifyInterfaces,
-		UseReflectionType: c.config.UseReflectionType,
-	}
 }
