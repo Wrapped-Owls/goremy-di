@@ -16,7 +16,7 @@ func TestStdInjector_SubInjector(t *testing.T) {
 
 	var counter uint8 = 0
 	_ = Register(
-		parent, binds.Factory(
+		parent, "", binds.Factory(
 			func(retriever types.DependencyRetriever) (uint8, error) {
 				counter++
 				return counter, nil
@@ -25,16 +25,16 @@ func TestStdInjector_SubInjector(t *testing.T) {
 	)
 
 	_ = Register(
-		subInjector, binds.Factory(
+		subInjector, "", binds.Factory(
 			func(retriever types.DependencyRetriever) (string, error) {
-				return fmt.Sprintf("%s %d", strFirstHalf, TryGet[uint8](retriever)), nil
+				return fmt.Sprintf("%s %d", strFirstHalf, TryGet[uint8](retriever, "")), nil
 			},
 		),
 	)
 
 	for i := 0; i < 255; i++ {
 		expected := fmt.Sprintf("%s %d", strFirstHalf, i+1)
-		if result := TryGet[string](subInjector); result != expected {
+		if result := TryGet[string](subInjector, ""); result != expected {
 			t.Errorf(
 				"sub-injector is not calling parent injector correctly. Received: `%s`; Expected: `%s`",
 				result,
@@ -50,7 +50,7 @@ func TestStdInjector_SubInjectorEmpty(t *testing.T) {
 	parent := New(injopts.CacheOptNone)
 	subInjector := parent.SubInjector(false)
 
-	_ = Register(parent, binds.Instance("snake-pong"), elementKey)
+	_ = Register(parent, elementKey, binds.Instance("snake-pong"))
 
 	results := [...]string{
 		TryGet[string](parent, elementKey),
@@ -65,7 +65,7 @@ func TestStdInjector_GetUnboundedElement(t *testing.T) {
 	const errMessage = "An error have not been returned when getting unbounded element"
 	parentInjector := New(injopts.CacheOptNone)
 	for _, ij := range [...]types.Injector{parentInjector, parentInjector.SubInjector()} {
-		if _, err := Get[string](ij); err == nil {
+		if _, err := Get[string](ij, ""); err == nil {
 			t.Error(errMessage)
 		}
 		if _, err := Get[uint8](ij, "release-date"); err == nil {
@@ -80,7 +80,7 @@ func TestStdInjector_SubInjector__OverrideParent(t *testing.T) {
 	subInjector := parent.SubInjector(false)
 
 	_ = Register(
-		parent, binds.Factory(
+		parent, "", binds.Factory(
 			func(retriever types.DependencyRetriever) (uint8, error) {
 				return 101, nil
 			},
@@ -88,15 +88,15 @@ func TestStdInjector_SubInjector__OverrideParent(t *testing.T) {
 	)
 
 	_ = Register(
-		subInjector, binds.Factory(
+		subInjector, "", binds.Factory(
 			func(retriever types.DependencyRetriever) (string, error) {
-				return fmt.Sprintf("%s %d", strFirstHalf, TryGet[uint8](retriever)), nil
+				return fmt.Sprintf("%s %d", strFirstHalf, TryGet[uint8](retriever, "")), nil
 			},
 		),
 	)
 
 	expected := fmt.Sprintf("%s 101", strFirstHalf)
-	if result := TryGet[string](subInjector); result != expected {
+	if result := TryGet[string](subInjector, ""); result != expected {
 		t.Errorf(
 			"sub-injector is not calling parent injector correctly. Received: `%s`; Expected: `%s`",
 			result, expected,
@@ -106,7 +106,7 @@ func TestStdInjector_SubInjector__OverrideParent(t *testing.T) {
 
 	// Register a new uint8 to override parent
 	_ = Register(
-		subInjector, binds.Singleton(
+		subInjector, "", binds.Singleton(
 			func(retriever types.DependencyRetriever) (uint8, error) {
 				return 42, nil
 			},
@@ -114,7 +114,7 @@ func TestStdInjector_SubInjector__OverrideParent(t *testing.T) {
 	)
 
 	expected = fmt.Sprintf("%s 42", strFirstHalf)
-	if result := TryGet[string](subInjector); result != expected {
+	if result := TryGet[string](subInjector, ""); result != expected {
 		t.Errorf(
 			"sub-injector is not calling parent injector correctly. Received: `%s`; Expected: `%s`",
 			result, expected,
@@ -123,7 +123,7 @@ func TestStdInjector_SubInjector__OverrideParent(t *testing.T) {
 	}
 
 	// Checks if parent still returns the same old value
-	parentResult := TryGet[uint8](parent)
+	parentResult := TryGet[uint8](parent, "")
 	if parentResult != 101 {
 		t.Errorf("parent value was overrided, it should not occur")
 	}
