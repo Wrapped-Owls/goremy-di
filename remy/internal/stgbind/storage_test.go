@@ -9,7 +9,7 @@ import (
 )
 
 func TestElementsStorage_Set(t *testing.T) {
-	stg := NewElementsStorage[string](injopts.CacheOptAllowOverride, types.ReflectionOptions{})
+	stg := NewElementsStorage[string](injopts.CacheOptAllowOverride)
 	var (
 		wasOverridden bool
 		err           error
@@ -39,7 +39,7 @@ func TestElementsStorage_Set(t *testing.T) {
 func TestElementsStorage_Set__Override(t *testing.T) {
 	testCases := generateStorageTestCases()
 
-	stg := NewElementsStorage[string](injopts.CacheOptNone, types.ReflectionOptions{})
+	stg := NewElementsStorage[string](injopts.CacheOptNone)
 	for _, toTest := range testCases {
 		t.Run(
 			toTest.name, func(t *testing.T) {

@@ -22,7 +22,7 @@ func TestMethods_parallel_Get_variants(t *testing.T) {
 	)
 
 	// Create injector and register all dependencies on the main goroutine
-	i := New(injopts.CacheOptReturnAll, types.ReflectionOptions{})
+	i := New(injopts.CacheOptReturnAll)
 
 	if registerErr := errors.Join(
 		// Base registrations that should remain unchanged across all workers
