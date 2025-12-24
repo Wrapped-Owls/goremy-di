@@ -40,3 +40,11 @@ func recoverInjectorPanic(err *error) {
 
 	*err = asError
 }
+
+func firstOrDefault[T any](valueList ...T) (result T) {
+	if len(valueList) > 0 {
+		result = valueList[0]
+	}
+
+	return result
+}
