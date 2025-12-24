@@ -25,29 +25,29 @@ func TestMethods_parallel_Get_variants(t *testing.T) {
 
 	if registerErr := errors.Join(
 		// Base registrations that should remain unchanged across all workers
-		Register(i, binds.Instance(uint8(42))),
-		Register(i, binds.Instance("Go"), "lang"),
-		Register(i, binds.Instance(false)), // will be overridden only in sub-injectors
+		Register(i, "", binds.Instance(uint8(42))),
+		Register(i, "lang", binds.Instance("Go")),
+		Register(i, "", binds.Instance(false)), // will be overridden only in sub-injectors
 		Register[fixtures.Language](
-			i, binds.Instance[fixtures.Language](fixtures.GoProgrammingLang{}),
+			i, "", binds.Instance[fixtures.Language](fixtures.GoProgrammingLang{}),
 		),
 	); registerErr != nil {
 		t.Fatal(registerErr)
 	}
 
 	// Register a factory that depends on values (uint8, bool, string[tag], interface)
-	if err := Register(i, binds.Factory(func(retriever types.DependencyRetriever) (string, error) {
+	if err := Register(i, "", binds.Factory(func(retriever types.DependencyRetriever) (string, error) {
 		// Compose a stable string:
 		// "I love <lang>, yes this is <bool>, as the answer <uint8>"
 		res := fmt.Sprintf(
 			"I love %s, yes this is %v, as the answer %d",
 			TryGet[string](retriever, "lang"),
-			TryGet[bool](retriever),
-			TryGet[uint8](retriever),
+			TryGet[bool](retriever, ""),
+			TryGet[uint8](retriever, ""),
 		)
 
 		// Make sure interface retrieval also works
-		if _, err := Get[fixtures.Language](retriever); err != nil {
+		if _, err := Get[fixtures.Language](retriever, ""); err != nil {
 			return "", err
 		}
 		return res, nil
@@ -65,7 +65,7 @@ func TestMethods_parallel_Get_variants(t *testing.T) {
 			defer wg.Done()
 			for it := 0; it < iterations; it++ {
 				// Simple Get
-				if v, err := Get[uint8](i); err != nil || v != 42 {
+				if v, err := Get[uint8](i, ""); err != nil || v != 42 {
 					t.Errorf("failed on Get[uint8]: val=%d err=%v", v, err)
 					return
 				}
@@ -75,20 +75,18 @@ func TestMethods_parallel_Get_variants(t *testing.T) {
 				}
 
 				// GetAll
-				if lst, err := GetAll[uint8](i); err != nil || len(lst) != 1 || lst[0] != 42 {
+				if lst, err := GetAll[uint8](i, ""); err != nil || len(lst) != 1 || lst[0] != 42 {
 					t.Errorf("failed on GetAll[uint8]: list=%v err=%v", lst, err)
 					return
 				}
 
 				// GetWithPairs overriding only within the sub-injector
 				valPairs, err := GetWithPairs[string](
-					i,
-					[]types.BindEntry{
-						types.NewBindPair(true, ""), // override bool only for this call
-						types.NewBindPair[fixtures.Language](
-							fixtures.CountryLanguage{Language: "ptBr"}, "",
-						),
-					},
+					i, "",
+					types.NewBindPair(true, ""), // override bool only for this call
+					types.NewBindPair[fixtures.Language](
+						fixtures.CountryLanguage{Language: "ptBr"}, "",
+					),
 				)
 				if err != nil || valPairs != expectedStr {
 					t.Errorf("failed on GetWithPairs[string]: val=%q err=%v", valPairs, err)
@@ -96,19 +94,19 @@ func TestMethods_parallel_Get_variants(t *testing.T) {
 				}
 
 				// Ensure original bool remains false in the main injector
-				if b, getErr := Get[bool](i); getErr != nil || b != false {
+				if b, getErr := Get[bool](i, ""); getErr != nil || b != false {
 					t.Errorf("post-GetWithPairs Get[bool]: val=%v err=%v", b, getErr)
 					return
 				}
 
 				// GetWith binder variant
 				var valWith string
-				valWith, err = GetWith[string](i, func(ij types.Injector) error {
+				valWith, err = GetWith[string](i, "", func(ij types.Injector) error {
 					// supply only the overrides for this call
 					return errors.Join(
-						Register(ij, binds.Instance(true)),
+						Register(ij, "", binds.Instance(true)),
 						Register(
-							ij, binds.Instance[fixtures.Language](
+							ij, "", binds.Instance[fixtures.Language](
 								fixtures.CountryLanguage{Language: "ptBr"},
 							),
 						),

@@ -51,7 +51,8 @@ func NewInjector(configs ...Config) Injector {
 // Register must be called first, because the library doesn't support registering dependencies while get at same time.
 // This is not supported in multithreading applications because it does not have race protection
 func Register[T any](i Injector, bind Bind[T], optTag ...string) {
-	if err := injector.Register[T](mustInjector(i), bind, optTag...); err != nil {
+	tag := firstOrDefault(optTag...)
+	if err := injector.Register[T](mustInjector(i), tag, bind); err != nil {
 		panic(err)
 	}
 }
@@ -62,7 +63,8 @@ func Register[T any](i Injector, bind Bind[T], optTag ...string) {
 //
 // This is not supported in multithreading applications because it does not have race protection
 func Override[T any](i Injector, bind Bind[T], optTag ...string) {
-	if err := injector.RegisterWithOverride[T](mustInjector(i), bind, optTag...); err != nil {
+	tag := firstOrDefault(optTag...)
+	if err := injector.RegisterWithOverride[T](mustInjector(i), tag, bind); err != nil {
 		panic(err)
 	}
 }
@@ -100,7 +102,8 @@ func RegisterLazySingleton[T any](i Injector, binder types.Binder[T], optTag ...
 //
 // Receives: DependencyRetriever (required); tag (optional)
 func GetAll[T any](i DependencyRetriever, optTag ...string) (result []T, err error) {
-	return injector.GetAll[T](mustRetriever(i), optTag...)
+	tag := firstOrDefault(optTag...)
+	return injector.GetAll[T](mustRetriever(i), tag)
 }
 
 // MustGetAll directly access a retriever and returns all instance types that was bound in it and match qualifier.
@@ -130,7 +133,9 @@ func MaybeGetAll[T any](i DependencyRetriever, optTag ...string) []T {
 // Receives: DependencyRetriever (required); tag (optional)
 func Get[T any](i DependencyRetriever, optTag ...string) (result T, err error) {
 	defer recoverInjectorPanic(&err)
-	result, err = injector.Get[T](mustRetriever(i), optTag...)
+
+	tag := firstOrDefault(optTag...)
+	result, err = injector.Get[T](mustRetriever(i), tag)
 	return result, err
 }
 
@@ -163,7 +168,9 @@ func GetWithPairs[T any](
 	i DependencyRetriever, elements []BindEntry, optTag ...string,
 ) (result T, err error) {
 	defer recoverInjectorPanic(&err)
-	result, err = injector.GetWithPairs[T](mustRetriever(i), elements, optTag...)
+
+	tag := firstOrDefault(optTag...)
+	result, err = injector.GetWithPairs[T](mustRetriever(i), tag, elements...)
 	return result, err
 }
 
@@ -200,7 +207,9 @@ func GetWith[T any](
 	i DependencyRetriever, binder func(Injector) error, optTag ...string,
 ) (result T, err error) {
 	defer recoverInjectorPanic(&err)
-	result, err = injector.GetWith[T](mustRetriever(i), binder, optTag...)
+
+	tag := firstOrDefault(optTag...)
+	result, err = injector.GetWith[T](mustRetriever(i), tag, binder)
 	return result, err
 }
 
@@ -229,8 +238,8 @@ func GetWithContext[T any](
 	i DependencyRetriever, ctx context.Context, optTag ...string,
 ) (result T, err error) {
 	defer recoverInjectorPanic(&err)
-	result, err = injector.GetWithPairs[T](
-		i, []types.BindEntry{NewBindEntry(ctx)}, optTag...,
-	)
+
+	tag := firstOrDefault(optTag...)
+	result, err = injector.GetWithPairs[T](mustRetriever(i), tag, NewBindEntry(ctx))
 	return result, err
 }

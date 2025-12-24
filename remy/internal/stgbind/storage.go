@@ -84,7 +84,9 @@ func (s *ElementsStorage[T]) GetAll(optKey ...string) (resultList []any, err err
 
 	fromList := s.elements
 	if len(optKey) > 0 {
-		fromList = s.namedElements[optKey[0]]
+		if keyTag := optKey[0]; keyTag != "" {
+			fromList = s.namedElements[keyTag]
+		}
 	}
 
 	resultList = make([]any, 0, len(fromList))

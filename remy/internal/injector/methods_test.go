@@ -58,12 +58,12 @@ func TestGenerateBind__InstanceFactory(testObj *testing.T) {
 				)
 
 				i := New(injopts.CacheOptAllowOverride)
-				if err := Register(i, insBind); err != nil {
+				if err := Register(i, "", insBind); err != nil {
 					t.Error(err)
 					t.FailNow()
 				}
 				for index := 0; index < totalExecutions; index++ {
-					result, err := Get[string](i)
+					result, err := Get[string](i, "")
 					if result != expectedString {
 						t.Error("Generated instance is incorrect")
 					}
@@ -119,7 +119,7 @@ func TestRegister__Singleton(testObj *testing.T) {
 					t.Error("Singleton was generated before register")
 				}
 				for index := 0; index < 11; index++ {
-					_ = Register(i, sgtBind)
+					_ = Register(i, "", sgtBind)
 					if invocations != bindCase.registerGenerations {
 						t.Errorf(
 							"Singleton %d times. Expected %d",
@@ -131,7 +131,7 @@ func TestRegister__Singleton(testObj *testing.T) {
 				}
 
 				for index := 0; index < totalGetsExecuted; index++ {
-					result, err := Get[*string](i)
+					result, err := Get[*string](i, "")
 					if err != nil {
 						t.Error(err)
 					}
@@ -155,19 +155,19 @@ func TestRegister__overrideInstanceByBind(t *testing.T) {
 		unexpectedString = "banana"
 	)
 	err := Register(
-		inj, binds.Instance(expectedString),
+		inj, "", binds.Instance(expectedString),
 	)
 	if err != nil {
 		t.Errorf("Unable to fist register instance: %v", err)
 	}
 
-	if result := TryGet[string](inj); result != expectedString {
+	if result := TryGet[string](inj, ""); result != expectedString {
 		t.Error("Instance register is not working as expected")
 		t.FailNow()
 	}
 
 	err = Register(
-		inj, binds.Singleton(
+		inj, "", binds.Singleton(
 			func(retriever types.DependencyRetriever) (string, error) {
 				return unexpectedString, nil
 			},
@@ -179,7 +179,7 @@ func TestRegister__overrideInstanceByBind(t *testing.T) {
 		t.Errorf("Result error is not the expected error: %v", err.Error())
 	}
 
-	if result := TryGet[string](inj); result != expectedString {
+	if result := TryGet[string](inj, ""); result != expectedString {
 		t.Error("Instance bind is being overridden by singleton bind")
 	}
 }
@@ -196,13 +196,11 @@ func TestGetWith(t *testing.T) {
 			name: "GetWithPairs[string]",
 			getGenCallback: func(ij types.Injector) string {
 				result, _ := GetWithPairs[string](
-					ij,
-					[]types.BindEntry{
-						types.NewBindPair(uint8(42), ""),
-						types.NewBindPair("Go", "lang"),
-						types.NewBindPair(true, ""),
-						types.NewBindPair[fixtures.Language](interfaceValue, ""),
-					},
+					ij, "",
+					types.NewBindPair(uint8(42), ""),
+					types.NewBindPair("Go", "lang"),
+					types.NewBindPair(true, ""),
+					types.NewBindPair[fixtures.Language](interfaceValue, ""),
 				)
 				return result
 			},
@@ -211,13 +209,13 @@ func TestGetWith(t *testing.T) {
 			name: "GetWith[string]",
 			getGenCallback: func(i types.Injector) string {
 				result, _ := GetWith[string](
-					i, func(ij types.Injector) error {
+					i, "", func(ij types.Injector) error {
 						err := errors.Join(
-							Register(ij, binds.Instance[uint8](42)),
-							Register(ij, binds.Instance("Go"), "lang"),
-							Register(ij, binds.Instance(true)),
+							Register(ij, "", binds.Instance[uint8](42)),
+							Register(ij, "lang", binds.Instance("Go")),
+							Register(ij, "", binds.Instance(true)),
 							Register[fixtures.Language](
-								ij, binds.Instance[fixtures.Language](interfaceValue),
+								ij, "", binds.Instance[fixtures.Language](interfaceValue),
 							),
 						)
 						return err
@@ -232,7 +230,7 @@ func TestGetWith(t *testing.T) {
 	for _, tCase := range testCases {
 		i := New(injopts.CacheOptAllowOverride)
 		_ = Register(
-			i, binds.Factory(
+			i, "", binds.Factory(
 				func(retriever types.DependencyRetriever) (result string, err error) {
 					result = fmt.Sprintf(
 						"I love %s, yes this is %v, as the answer %d",
@@ -240,11 +238,11 @@ func TestGetWith(t *testing.T) {
 							retriever,
 							"lang",
 						),
-						TryGet[bool](retriever),
-						TryGet[uint8](retriever),
+						TryGet[bool](retriever, ""),
+						TryGet[uint8](retriever, ""),
 					)
 
-					if _, err = Get[fixtures.Language](retriever); err != nil {
+					if _, err = Get[fixtures.Language](retriever, ""); err != nil {
 						t.Error(err)
 					}
 					return
@@ -253,7 +251,7 @@ func TestGetWith(t *testing.T) {
 		)
 
 		// register a bool bind to check if it will be replaced during parameter passing
-		_ = Register(i, binds.Instance(false))
+		_ = Register(i, "", binds.Instance(false))
 
 		t.Run(
 			tCase.name, func(t *testing.T) {
@@ -268,10 +266,10 @@ func TestGetWith(t *testing.T) {
 					t.FailNow()
 				}
 
-				// Check if the binds doesn't exist after do the GetWithPairs
+				// Check if the binds don't exist after do the GetWithPairs
 				var (
-					uintResult, _ = Get[uint8](i)
-					boolResult, _ = Get[bool](i)
+					uintResult, _ = Get[uint8](i, "")
+					boolResult, _ = Get[bool](i, "")
 					strResult, _  = Get[string](i, "lang")
 				)
 				if uintResult != 0 || boolResult || len(strResult) > 0 {
@@ -290,9 +288,9 @@ func TestGetWithPairs_withDirectBindKey(t *testing.T) {
 
 	errFirstRegister := errors.Join(
 		Register(
-			i, binds.Factory(
+			i, "", binds.Factory(
 				func(retriever types.DependencyRetriever) (result string, err error) {
-					workTime := TryGet[time.Time](retriever)
+					workTime := TryGet[time.Time](retriever, "")
 					timeStr := workTime.Format("3 PM")
 					result = fmt.Sprintf(
 						"%s and %s work at the park at %s, during: %d minutes, is weekend: %v",
@@ -302,8 +300,8 @@ func TestGetWithPairs_withDirectBindKey(t *testing.T) {
 						),
 						TryGet[string](retriever, "employee2"),
 						timeStr,
-						TryGet[uint8](retriever),
-						TryGet[bool](retriever),
+						TryGet[uint8](retriever, ""),
+						TryGet[bool](retriever, ""),
 					)
 					return
 				},
@@ -311,8 +309,8 @@ func TestGetWithPairs_withDirectBindKey(t *testing.T) {
 		),
 
 		// register a bool bind to check if it will be replaced during parameter passing
-		Register(i, binds.Instance(false)),
-		Register(i, binds.Instance(time.Time{})),
+		Register(i, "", binds.Instance(false)),
+		Register(i, "", binds.Instance(time.Time{})),
 	)
 	if errFirstRegister != nil {
 		t.Fatal(errFirstRegister)
@@ -320,13 +318,12 @@ func TestGetWithPairs_withDirectBindKey(t *testing.T) {
 
 	// Test with direct BindKey provided - when Key is provided, InterfaceValue is not needed
 	result, err := GetWithPairs[string](
-		i, []types.BindEntry{
-			types.NewBindPair(uint8(42), ""),
-			types.NewBindPair("Mordecai", "employee1"),
-			types.NewBindPair("Rigby", "employee2"),
-			types.NewBindPair(time.Date(2024, 1, 1, 15, 0, 0, 0, time.UTC), ""),
-			types.NewBindPair(true, ""),
-		},
+		i, "",
+		types.NewBindPair(uint8(42), ""),
+		types.NewBindPair("Mordecai", "employee1"),
+		types.NewBindPair("Rigby", "employee2"),
+		types.NewBindPair(time.Date(2024, 1, 1, 15, 0, 0, 0, time.UTC), ""),
+		types.NewBindPair(true, ""),
 	)
 	if err != nil {
 		t.Errorf("GetWithPairs failed with error: %v", err)
@@ -344,11 +341,11 @@ func TestGetWithPairs_withDirectBindKey(t *testing.T) {
 
 	// Check if the binds doesn't exist after do the GetWithPairs
 	var (
-		uintResult, _      = Get[uint8](i)
-		boolResult, _      = Get[bool](i)
+		uintResult, _      = Get[uint8](i, "")
+		boolResult, _      = Get[bool](i, "")
 		employee1Result, _ = Get[string](i, "employee1")
 		employee2Result, _ = Get[string](i, "employee2")
-		timeResult, _      = Get[time.Time](i)
+		timeResult, _      = Get[time.Time](i, "")
 	)
 	if uintResult != 0 || boolResult || len(employee1Result) > 0 ||
 		len(employee2Result) > 0 || !timeResult.IsZero() {
@@ -362,10 +359,10 @@ func TestGetGen_raiseCastError(t *testing.T) {
 		interfaceValue fixtures.Language = fixtures.GoProgrammingLang{}
 	)
 	err := Register(
-		i, binds.Factory(
+		i, "", binds.Factory(
 			func(retriever types.DependencyRetriever) (result string, getErr error) {
 				var lang fixtures.Language
-				if lang, getErr = Get[fixtures.Language](retriever); getErr == nil {
+				if lang, getErr = Get[fixtures.Language](retriever, ""); getErr == nil {
 					result = lang.Kind() + " language: " + lang.Name()
 				}
 				return
@@ -380,7 +377,7 @@ func TestGetGen_raiseCastError(t *testing.T) {
 	t.Run(
 		"Correctly bind registration", func(t *testing.T) {
 			_, err = GetWithPairs[string](
-				i, []types.BindEntry{types.NewBindPair[fixtures.Language](interfaceValue, "")},
+				i, "", types.NewBindPair[fixtures.Language](interfaceValue, ""),
 			)
 			if err != nil {
 				t.Error(err)
@@ -392,12 +389,10 @@ func TestGetGen_raiseCastError(t *testing.T) {
 	t.Run(
 		"Register pointer interface value", func(t *testing.T) {
 			_, err = GetWithPairs[string](
-				i,
-				[]types.BindEntry{
-					types.InstancePair[*fixtures.Language]{
-						Key:   utils.NewKeyElem[fixtures.Language](),
-						Value: &interfaceValue,
-					},
+				i, "",
+				types.InstancePair[*fixtures.Language]{
+					Key:   utils.NewKeyElem[fixtures.Language](),
+					Value: &interfaceValue,
 				},
 			)
 			if err == nil {
@@ -451,10 +446,10 @@ func TestGet_duckTypeInterface(t *testing.T) {
 			tt.name, func(t *testing.T) {
 				i := New(injopts.CacheOptReturnAll)
 				err := Register(
-					i, binds.Factory(
+					i, "", binds.Factory(
 						func(retriever types.DependencyRetriever) (result string, getErr error) {
 							var lang fixtures.Language
-							if lang, getErr = Get[fixtures.Language](retriever); getErr == nil {
+							if lang, getErr = Get[fixtures.Language](retriever, ""); getErr == nil {
 								result = strGenerator(lang)
 							}
 							return
@@ -466,18 +461,18 @@ func TestGet_duckTypeInterface(t *testing.T) {
 				}
 
 				if tt.registerSubject > 1 {
-					if err = Register(i, binds.Instance(testSecondSubject)); err != nil {
+					if err = Register(i, "", binds.Instance(testSecondSubject)); err != nil {
 						t.Fatal(err)
 					}
 				}
 				if tt.registerSubject > 0 {
-					if err = Register(i, binds.Instance(testFirstSubject)); err != nil {
+					if err = Register(i, "", binds.Instance(testFirstSubject)); err != nil {
 						t.Fatal(err)
 					}
 				}
 
 				var result string
-				result, err = Get[string](i)
+				result, err = Get[string](i, "")
 				if err != nil && !errors.Is(err, tt.expectedError) {
 					t.Fatalf(
 						"Error is not the same:\nExpected: `%v`\nReceived: `%v`",
@@ -500,11 +495,11 @@ func testGuestSubtype[T, K interface{ ~int32 | ~uint8 | ~float64 }](t *testing.T
 		expectedElement T // zero value
 	)
 
-	if err := Register(i, binds.Instance(registerElement)); err != nil {
+	if err := Register(i, "", binds.Instance(registerElement)); err != nil {
 		t.Fatal(err)
 	}
 
-	result, err := Get[T](i)
+	result, err := Get[T](i, "")
 	if err == nil {
 		t.Fatalf("No error was received when trying to find subtype `%T`", result)
 	}
@@ -533,7 +528,7 @@ func TestGetAll_withGeneratedBind(t *testing.T) {
 	const expectedLanguage = "Portuguese"
 	i := New(injopts.CacheOptReturnAll)
 	err := Register(
-		i,
+		i, "",
 		binds.Factory(func(retriever types.DependencyRetriever) (fixtures.CountryLanguage, error) {
 			return fixtures.CountryLanguage{Language: expectedLanguage}, nil
 		}),
@@ -543,7 +538,7 @@ func TestGetAll_withGeneratedBind(t *testing.T) {
 	}
 
 	var result fixtures.Language
-	if result, err = Get[fixtures.Language](i); err != nil {
+	if result, err = Get[fixtures.Language](i, ""); err != nil {
 		t.Fatalf("Should not have gotten error when trying to find all subtypes")
 	}
 
@@ -556,19 +551,19 @@ func TestGetAll_withGeneratedBind(t *testing.T) {
 }
 
 func TestGetWith_withParentDuckTyping(t *testing.T) {
-	// Create parent injector with CacheOptReturnAll enabled (allows GetAll)
+	// Create a parent injector with CacheOptReturnAll enabled (allows GetAll)
 	parent := New(injopts.CacheOptReturnAll)
 
 	// Register an interface implementation in the parent injector
 	langImpl := fixtures.GoProgrammingLang{}
-	if err := Register(parent, binds.Instance(langImpl)); err != nil {
+	if err := Register(parent, "", binds.Instance(langImpl)); err != nil {
 		t.Fatalf("Failed to register language implementation: %v", err)
 	}
 
 	// Use GetWith which creates a sub-injector with CacheOptNone (doesn't allow GetAll)
 	// The sub-injector should be able to find the interface via duck typing by delegating to parent
 	result, err := GetWith[fixtures.Language](
-		parent, func(ij types.Injector) error {
+		parent, "", func(ij types.Injector) error {
 			// Sub-injector doesn't need to register anything
 			// It should find the interface from the parent via duck typing
 			return nil

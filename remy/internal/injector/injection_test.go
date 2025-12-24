@@ -13,24 +13,24 @@ func TestInjection__GetNoRegistered(t *testing.T) {
 	ij := New(injopts.CacheOptNone)
 
 	// Verify if an error is returned when trying to retrieve a non-registered object
-	if _, err := Get[string](ij); err == nil {
+	if _, err := Get[string](ij, ""); err == nil {
 		t.Errorf("no error was returned when trying to retrieve a non-registered object")
 	}
 
 	// Check the return for other injection types
-	if strResult := TryGet[string](ij); len(strResult) != 0 {
+	if strResult := TryGet[string](ij, ""); len(strResult) != 0 {
 		t.Errorf("string result is not the default, received: `%s`", strResult)
 	}
-	if intResult := TryGet[int](ij); intResult != 0 {
+	if intResult := TryGet[int](ij, ""); intResult != 0 {
 		t.Errorf("int result is not the default, received: %d", intResult)
 	}
-	if pointerResult := TryGet[*bool](ij); pointerResult != nil {
+	if pointerResult := TryGet[*bool](ij, ""); pointerResult != nil {
 		t.Error("pointer received is not null")
 	}
-	if interfaceResult := TryGet[interface{ a() string }](ij); interfaceResult != nil {
+	if interfaceResult := TryGet[interface{ a() string }](ij, ""); interfaceResult != nil {
 		t.Error("interface result is not nil")
 	}
-	if structResult := TryGet[struct{ element string }](ij); len(structResult.element) != 0 {
+	if structResult := TryGet[struct{ element string }](ij, ""); len(structResult.element) != 0 {
 		t.Error("default struct is not created correctly")
 	}
 }
@@ -53,18 +53,18 @@ func TestInjection__GetStructImplementInterface(t *testing.T) {
 	}
 	ij := New(injopts.CacheOptNone)
 
-	_ = Register(ij, binds.Instance[universalAnswer](&expected[0]))
+	_ = Register(ij, "", binds.Instance[universalAnswer](&expected[0]))
 	// Register again as another type, to check if it works
-	_ = Register(ij, binds.Instance[guide](expected[1]))
+	_ = Register(ij, "", binds.Instance[guide](expected[1]))
 
-	result := TryGet[universalAnswer](ij)
+	result := TryGet[universalAnswer](ij, "")
 	if result != &expected[0] {
 		t.Errorf("element injected is different than the provided. Received %p", result)
 	} else if result.String() != expected[0].value {
 		t.Errorf("element was reseted. Expected: `%s`; Received: `%s`", expected[0].value, result.String())
 	}
 
-	structResult := TryGet[guide](ij)
+	structResult := TryGet[guide](ij, "")
 	if structResult.String() != expected[1].value {
 		t.Errorf(
 			"element was reseted. Expected: `%s`; Received: `%s`",
@@ -80,8 +80,8 @@ func TestInjection__RegisterSameKeyDifferentType(t *testing.T) {
 	)
 
 	ij := New(injopts.CacheOptNone)
-	_ = Register(ij, binds.Instance(expectedStr), "truth")
-	_ = Register(ij, binds.Instance(expectedInt), "truth")
+	_ = Register(ij, "truth", binds.Instance(expectedStr))
+	_ = Register(ij, "truth", binds.Instance(expectedInt))
 
 	strResult := TryGet[string](ij, "truth")
 	intResult := TryGet[int](ij, "truth")
@@ -113,9 +113,9 @@ func TestInjection__RetrieveSameTypeDifferentKey(t *testing.T) {
 	)
 
 	ij := New(injopts.CacheOptAllowOverride)
-	_ = Register(ij, binds.Instance(resultParts[1]), "lang")
-	_ = Register(ij, a)
-	result := TryGet[string](ij)
+	_ = Register(ij, "lang", binds.Instance(resultParts[1]))
+	_ = Register(ij, "", a)
+	result := TryGet[string](ij, "")
 
 	if result != resultParts[0]+resultParts[1] {
 		t.Errorf("injection result not work properly: Received: `%s`", result)
@@ -147,8 +147,8 @@ func TestInjection__RegisterEqualInterfaces(t *testing.T) {
 	}
 
 	ij := New(injopts.CacheOptAllowOverride)
-	_ = Register(ij, binds.Instance[spk1](elements[0]), storageKey)
-	_ = Register(ij, binds.Instance[spk2](elements[1]), storageKey)
+	_ = Register(ij, storageKey, binds.Instance[spk1](elements[0]))
+	_ = Register(ij, storageKey, binds.Instance[spk2](elements[1]))
 
 	// Start to retrieve the injected objects
 	results := [...]spk1{
