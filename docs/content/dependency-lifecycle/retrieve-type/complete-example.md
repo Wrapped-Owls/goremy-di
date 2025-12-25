@@ -67,9 +67,9 @@ func main() {
 	// Using GetWithPairs for temporary dependencies
 	result := remy.MustGetWithPairs[string](
 		Injector,
-		[]remy.InstancePairAny{
-			{Key: remy.NewBindKey[uint8](), Value: uint8(42)},
-			{Key: remy.NewBindKey[string](), Value: "Go", Tag: "lang"},
+		[]remy.BindEntry{
+			remy.NewBindEntry(uint8(42)),
+			remy.NewBindEntryTagged("Go", "lang"),
 		},
 	)
 	log.Println(result)
@@ -87,4 +87,5 @@ func main() {
 
 	log.Printf("Database: %v, Environment: %s", db, env)
 }
+
 ```

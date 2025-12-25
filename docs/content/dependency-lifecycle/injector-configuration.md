@@ -29,10 +29,8 @@ func main() {
 
 	// Create injector with custom configuration
 	customInjector := remy.NewInjector(remy.Config{
-		CanOverride:        true,
-		DuckTypeElements:   false,
-		GenerifyInterfaces: false,
-		UseReflectionType:  false,
+		CanOverride:      true,
+		DuckTypeElements: false,
 	})
 }
 ```
@@ -151,108 +149,6 @@ services, err := remy.GetAll[ServiceInterface](injector)
 - Testing scenarios with mock implementations
 - When you want to retrieve by interface without knowing the concrete type
 
-### Reflection Options
-
-Remy uses **zero-width generic types** (0-width keys) to store bindings, which means reflection is **not required** for
-normal operations. However, there are two reflection-related options for specific scenarios:
-
-#### GenerifyInterfaces
-
-**Type:** `bool`  
-**Default:** `false`
-
-Controls how interface types are identified. When `true`, interfaces with the same method signatures (even from
-different packages) are treated as the same type. When `false`, each interface is treated as unique based on its package
-and name.
-
-> **ℹ️ INFO:** This option enables reflection for interface type identification.
-
-```go
-// In package A
-type Writer interface {
-    Write([]byte) (int, error)
-}
-
-// In package B
-type Writer interface {
-    Write([]byte) (int, error)
-}
-
-injector := remy.NewInjector(remy.Config{
-    GenerifyInterfaces: true, // Both interfaces are treated as the same
-})
-
-remy.Register(injector, remy.Instance(&MyWriter{}))
-
-// Can retrieve using either interface type
-writerA := remy.MustGet[packageA.Writer](injector)
-writerB := remy.MustGet[packageB.Writer](injector)
-// Both return the same instance
-```
-
-#### UseReflectionType
-
-**Type:** `bool`  
-**Default:** `false`
-
-Enables reflection-based type identification. This is primarily needed when using `GetWithPairs` without explicitly
-providing the type using `remy.NewBindKey`.
-
-**When is reflection required?**
-
-Reflection is **only required** when:
-
-- Using `GetWithPairs` without providing a `Key` in the `InstancePair`
-- You have types with the same name and package from different modules or subpackages
-
-```go
-injector := remy.NewInjector(remy.Config{
-    UseReflectionType: true, // Required for GetWithPairs without explicit keys
-})
-
-// Without reflection, this would fail if Key is not provided
-result := remy.MustGetWithPairs[string](
-    injector,
-    []remy.InstancePairAny{
-        {Value: 42}, // No Key provided - needs reflection
-    },
-)
-```
-
-**Recommended approach (no reflection needed):**
-
-```go
-injector := remy.NewInjector() // No reflection needed
-
-// Provide explicit keys using NewBindKey
-result := remy.MustGetWithPairs[string](
-    injector,
-    []remy.InstancePairAny{
-        {
-            Key:   remy.NewBindKey[int](), // Explicit key - no reflection needed
-            Value: 42,
-        },
-    },
-)
-```
-
-**Use cases for reflection options:**
-
-- **GenerifyInterfaces:**
-
-    - When you have duplicate interface definitions across packages
-    - When working with interfaces that have identical signatures
-    - Cross-package dependency injection scenarios
-
-- **UseReflectionType:**
-    - Using `GetWithPairs` without providing explicit `Key` values
-    - Multi-module projects with type name collisions
-    - Working with vendored dependencies
-    - Complex package structures
-
-> **😨 Performance note:** Both options use reflection, which has a performance cost. For best performance, avoid these
-> options when possible and use explicit `NewBindKey` calls in `GetWithPairs`.
-
 ### ParentInjector
 
 **Type:** `Injector`  
@@ -335,22 +231,18 @@ remy.Register(child, remy.Instance("child-value"))
 2. **Enable `CanOverride`** only when needed (testing, development)
 3. **Use `DuckTypeElements` sparingly** - it has performance implications
 4. **Leverage `ParentInjector`** for modular applications with clear dependency scopes
-5. **Avoid reflection when possible** - Remy uses zero-width keys, so reflection is rarely needed
-6. **Use explicit `NewBindKey` in `GetWithPairs`** - This avoids the need for `UseReflectionType`
-7. **Use `GenerifyInterfaces` only when necessary** - For duplicate interface definitions across packages
-8. **Create sub-injectors** for request-scoped or test-scoped dependencies
+5. **Use `NewBindEntry` or `NewBindEntryTagged` in `GetWithPairs`** - The type key is automatically generated from the
+   value's type
+6. **Create sub-injectors** for request-scoped or test-scoped dependencies
 
 ## Configuration Comparison
 
-| Option               | Default | Performance Impact  | Use Case                             |
-|----------------------|---------|---------------------|--------------------------------------|
-| `CanOverride`        | `false` | None                | Testing, development                 |
-| `DuckTypeElements`   | `false` | High                | Plugin systems, service discovery    |
-| `GenerifyInterfaces` | `false` | Low (reflection)    | Cross-package interfaces             |
-| `UseReflectionType`  | `false` | Medium (reflection) | `GetWithPairs` without explicit keys |
-| `ParentInjector`     | `nil`   | Low                 | Scoped dependencies                  |
+| Option             | Default | Performance Impact | Use Case                          |
+|--------------------|---------|--------------------|-----------------------------------|
+| `CanOverride`      | `false` | None               | Testing, development              |
+| `DuckTypeElements` | `false` | High               | Plugin systems, service discovery |
+| `ParentInjector`   | `nil`   | Low                | Scoped dependencies               |
 
-> **ℹ️ INFO:** Remy uses zero-width generic types for bindings, so reflection is **not required** for normal operations.
-> The
-> reflection options are only needed for specific edge cases. For best performance, avoid reflection when possible by
-> using explicit `NewBindKey` calls.
+> **ℹ️ INFO:** Remy uses zero-width generic types for bindings, providing compile-time type safety without requiring
+> reflection. The type key is automatically generated from the value's type when using `NewBindEntry` or
+`NewBindEntryTagged`.

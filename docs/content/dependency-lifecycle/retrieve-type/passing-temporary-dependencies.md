@@ -14,20 +14,20 @@ registered in the main injector.
 
 ## GetWithPairs
 
-`GetWithPairs` allows you to pass temporary dependencies as a slice of `InstancePairAny`. This is convenient when you
+`GetWithPairs` allows you to pass temporary dependencies as a slice of `BindEntry`. This is convenient when you
 have a fixed set of values to inject.
 
-> **Important:** When using `GetWithPairs`, you must specify the bind key using `remy.NewBindKey[T]()` for each value.
-> This is required to work without reflection enabled. If you omit the `Key` field, the injector will attempt to use
-> reflection to determine the type, which requires the `UseReflectionType` configuration to be enabled.
+The type key is automatically generated from the value's type, so you don't need to manually specify it. Use
+`remy.NewBindEntry[T](value)` for values without tags, or `remy.NewBindEntryTagged[T](value, tag)` for values that
+need a tag.
 
 ```go
 result := remy.MustGetWithPairs[string](
     injector,
-    []remy.InstancePairAny{
-        {Key: remy.NewBindKey[uint8](), Value: uint8(42)},
-        {Key: remy.NewBindKey[string](), Value: "Go", Tag: "lang"},
-        {Key: remy.NewBindKey[bool](), Value: true},
+    []remy.BindEntry{
+        remy.NewBindEntry(uint8(42)),
+        remy.NewBindEntryTagged("Go", "lang"),
+        remy.NewBindEntry(true),
     },
 )
 ```
@@ -35,33 +35,31 @@ result := remy.MustGetWithPairs[string](
 The temporary pairs are only available to the specific bind being retrieved and are automatically cleaned up after the
 retrieval completes.
 
-### Using Interface Values
+### Using Tags
 
-You can also specify interface types explicitly using `InterfaceValue`, which will require reflection:
+You can use tags to disambiguate between multiple instances of the same type:
 
 ```go
 result := remy.MustGetWithPairs[string](
     injector,
-    []remy.InstancePairAny{
-        {
-            Key:            remy.NewBindKey[Language](),
-            Value:          goLang,
-            InterfaceValue: (*Language)(nil), // Explicitly bind as Language interface
-        },
+    []remy.BindEntry{
+        remy.NewBindEntryTagged("production", "environment"),
+        remy.NewBindEntryTagged("us-east-1", "region"),
+        remy.NewBindEntry(42),
     },
 )
 ```
 
-### Direct Bind Keys
+### Using Interface Types
 
-For more control, you can specify the bind key directly:
+You can also pass interface types directly:
 
 ```go
 result := remy.MustGetWithPairs[string](
     injector,
-    []remy.InstancePairAny{
-        {Key: remy.NewBindKey[uint8](), Value: uint8(42)},
-        {Key: remy.NewBindKey[string](), Value: "Go", Tag: "lang"},
+    []remy.BindEntry{
+        remy.NewBindEntry[Language](goLang),
+        remy.NewBindEntry(uint8(42)),
     },
 )
 ```
@@ -105,8 +103,7 @@ result, err := remy.GetWith[string](
 
         // Register interface type
         if err := remy.Register[Language](
-            injector,
-            remy.Instance[Language](goLang),
+            injector, remy.Instance[Language](goLang),
         ); err != nil {
             return err
         }
@@ -182,14 +179,14 @@ result := remy.MustGetWith[string](
 
 - **Use `GetWithPairs`** when you have a simple, fixed set of values to pass
 - **Use `GetWith`** when you need:
-  - More complex registration logic
-  - Conditional dependencies
-  - Error handling during registration
-  - Dynamic value generation
+    - More complex registration logic
+    - Conditional dependencies
+    - Error handling during registration
+    - Dynamic value generation
 
 ## Important Notes
 
 - Temporary dependencies are **only available** during the retrieval of the specific bind
 - They do **not** persist in the main injector after retrieval completes
 - They **override** any existing bindings of the same type/tag in the parent injector for the duration of the retrieval
-- The sub-injector created for temporary dependencies inherits the reflection options from the parent injector
+- The type key is automatically generated from the value's type, ensuring type safety at compile time
