@@ -55,12 +55,26 @@ func LazySingleton[T any](binder types.Binder[T]) Bind[T] {
 	return binds.LazySingleton(binder)
 }
 
+// BindEntry is an interface used to pass temporary dependencies to GetWithPairs.
+// It encapsulates a value along with its type key and optional tag for registration
+// in a sub-injector during dependency retrieval.
 type BindEntry = types.BindEntry
 
+// NewBindEntry creates a BindEntry with the given value and no tag.
+// This is a convenience function for creating temporary dependencies when using GetWithPairs.
+//
+// The type key is automatically generated from the value's type, so you don't need to
+// manually specify it.
 func NewBindEntry[T any](value T) BindEntry {
 	return types.NewBindPair(value, "")
 }
 
+// NewBindEntryTagged creates a BindEntry with the given value and tag.
+// This is useful when you need to register a temporary dependency with a specific tag
+// for disambiguation when multiple instances of the same type are registered.
+//
+// The type key is automatically generated from the value's type, so you don't need to
+// manually specify it.
 func NewBindEntryTagged[T any](value T, tag string) BindEntry {
 	return types.NewBindPair(value, tag)
 }

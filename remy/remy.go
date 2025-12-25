@@ -234,12 +234,19 @@ func MaybeGetWith[T any](i DependencyRetriever, binder func(Injector) error, opt
 	return result
 }
 
+// GetWithContext creates a sub-injector and injects the given context.Context as a temporary dependency,
+// then retrieves the requested type. This is a convenience function for factory binds that need access
+// to a context.Context.
+//
+// The context is automatically registered in the sub-injector and is available to any factory bind
+// that requests a context.Context during the retrieval.
+//
+// Additionally, it returns an error which indicates if the bind was found or not.
+//
+// Receives: DependencyRetriever (required); context.Context (required); tag (optional)
 func GetWithContext[T any](
 	i DependencyRetriever, ctx context.Context, optTag ...string,
 ) (result T, err error) {
-	defer recoverInjectorPanic(&err)
-
-	tag := firstOrDefault(optTag...)
-	result, err = injector.GetWithPairs[T](mustRetriever(i), tag, NewBindEntry(ctx))
+	result, err = GetWithPairs[T](i, []BindEntry{NewBindEntry(ctx)}, optTag...)
 	return result, err
 }
