@@ -6,12 +6,12 @@ import remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 
 type (
 	Node[T any] struct {
-		Value T
+		Data  T
 		Left  int // -1 == nil
 		Right int // -1 == nil
 	}
 	TreeNodeData[K stgKey] struct {
-		KeyValuePair[K, *any]
+		KeyValuePair[K, int]
 		ResolvedKey uint64
 	}
 	backendUnsafeTree[K stgKey] struct {
@@ -39,11 +39,10 @@ func newBackend[K stgKey](initialCap uint16) StorageBackend[K, any] {
 }
 
 func (t *backendUnsafeTree[K]) createNode(key K, value any) Node[TreeNodeData[K]] {
-	t.valueData = append(t.valueData, value) // TODO: Remove old data here after override
-	valLocation := &t.valueData[len(t.valueData)-1]
+	t.valueData = append(t.valueData, value)
 	return Node[TreeNodeData[K]]{
-		Value: TreeNodeData[K]{
-			KeyValuePair: KeyValuePair[K, *any]{Key: key, Value: valLocation},
+		Data: TreeNodeData[K]{
+			KeyValuePair: KeyValuePair[K, int]{Key: key, Value: len(t.valueData) - 1},
 			ResolvedKey:  key.ID(),
 		},
 		Left:  -1,
@@ -52,36 +51,39 @@ func (t *backendUnsafeTree[K]) createNode(key K, value any) Node[TreeNodeData[K]
 }
 
 func (t *backendUnsafeTree[K]) Set(key K, value any, allowOverride bool) (triedOverride bool) {
-	newNode := t.createNode(key, value)
 	if len(t.arena) == 0 { // tree is empty
+		newNode := t.createNode(key, value)
 		t.arena = append(t.arena, newNode)
 		return false
 	}
 
+	keyID := key.ID()
 	var emptyVal int
 	curIdx := &emptyVal
 	for {
 		targetNode := &t.arena[*curIdx]
-		cmp := targetNode.Value.Compare(newNode.Value)
+		targetID := targetNode.Data.ResolvedKey
 		var idxPtr *int
 		switch {
-		case cmp == 0: // already present
+		case targetID == keyID: // already present
 			triedOverride = true
 			if !allowOverride {
 				// Skip override value
 				return true
 			}
-			*targetNode = newNode
+			t.valueData[targetNode.Data.Value] = value
 			return
-		case cmp > 0: // v < current, go left
+		case keyID < targetID:
 			idxPtr = &targetNode.Left
-		case cmp < 0: // v > current, go right
+		case keyID > targetID:
 			idxPtr = &targetNode.Right
 		}
 
 		if *idxPtr == -1 {
+			newNode := t.createNode(key, value)
 			t.arena = append(t.arena, newNode)
 			*idxPtr = len(t.arena) - 1
+			t.arena[*curIdx] = *targetNode
 			return triedOverride
 		}
 		curIdx = idxPtr
@@ -91,12 +93,12 @@ func (t *backendUnsafeTree[K]) Set(key K, value any, allowOverride bool) (triedO
 func (t *backendUnsafeTree[T]) Get(key T) (any, error) {
 	var curIdx int
 	keyID := key.ID()
-	for curIdx != -1 {
+	for curIdx != -1 && curIdx < len(t.arena) {
 		targetNode := t.arena[curIdx]
-		targetID := targetNode.Value.ResolvedKey
+		targetID := targetNode.Data.ResolvedKey
 		switch {
 		case targetID == keyID:
-			return *targetNode.Value.Value, nil
+			return t.valueData[targetNode.Data.Value], nil
 		case keyID < targetID:
 			curIdx = targetNode.Left
 		case keyID > targetID:
