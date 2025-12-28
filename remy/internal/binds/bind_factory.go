@@ -3,8 +3,8 @@ package binds
 import "github.com/wrapped-owls/goremy-di/remy/internal/types"
 
 type FactoryBind[T any] struct {
-	IsFactory bool
 	binder    types.Binder[T]
+	IsFactory bool
 }
 
 func (b FactoryBind[T]) Generates(injector types.DependencyRetriever) (T, error) {

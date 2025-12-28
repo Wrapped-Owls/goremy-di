@@ -9,9 +9,9 @@ import (
 type (
 	genericAnyMap[T comparable]   map[T]any
 	ElementsStorage[T comparable] struct {
-		opts          injopts.CacheConfOption
 		namedElements map[string]genericAnyMap[T]
 		elements      genericAnyMap[T]
+		opts          injopts.CacheConfOption
 	}
 )
 

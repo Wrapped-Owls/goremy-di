@@ -11,9 +11,9 @@ import (
 
 type (
 	StdInjector struct {
-		cacheOpts      injopts.CacheConfOption
 		parentInjector types.DependencyRetriever
 		cacheStorage   types.Storage[types.BindKey]
+		cacheOpts      injopts.CacheConfOption
 	}
 )
 
