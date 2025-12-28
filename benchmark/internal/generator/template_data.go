@@ -13,13 +13,13 @@ type BenchmarkTemplateData struct {
 }
 
 type TemplateOperation struct {
+	Type         TypeInfo
 	Kind         string
 	Target       string
-	Type         TypeInfo
-	HasType      bool
+	ValueVar     string
 	Dependencies []DependencyInfo
 	Args         []string
-	ValueVar     string
+	HasType      bool
 }
 
 type DependencyInfo struct {

@@ -19,8 +19,8 @@ func buildTemplateData(lib libraryConfig) (TemplateData, error) {
 }
 
 type benchmarkOps struct {
-	Benchmark BenchmarkTemplateData
 	ValueVars map[string]string
+	Benchmark BenchmarkTemplateData
 }
 
 func buildBenchmarkOps(def benchmarkDefinition) benchmarkOps {
@@ -38,8 +38,8 @@ func buildBenchmarkOps(def benchmarkDefinition) benchmarkOps {
 }
 
 type operationsResult struct {
-	Ops       []TemplateOperation
 	ValueVars map[string]string
+	Ops       []TemplateOperation
 }
 
 func convertOperations(ops []operation) operationsResult {

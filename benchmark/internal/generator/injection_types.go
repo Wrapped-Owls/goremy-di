@@ -4,8 +4,8 @@ type TypeInfo struct {
 	Name         string
 	Type         string
 	Constructor  string
-	Dependencies []string
 	VarName      string
+	Dependencies []string
 }
 
 const (
