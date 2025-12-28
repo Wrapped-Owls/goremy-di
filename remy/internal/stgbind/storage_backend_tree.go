@@ -30,8 +30,7 @@ func (tnd TreeNodeData[K]) Compare(other TreeNodeData[K]) int {
 	return 0
 }
 
-func newBackend[K stgKey]() StorageBackend[K, any] {
-	const initialCap = 11
+func newBackend[K stgKey](initialCap uint16) StorageBackend[K, any] {
 	t := &backendUnsafeTree[K]{
 		arena:     make([]Node[TreeNodeData[K]], 0, initialCap>>1),
 		valueData: make([]any, 0, initialCap>>1),

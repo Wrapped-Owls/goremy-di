@@ -2,19 +2,15 @@
 
 package stgbind
 
-import (
-	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
-)
+import remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 
-// mapBackendNounsafe implements StorageBackend[T, any] using a map with direct key type
 type mapBackendNounsafe[T stgKey] struct {
 	m genericAnyMap[T]
 }
 
-// newBackend creates a new map backend without unsafe (direct T keys)
-func newBackend[T stgKey]() StorageBackend[T, any] {
+func newBackend[T stgKey](initialCap uint16) StorageBackend[T, any] {
 	return &mapBackendNounsafe[T]{
-		m: make(genericAnyMap[T]),
+		m: make(genericAnyMap[T], initialCap),
 	}
 }
 

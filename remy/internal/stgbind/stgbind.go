@@ -6,7 +6,6 @@ import (
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 )
 
-// ElementsStorage holds all dependencies
 type (
 	stgKey interface {
 		types.BindKey
@@ -27,6 +26,7 @@ type (
 		GetAll() []V
 	}
 
+	// ElementsStorage holds all dependencies
 	ElementsStorage[T stgKey] struct {
 		elements      StorageBackend[T, any]
 		namedElements map[string]StorageBackend[T, any]
@@ -40,7 +40,7 @@ func NewElementsStorage[T stgKey](
 	return &ElementsStorage[T]{
 		opts:          opts,
 		namedElements: make(map[string]StorageBackend[T, any]),
-		elements:      newBackend[T](),
+		elements:      newBackend[T](11),
 	}
 }
 
@@ -61,7 +61,7 @@ func (s *ElementsStorage[T]) SetNamed(
 	backend, ok := s.namedElements[name]
 	if !ok {
 		// Create new backend for this name
-		backend = newBackend[T]()
+		backend = newBackend[T](1)
 		s.namedElements[name] = backend
 	}
 
