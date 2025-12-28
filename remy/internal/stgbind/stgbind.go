@@ -15,50 +15,76 @@ type (
 	genericAnyMap[T comparable] map[T]any
 )
 
-func (s *ElementsStorage[T]) Set(key T, value any) (wasOverridden bool, err error) {
-	if _, ok := s.elements[s.keyID(key)]; ok {
-		if !s.opts.Is(injopts.CacheOptAllowOverride) {
-			return false, remyErrs.ErrAlreadyBound{Key: key}
-		}
-		wasOverridden = true
+type (
+	KeyValuePair[K stgKey, T any] struct {
+		Key   K
+		Value T
 	}
-	s.elements[s.keyID(key)] = value
-	return
+	StorageBackend[K stgKey, V any] interface {
+		Set(key K, value V, allowOverride bool) (triedOverride bool)
+		Get(key K) (V, error)
+		Size() int
+		GetAll() []V
+	}
+
+	ElementsStorage[T stgKey] struct {
+		elements      StorageBackend[T, any]
+		namedElements map[string]StorageBackend[T, any]
+		opts          injopts.CacheConfOption
+	}
+)
+
+func NewElementsStorage[T stgKey](
+	opts injopts.CacheConfOption,
+) *ElementsStorage[T] {
+	return &ElementsStorage[T]{
+		opts:          opts,
+		namedElements: make(map[string]StorageBackend[T, any]),
+		elements:      newBackend[T](),
+	}
+}
+
+func (s *ElementsStorage[T]) Set(key T, value any) (wasOverridden bool, err error) {
+	allowOverride := s.opts.Is(injopts.CacheOptAllowOverride)
+	triedOverride := s.elements.Set(key, value, allowOverride)
+
+	if triedOverride && !allowOverride {
+		return false, remyErrs.ErrAlreadyBound{Key: key}
+	}
+
+	return triedOverride, nil
 }
 
 func (s *ElementsStorage[T]) SetNamed(
-	elementType T, name string, value any,
+	key T, name string, value any,
 ) (wasOverridden bool, err error) {
-	namedBinds := s.getNamedStorage(name)
-
-	if _, ok := namedBinds[s.keyID(elementType)]; ok {
-		if !s.opts.Is(injopts.CacheOptAllowOverride) {
-			return false, remyErrs.ErrAlreadyBound{Key: elementType}
-		}
-		wasOverridden = true
+	backend, ok := s.namedElements[name]
+	if !ok {
+		// Create new backend for this name
+		backend = newBackend[T]()
+		s.namedElements[name] = backend
 	}
-	namedBinds[s.keyID(elementType)] = value
-	s.namedElements[name] = namedBinds
-	return
+
+	allowOverride := s.opts.Is(injopts.CacheOptAllowOverride)
+	triedOverride := backend.Set(key, value, allowOverride)
+
+	if triedOverride && !allowOverride {
+		return false, remyErrs.ErrAlreadyBound{Key: key}
+	}
+
+	return triedOverride, nil
 }
 
-func (s *ElementsStorage[T]) GetNamed(elementType T, name string) (result any, err error) {
-	if elementMap, ok := s.namedElements[name]; ok && elementMap != nil {
-		result, ok = elementMap[s.keyID(elementType)]
-		if !ok {
-			err = remyErrs.ErrElementNotRegistered{Key: elementType}
-		}
-		return result, err
+func (s *ElementsStorage[T]) GetNamed(key T, name string) (result any, err error) {
+	backend, ok := s.namedElements[name]
+	if !ok {
+		return nil, remyErrs.ErrElementNotRegistered{Key: key}
 	}
-	return nil, remyErrs.ErrElementNotRegistered{Key: elementType}
+	return backend.Get(key)
 }
 
 func (s *ElementsStorage[T]) Get(key T) (result any, err error) {
-	var ok bool
-	if result, ok = s.elements[s.keyID(key)]; !ok {
-		err = remyErrs.ErrElementNotRegistered{Key: key}
-	}
-	return
+	return s.elements.Get(key)
 }
 
 func (s *ElementsStorage[T]) GetAll(keyTag string) (resultList []any, err error) {
@@ -67,14 +93,14 @@ func (s *ElementsStorage[T]) GetAll(keyTag string) (resultList []any, err error)
 		return
 	}
 
-	fromList := s.elements
+	backend := s.elements
 	if keyTag != "" {
-		fromList = s.namedElements[keyTag]
+		var ok bool
+		if backend, ok = s.namedElements[keyTag]; !ok {
+			return nil, remyErrs.ErrElementNotRegistered{Key: keyTag}
+		}
 	}
 
-	resultList = make([]any, 0, len(fromList))
-	for _, value := range fromList {
-		resultList = append(resultList, value)
-	}
+	resultList = backend.GetAll()
 	return
 }
