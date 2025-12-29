@@ -15,10 +15,6 @@ type (
 )
 
 type (
-	KeyValuePair[K stgKey, T any] struct {
-		Key   K
-		Value T
-	}
 	StorageBackend[K stgKey, V any] interface {
 		Set(key K, value V, allowOverride bool) (triedOverride bool)
 		Get(key K) (V, error)
