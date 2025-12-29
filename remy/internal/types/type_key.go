@@ -12,13 +12,8 @@ type (
 	}
 
 	KeyElem[T any] struct{}
-	StrKeyElem     string
 )
 
 func (k KeyElem[T]) comparable() {
-	// Just a stub function
-}
-
-func (k StrKeyElem) comparable() {
 	// Just a stub function
 }

@@ -38,12 +38,7 @@ func debugBindKey(value types.BindKey) (keyVal string) {
 		return ""
 	}
 
-	if asStr, ok := value.(types.StrKeyElem); ok {
-		keyVal = string(asStr)
-	} else {
-		keyVal = reflect.TypeOf(value).String()
-	}
-
+	keyVal = reflect.TypeOf(value).String()
 	return " " + keyVal
 }
 

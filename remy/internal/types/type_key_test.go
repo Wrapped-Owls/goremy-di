@@ -21,14 +21,6 @@ func TestBindKey_AsMapKey(t *testing.T) {
 			value: 42,
 		},
 		{
-			key:   StrKeyElem("key"),
-			value: "answers everywhere",
-		},
-		{
-			key:   StrKeyElem("Gomu Gomu no Mi"),
-			value: "Hito Hito no Mi, Model: Nika",
-		},
-		{
 			key:   KeyElem[map[string]bool]{},
 			value: map[string]bool{"test": true},
 		},
@@ -54,13 +46,5 @@ func TestBindKey_AsMapKey(t *testing.T) {
 				val,
 			)
 		}
-	}
-}
-
-// TestComparableBindKey is a test just to improve coverage over the type_key file
-func TestComparableBindKey(t *testing.T) {
-	testList := []BindKey{KeyElem[bool]{}, StrKeyElem("any")}
-	for _, subject := range testList {
-		subject.comparable()
 	}
 }
