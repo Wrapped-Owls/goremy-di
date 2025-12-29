@@ -6,13 +6,13 @@ import (
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 )
 
-type ElementsStorage[T mapKey] struct {
-	opts          injopts.CacheConfOption
+type ElementsStorage[T stgKey] struct {
 	namedElements map[string]genericAnyMap[T]
 	elements      genericAnyMap[T]
+	opts          injopts.CacheConfOption
 }
 
-func NewElementsStorage[T mapKey](
+func NewElementsStorage[T stgKey](
 	opts injopts.CacheConfOption,
 ) *ElementsStorage[T] {
 	return &ElementsStorage[T]{

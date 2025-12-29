@@ -8,7 +8,7 @@ import (
 
 // ElementsStorage holds all dependencies
 type (
-	mapKey interface {
+	stgKey interface {
 		types.BindKey
 		comparable
 	}
