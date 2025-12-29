@@ -14,9 +14,9 @@ type (
 	LogLevel uint8
 
 	DefaultLogger struct {
-		Level     LogLevel
 		StdOutput *log.Logger
 		ErrOutput *log.Logger
+		Level     LogLevel
 	}
 )
 

@@ -4,8 +4,8 @@ import "time"
 
 // Note is a simple structure to hold an annotation
 type Note struct {
-	Message string
 	Time    time.Time
+	Message string
 }
 
 // NewAnnotation is a constructor for Note

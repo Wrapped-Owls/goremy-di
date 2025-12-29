@@ -55,13 +55,13 @@ func (c loggerInjector) RetrieveBind(bindKey remy.BindKey, tag string) (result a
 	return
 }
 
-func (c loggerInjector) GetAll(optKey ...string) (result []any, err error) {
-	c.logger.Infof("Injector[GetAll](%+v) - Starting\n", optKey)
-	result, err = c.ij.GetAll(optKey...)
+func (c loggerInjector) GetAll(keyTag string) (result []any, err error) {
+	c.logger.Infof("Injector[GetAll](%s) - Starting\n", keyTag)
+	result, err = c.ij.GetAll(keyTag)
 	if err != nil {
-		c.logger.Errorf("Injector[GetAll]<%v> - Error: `%v`\n", optKey, err)
+		c.logger.Errorf("Injector[GetAll]<%s> - Error: `%v`\n", keyTag, err)
 	}
 
-	c.logger.Infof("Injector[GetAll](%+v) - Found `%+v`\n", optKey, result)
+	c.logger.Infof("Injector[GetAll](%s) - Found `%+v`\n", keyTag, result)
 	return
 }
