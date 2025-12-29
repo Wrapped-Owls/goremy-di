@@ -9,7 +9,7 @@ import (
 )
 
 func TestElementsStorage_Set(t *testing.T) {
-	stg := NewElementsStorage[string](injopts.CacheOptAllowOverride)
+	stg := NewElementsStorage[types.BindKey](injopts.CacheOptAllowOverride)
 	var (
 		wasOverridden bool
 		err           error
@@ -24,22 +24,22 @@ func TestElementsStorage_Set(t *testing.T) {
 			t.Errorf("Wanted error %v, got %v", expectedErr, expectedErr)
 		}
 	}
-	wasOverridden, err = stg.Set("value", 7)
+	wasOverridden, err = stg.Set(types.KeyElem[uint]{}, 7)
 	checkFunc(false, nil)
 
-	wasOverridden, err = stg.Set("value", 11)
+	wasOverridden, err = stg.Set(types.KeyElem[uint]{}, 11)
 	checkFunc(true, nil)
 
-	wasOverridden, err = stg.SetNamed("tools", "lang", "dart")
+	wasOverridden, err = stg.SetNamed(types.KeyElem[string]{}, "lang", "dart")
 	checkFunc(false, nil)
-	wasOverridden, err = stg.SetNamed("tools", "lang", "go")
+	wasOverridden, err = stg.SetNamed(types.KeyElem[string]{}, "lang", "go")
 	checkFunc(true, nil)
 }
 
 func TestElementsStorage_Set__Override(t *testing.T) {
 	testCases := generateStorageTestCases()
 
-	stg := NewElementsStorage[string](injopts.CacheOptNone)
+	stg := NewElementsStorage[types.BindKey](injopts.CacheOptNone)
 	for _, toTest := range testCases {
 		t.Run(
 			toTest.name, func(t *testing.T) {
@@ -68,25 +68,25 @@ func TestElementsStorage_Set__Override(t *testing.T) {
 func generateStorageTestCases() []struct {
 	name       string
 	values     [2]any
-	setterFunc func(types.Storage[string], any) (bool, error)
+	setterFunc func(types.Storage[types.BindKey], any) (bool, error)
 } {
 	return []struct {
 		name       string
 		values     [2]any
-		setterFunc func(types.Storage[string], any) (bool, error)
+		setterFunc func(types.Storage[types.BindKey], any) (bool, error)
 	}{
 		{
 			name:   "Set Without Tag",
 			values: [2]any{7, 11},
-			setterFunc: func(stg types.Storage[string], receive any) (bool, error) {
-				return stg.Set("value", receive)
+			setterFunc: func(stg types.Storage[types.BindKey], receive any) (bool, error) {
+				return stg.Set(types.KeyElem[any]{}, receive)
 			},
 		},
 		{
 			name:   "Set Named",
 			values: [2]any{"go", "flutter"},
-			setterFunc: func(stg types.Storage[string], receive any) (bool, error) {
-				return stg.SetNamed("value", "tool", receive)
+			setterFunc: func(stg types.Storage[types.BindKey], receive any) (bool, error) {
+				return stg.SetNamed(types.KeyElem[any]{}, "tool", receive)
 			},
 		},
 	}
