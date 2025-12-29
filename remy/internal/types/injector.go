@@ -14,7 +14,7 @@ type (
 	}
 	AllValuesGetter[T any] interface {
 		// GetAll returns all elements from the storage that hasn't a key
-		GetAll(optKey ...string) ([]T, error)
+		GetAll(keyTag string) ([]T, error)
 	}
 	ValuesGetter[K comparable, T any] interface {
 		// GetNamed search for a named element that was cached using the T value given and a string key

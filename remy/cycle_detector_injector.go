@@ -96,6 +96,6 @@ func (c cycleDetectorInjector) RetrieveBind(bindKey types.BindKey, tag string) (
 	return c.ij.RetrieveBind(bindKey, tag)
 }
 
-func (c cycleDetectorInjector) GetAll(optKey ...string) ([]any, error) {
-	return c.ij.GetAll(optKey...)
+func (c cycleDetectorInjector) GetAll(keyTag string) ([]any, error) {
+	return c.ij.GetAll(keyTag)
 }

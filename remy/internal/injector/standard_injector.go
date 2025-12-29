@@ -93,13 +93,13 @@ func (s *StdInjector) RetrieveBind(bindKey types.BindKey, tag string) (result an
 	return result, err
 }
 
-func (s *StdInjector) GetAll(optKey ...string) (resultList []any, err error) {
+func (s *StdInjector) GetAll(keyTag string) (resultList []any, err error) {
 	var (
 		cachedElements []any
 		parentElements []any
 	)
 
-	if cachedElements, err = s.cacheStorage.GetAll(optKey...); err != nil &&
+	if cachedElements, err = s.cacheStorage.GetAll(keyTag); err != nil &&
 		// Allow not allow return all temporarily for sub-injectors
 		!errors.Is(err, remyErrs.ErrConfigNotAllowReturnAll) {
 		return
@@ -107,7 +107,7 @@ func (s *StdInjector) GetAll(optKey ...string) (resultList []any, err error) {
 
 	if s.parentInjector != nil {
 		originalError := err
-		if parentElements, err = s.parentInjector.GetAll(optKey...); err != nil {
+		if parentElements, err = s.parentInjector.GetAll(keyTag); err != nil {
 			err = remyErrs.ErrWrapParentSubErrors{MainError: err}
 			if originalError != nil { // Restore original error in case the parent raises an error as well
 				err = originalError

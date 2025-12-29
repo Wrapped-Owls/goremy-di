@@ -76,17 +76,15 @@ func (s *ElementsStorage[T]) Get(key T) (result any, err error) {
 	return
 }
 
-func (s *ElementsStorage[T]) GetAll(optKey ...string) (resultList []any, err error) {
+func (s *ElementsStorage[T]) GetAll(keyTag string) (resultList []any, err error) {
 	if !s.opts.Is(injopts.CacheOptReturnAll) {
 		err = remyErrs.ErrConfigNotAllowReturnAll
 		return
 	}
 
 	fromList := s.elements
-	if len(optKey) > 0 {
-		if keyTag := optKey[0]; keyTag != "" {
-			fromList = s.namedElements[keyTag]
-		}
+	if keyTag != "" {
+		fromList = s.namedElements[keyTag]
 	}
 
 	resultList = make([]any, 0, len(fromList))
