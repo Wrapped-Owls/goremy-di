@@ -6,7 +6,6 @@ import (
 
 type (
 	BindKey interface {
-		comparable()
 		ID() uint64
 	}
 
@@ -18,10 +17,6 @@ type (
 
 	KeyElem[T any] struct{}
 )
-
-func (k KeyElem[T]) comparable() {
-	// Just a stub function
-}
 
 // ID returns a stable, type-unique identifier for KeyElem[T].
 // It uses the classic “interface-header” technique:
