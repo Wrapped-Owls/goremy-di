@@ -6,16 +6,20 @@ on:
       - main
       - develop
     paths:
+      - 'Makefile'
       - 'remy/**'
       - 'examples/**'
+      - 'examples/Makefile'
       - '.github/workflows/build_examples.yml'
   pull_request:
     branches:
       - main
       - develop
     paths:
+      - 'Makefile'
       - 'remy/**'
       - 'examples/**'
+      - 'examples/Makefile'
       - '.github/workflows/build_examples.yml'
 
 jobs:
@@ -41,14 +45,5 @@ jobs:
         with:
           go-version: '${{ matrix.go-version }}'
 
-      - name: Build basic example
-        run: cd ./examples/basic && go build -v ./...
-
-      - name: Build bindlogger example
-        run: cd ./examples/bindlogger && go build -v ./...
-
-      - name: Build dynamic constructors example
-        run: cd ./examples/dynamiconstructor && go build -v ./...
-
-      - name: Build guessing_types example
-        run: cd ./examples/guessing_types && go build -v ./...
+      - name: Run examples
+        run: make examples
