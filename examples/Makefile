@@ -2,13 +2,13 @@
 
 test:
 	@echo "Running basic example..."
-	@go -C basic run .
+	@cd basic && go run .
 
 	@echo "\nRunning bindlogger example..."
-	@go -C bindlogger run .
+	@cd bindlogger && go run .
 
 	@echo "\nRunning dynamiconstructor example..."
-	@go -C dynamiconstructor run .
+	@cd dynamiconstructor && go run .
 
 	@echo "\nRunning guessing_types example..."
-	@go -C guessing_types run .
+	@cd guessing_types && go run .
