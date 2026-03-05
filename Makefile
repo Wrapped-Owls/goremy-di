@@ -54,12 +54,6 @@ docs-theme-check:
 	$(MAKE) -C docs theme-check
 
 benchmark:
-	$(MAKE) -C benchmark test
-
-benchmark-generate:
-	$(MAKE) -C benchmark generate
-
-benchmark-run:
 	$(MAKE) -C benchmark bench
 
 # --------------------
