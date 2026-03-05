@@ -1,0 +1,43 @@
+goos: linux
+goarch: amd64
+pkg: github.com/wrapped-owls/goremy-di/benchmark/tests
+cpu: AMD Ryzen 7 5800X 8-Core Processor             
+                              │    dig.txt     │                do.txt                 │              remy.txt               │
+                              │     sec/op     │    sec/op      vs base                │    sec/op     vs base               │
+Registration-16                  24.666µ ± ∞ ¹    6.564µ ± ∞ ¹   -73.39% (p=0.008 n=5)   1.406µ ± ∞ ¹  -94.30% (p=0.008 n=5)
+SingletonRetrieval-16            850.90n ± ∞ ¹   264.50n ± ∞ ¹   -68.92% (p=0.008 n=5)   28.06n ± ∞ ¹  -96.70% (p=0.008 n=5)
+FactoryRetrieval-16               863.2n ± ∞ ¹   6087.0n ± ∞ ¹  +605.17% (p=0.008 n=5)   464.1n ± ∞ ¹  -46.23% (p=0.008 n=5)
+InstanceRetrieval-16             802.40n ± ∞ ¹   250.90n ± ∞ ¹   -68.73% (p=0.008 n=5)   28.48n ± ∞ ¹  -96.45% (p=0.008 n=5)
+NestedDependencyResolution-16    4256.0n ± ∞ ¹   1425.0n ± ∞ ¹   -66.52% (p=0.008 n=5)   133.9n ± ∞ ¹  -96.85% (p=0.008 n=5)
+MultipleRetrievals-16            4112.0n ± ∞ ¹   1329.0n ± ∞ ¹   -67.68% (p=0.008 n=5)   143.5n ± ∞ ¹  -96.51% (p=0.008 n=5)
+UnregisteredTypeRetrieval-16    10355.0n ± ∞ ¹   8449.0n ± ∞ ¹   -18.41% (p=0.008 n=5)   234.1n ± ∞ ¹  -97.74% (p=0.008 n=5)
+geomean                           3.081µ          1.708µ         -44.56%                 156.9n        -94.91%
+¹ need >= 6 samples for confidence interval at level 0.95
+
+                              │    dig.txt     │                 do.txt                 │                 remy.txt                  │
+                              │      B/op      │      B/op       vs base                │     B/op       vs base                    │
+Registration-16                 24.197Ki ± ∞ ¹    4.433Ki ± ∞ ¹   -81.68% (p=0.008 n=5)   1.078Ki ± ∞ ¹   -95.54% (p=0.008 n=5)
+SingletonRetrieval-16              576.0 ± ∞ ¹      176.0 ± ∞ ¹   -69.44% (p=0.008 n=5)       0.0 ± ∞ ¹  -100.00% (p=0.008 n=5)
+FactoryRetrieval-16                576.0 ± ∞ ¹     3016.0 ± ∞ ¹  +423.61% (p=0.008 n=5)     120.0 ± ∞ ¹   -79.17% (p=0.008 n=5)
+InstanceRetrieval-16               576.0 ± ∞ ¹      176.0 ± ∞ ¹   -69.44% (p=0.008 n=5)       0.0 ± ∞ ¹  -100.00% (p=0.008 n=5)
+NestedDependencyResolution-16     3072.0 ± ∞ ¹      960.0 ± ∞ ¹   -68.75% (p=0.008 n=5)       0.0 ± ∞ ¹  -100.00% (p=0.008 n=5)
+MultipleRetrievals-16             2880.0 ± ∞ ¹      880.0 ± ∞ ¹   -69.44% (p=0.008 n=5)       0.0 ± ∞ ¹  -100.00% (p=0.008 n=5)
+UnregisteredTypeRetrieval-16     5529.00 ± ∞ ¹   10210.00 ± ∞ ¹   +84.66% (p=0.008 n=5)     80.00 ± ∞ ¹   -98.55% (p=0.008 n=5)
+geomean                          2.126Ki          1.175Ki         -44.71%                                ?                      ² ³
+¹ need >= 6 samples for confidence interval at level 0.95
+² summaries must be >0 to compute geomean
+³ ratios must be >0 to compute geomean
+
+                              │    dig.txt    │                do.txt                 │                remy.txt                 │
+                              │   allocs/op   │   allocs/op    vs base                │  allocs/op   vs base                    │
+Registration-16                  349.00 ± ∞ ¹     74.00 ± ∞ ¹   -78.80% (p=0.008 n=5)   33.00 ± ∞ ¹   -90.54% (p=0.008 n=5)
+SingletonRetrieval-16            20.000 ± ∞ ¹     5.000 ± ∞ ¹   -75.00% (p=0.008 n=5)   0.000 ± ∞ ¹  -100.00% (p=0.008 n=5)
+FactoryRetrieval-16              20.000 ± ∞ ¹    67.000 ± ∞ ¹  +235.00% (p=0.008 n=5)   4.000 ± ∞ ¹   -80.00% (p=0.008 n=5)
+InstanceRetrieval-16             20.000 ± ∞ ¹     5.000 ± ∞ ¹   -75.00% (p=0.008 n=5)   0.000 ± ∞ ¹  -100.00% (p=0.008 n=5)
+NestedDependencyResolution-16    104.00 ± ∞ ¹     26.00 ± ∞ ¹   -75.00% (p=0.008 n=5)    0.00 ± ∞ ¹  -100.00% (p=0.008 n=5)
+MultipleRetrievals-16            100.00 ± ∞ ¹     25.00 ± ∞ ¹   -75.00% (p=0.008 n=5)    0.00 ± ∞ ¹  -100.00% (p=0.008 n=5)
+UnregisteredTypeRetrieval-16    151.000 ± ∞ ¹   134.000 ± ∞ ¹   -11.26% (p=0.008 n=5)   5.000 ± ∞ ¹   -96.69% (p=0.008 n=5)
+geomean                           63.97           27.12         -57.60%                              ?                      ² ³
+¹ need >= 6 samples for confidence interval at level 0.95
+² summaries must be >0 to compute geomean
+³ ratios must be >0 to compute geomean
