@@ -1,29 +1,104 @@
-# Remy
+# Remy DI
 
-A package that helps the creation of golang dependency injections.
+Type-safe dependency injection for Go using generics.
+
+Remy DI provides a lightweight and fast way to register and resolve dependencies without reflection in the hot path.
+It supports scoped injectors, bind tags, factory parameters, and circular dependency detection.
 
 ## About
 
-The main job of a dependency-injection package is to help providing objects, instances, closures to a caller, by avoiding
+The main job of a dependency-injection package is to help providing objects, instances, closures to a caller, by
+avoiding
 a depth graph in parameter pass. Knowing this, and using culinary as inspiration, we thought that a DI (dependency
 injection) package is like a `Sous chef` in a cuisine, so we take decided to reference the best `Sous chef` we know: "
 Remy"!
 
 ### Inspiration
 
-This package is heavily inspired by the 
-flutter module [Modular Dependency Injection](https://modular.flutterando.com.br/docs/flutter_modular/dependency-injection)
+This package is heavily inspired by the
+flutter
+module [Modular Dependency Injection](https://modular.flutterando.com.br/docs/flutter_modular/dependency-injection)
 
-## Instance registration
+## Documentation
 
-The strategy for building an instance with its dependencies comprise on registering all objects in a module and
-instantiate them on demand or in single-instance form(singleton). This 'registration' is called **Bind**.
+- Docs site: https://wrapped-owls.github.io/goremy-di/
+- Go package: https://pkg.go.dev/github.com/wrapped-owls/goremy-di/remy
+- Benchmarks: [benchmark/README.md](./benchmark/README.md)
 
-There are a few ways to build a Bind to register object instances:
+## Requirements
 
-- _Bind.singleton_: Build an instance only once at the bind registration.
-- _Bind.lazySingleton_: Build an instance only once when element is retrieved at first time.
-- _Bind.factory_: Build an instance on demand.
-- _Bind.instance_: Adds an existing instance as it is.
+- Go `1.20+`
 
-Other information about binds, functions and injectors can be found easily at [spec](./docs/SPEC.md)
+## Installation
+
+```bash
+go get github.com/wrapped-owls/goremy-di/remy
+```
+
+## Quick Start
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/wrapped-owls/goremy-di/remy"
+)
+
+var Injector = remy.NewInjector()
+
+func init() {
+	remy.RegisterSingleton(Injector, func(_ remy.DependencyRetriever) (string, error) {
+		return "hello from remy", nil
+	})
+}
+
+func main() {
+	message := remy.MustGet[string](Injector)
+	log.Println(message)
+}
+```
+
+## Core Concepts
+
+- `Injector`: Container that stores binds and resolves dependencies.
+- `Bind`: Registration strategy for a type.
+- `DependencyRetriever`: Resolver interface used inside bind constructors.
+- Optional tags: Distinguish multiple binds with the same type.
+- Sub-injectors: Child scopes can inherit from a parent injector.
+
+### Bind Types
+
+- `Singleton`: Constructed once when registered.
+- `LazySingleton`: Constructed once on first retrieval.
+- `Factory`: Constructed on every retrieval.
+- `Instance`: Existing value registered as-is.
+
+## Project Structure
+
+- `remy/`: Main library module (`go.mod`, implementation, tests).
+- `examples/`: Runnable usage samples (`basic`, `bindlogger`, `dynamiconstructor`, `guessing_types`).
+- `docs/`: Hugo documentation source and generated site assets.
+- `benchmark/`: Benchmark suites and benchstat comparison output.
+
+## Development Commands
+
+Run from repository root:
+
+```bash
+make test
+make test-race
+make run-lint
+make run-formatters
+make examples
+make docs-build
+make docs-serve
+make benchmark
+```
+
+## Notes
+
+- Prefer registering dependencies during startup, before concurrent retrieval.
+- Use `Get[T]` if you want explicit error handling, or `MustGet[T]` when failure should panic.
+- For advanced usage (modules, tags, temporary dependencies, scoped retrieval), see the docs site.
