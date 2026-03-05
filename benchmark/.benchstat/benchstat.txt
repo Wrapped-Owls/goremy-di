@@ -1,43 +1,43 @@
 goos: linux
 goarch: amd64
 pkg: github.com/wrapped-owls/goremy-di/benchmark/tests
-cpu: AMD Ryzen 7 5800X 8-Core Processor             
-                              │    dig.txt     │                do.txt                 │              remy.txt               │
-                              │     sec/op     │    sec/op      vs base                │    sec/op     vs base               │
-Registration-16                  24.666µ ± ∞ ¹    6.564µ ± ∞ ¹   -73.39% (p=0.008 n=5)   1.406µ ± ∞ ¹  -94.30% (p=0.008 n=5)
-SingletonRetrieval-16            850.90n ± ∞ ¹   264.50n ± ∞ ¹   -68.92% (p=0.008 n=5)   28.06n ± ∞ ¹  -96.70% (p=0.008 n=5)
-FactoryRetrieval-16               863.2n ± ∞ ¹   6087.0n ± ∞ ¹  +605.17% (p=0.008 n=5)   464.1n ± ∞ ¹  -46.23% (p=0.008 n=5)
-InstanceRetrieval-16             802.40n ± ∞ ¹   250.90n ± ∞ ¹   -68.73% (p=0.008 n=5)   28.48n ± ∞ ¹  -96.45% (p=0.008 n=5)
-NestedDependencyResolution-16    4256.0n ± ∞ ¹   1425.0n ± ∞ ¹   -66.52% (p=0.008 n=5)   133.9n ± ∞ ¹  -96.85% (p=0.008 n=5)
-MultipleRetrievals-16            4112.0n ± ∞ ¹   1329.0n ± ∞ ¹   -67.68% (p=0.008 n=5)   143.5n ± ∞ ¹  -96.51% (p=0.008 n=5)
-UnregisteredTypeRetrieval-16    10355.0n ± ∞ ¹   8449.0n ± ∞ ¹   -18.41% (p=0.008 n=5)   234.1n ± ∞ ¹  -97.74% (p=0.008 n=5)
-geomean                           3.081µ          1.708µ         -44.56%                 156.9n        -94.91%
+cpu: AMD EPYC 9V74 80-Core Processor                
+                             │    dig.txt     │                 do.txt                 │              remy.txt               │
+                             │     sec/op     │     sec/op      vs base                │    sec/op     vs base               │
+Registration-4                  32.171µ ± ∞ ¹     4.664µ ± ∞ ¹   -85.50% (p=0.008 n=5)   1.599µ ± ∞ ¹  -95.03% (p=0.008 n=5)
+SingletonRetrieval-4            955.10n ± ∞ ¹    286.70n ± ∞ ¹   -69.98% (p=0.008 n=5)   37.12n ± ∞ ¹  -96.11% (p=0.008 n=5)
+FactoryRetrieval-4               953.8n ± ∞ ¹    7881.0n ± ∞ ¹  +726.27% (p=0.008 n=5)   607.5n ± ∞ ¹  -36.31% (p=0.008 n=5)
+InstanceRetrieval-4             961.70n ± ∞ ¹    274.00n ± ∞ ¹   -71.51% (p=0.008 n=5)   36.76n ± ∞ ¹  -96.18% (p=0.008 n=5)
+NestedDependencyResolution-4    5151.0n ± ∞ ¹    1586.0n ± ∞ ¹   -69.21% (p=0.008 n=5)   174.1n ± ∞ ¹  -96.62% (p=0.008 n=5)
+MultipleRetrievals-4            4857.0n ± ∞ ¹    1436.0n ± ∞ ¹   -70.43% (p=0.008 n=5)   183.2n ± ∞ ¹  -96.23% (p=0.008 n=5)
+UnregisteredTypeRetrieval-4    12928.0n ± ∞ ¹   10068.0n ± ∞ ¹   -22.12% (p=0.008 n=5)   273.5n ± ∞ ¹  -97.88% (p=0.008 n=5)
+geomean                          3.679µ           1.820µ         -50.52%                 197.1n        -94.64%
 ¹ need >= 6 samples for confidence interval at level 0.95
 
-                              │    dig.txt     │                 do.txt                 │                 remy.txt                  │
-                              │      B/op      │      B/op       vs base                │     B/op       vs base                    │
-Registration-16                 24.197Ki ± ∞ ¹    4.433Ki ± ∞ ¹   -81.68% (p=0.008 n=5)   1.078Ki ± ∞ ¹   -95.54% (p=0.008 n=5)
-SingletonRetrieval-16              576.0 ± ∞ ¹      176.0 ± ∞ ¹   -69.44% (p=0.008 n=5)       0.0 ± ∞ ¹  -100.00% (p=0.008 n=5)
-FactoryRetrieval-16                576.0 ± ∞ ¹     3016.0 ± ∞ ¹  +423.61% (p=0.008 n=5)     120.0 ± ∞ ¹   -79.17% (p=0.008 n=5)
-InstanceRetrieval-16               576.0 ± ∞ ¹      176.0 ± ∞ ¹   -69.44% (p=0.008 n=5)       0.0 ± ∞ ¹  -100.00% (p=0.008 n=5)
-NestedDependencyResolution-16     3072.0 ± ∞ ¹      960.0 ± ∞ ¹   -68.75% (p=0.008 n=5)       0.0 ± ∞ ¹  -100.00% (p=0.008 n=5)
-MultipleRetrievals-16             2880.0 ± ∞ ¹      880.0 ± ∞ ¹   -69.44% (p=0.008 n=5)       0.0 ± ∞ ¹  -100.00% (p=0.008 n=5)
-UnregisteredTypeRetrieval-16     5529.00 ± ∞ ¹   10210.00 ± ∞ ¹   +84.66% (p=0.008 n=5)     80.00 ± ∞ ¹   -98.55% (p=0.008 n=5)
-geomean                          2.126Ki          1.175Ki         -44.71%                                ?                      ² ³
+                             │    dig.txt     │                 do.txt                 │                 remy.txt                  │
+                             │      B/op      │      B/op       vs base                │     B/op       vs base                    │
+Registration-4                 24.184Ki ± ∞ ¹    3.297Ki ± ∞ ¹   -86.37% (p=0.008 n=5)   1.078Ki ± ∞ ¹   -95.54% (p=0.008 n=5)
+SingletonRetrieval-4              576.0 ± ∞ ¹      176.0 ± ∞ ¹   -69.44% (p=0.008 n=5)       0.0 ± ∞ ¹  -100.00% (p=0.008 n=5)
+FactoryRetrieval-4                576.0 ± ∞ ¹     3016.0 ± ∞ ¹  +423.61% (p=0.008 n=5)     120.0 ± ∞ ¹   -79.17% (p=0.008 n=5)
+InstanceRetrieval-4               576.0 ± ∞ ¹      176.0 ± ∞ ¹   -69.44% (p=0.008 n=5)       0.0 ± ∞ ¹  -100.00% (p=0.008 n=5)
+NestedDependencyResolution-4     3072.0 ± ∞ ¹      960.0 ± ∞ ¹   -68.75% (p=0.008 n=5)       0.0 ± ∞ ¹  -100.00% (p=0.008 n=5)
+MultipleRetrievals-4             2880.0 ± ∞ ¹      880.0 ± ∞ ¹   -69.44% (p=0.008 n=5)       0.0 ± ∞ ¹  -100.00% (p=0.008 n=5)
+UnregisteredTypeRetrieval-4     5526.00 ± ∞ ¹   10203.00 ± ∞ ¹   +84.64% (p=0.008 n=5)     80.00 ± ∞ ¹   -98.55% (p=0.008 n=5)
+geomean                         2.125Ki          1.127Ki         -47.00%                                ?                      ² ³
 ¹ need >= 6 samples for confidence interval at level 0.95
 ² summaries must be >0 to compute geomean
 ³ ratios must be >0 to compute geomean
 
-                              │    dig.txt    │                do.txt                 │                remy.txt                 │
-                              │   allocs/op   │   allocs/op    vs base                │  allocs/op   vs base                    │
-Registration-16                  349.00 ± ∞ ¹     74.00 ± ∞ ¹   -78.80% (p=0.008 n=5)   33.00 ± ∞ ¹   -90.54% (p=0.008 n=5)
-SingletonRetrieval-16            20.000 ± ∞ ¹     5.000 ± ∞ ¹   -75.00% (p=0.008 n=5)   0.000 ± ∞ ¹  -100.00% (p=0.008 n=5)
-FactoryRetrieval-16              20.000 ± ∞ ¹    67.000 ± ∞ ¹  +235.00% (p=0.008 n=5)   4.000 ± ∞ ¹   -80.00% (p=0.008 n=5)
-InstanceRetrieval-16             20.000 ± ∞ ¹     5.000 ± ∞ ¹   -75.00% (p=0.008 n=5)   0.000 ± ∞ ¹  -100.00% (p=0.008 n=5)
-NestedDependencyResolution-16    104.00 ± ∞ ¹     26.00 ± ∞ ¹   -75.00% (p=0.008 n=5)    0.00 ± ∞ ¹  -100.00% (p=0.008 n=5)
-MultipleRetrievals-16            100.00 ± ∞ ¹     25.00 ± ∞ ¹   -75.00% (p=0.008 n=5)    0.00 ± ∞ ¹  -100.00% (p=0.008 n=5)
-UnregisteredTypeRetrieval-16    151.000 ± ∞ ¹   134.000 ± ∞ ¹   -11.26% (p=0.008 n=5)   5.000 ± ∞ ¹   -96.69% (p=0.008 n=5)
-geomean                           63.97           27.12         -57.60%                              ?                      ² ³
+                             │    dig.txt    │                do.txt                 │                remy.txt                 │
+                             │   allocs/op   │   allocs/op    vs base                │  allocs/op   vs base                    │
+Registration-4                  349.00 ± ∞ ¹     54.00 ± ∞ ¹   -84.53% (p=0.008 n=5)   33.00 ± ∞ ¹   -90.54% (p=0.008 n=5)
+SingletonRetrieval-4            20.000 ± ∞ ¹     5.000 ± ∞ ¹   -75.00% (p=0.008 n=5)   0.000 ± ∞ ¹  -100.00% (p=0.008 n=5)
+FactoryRetrieval-4              20.000 ± ∞ ¹    67.000 ± ∞ ¹  +235.00% (p=0.008 n=5)   4.000 ± ∞ ¹   -80.00% (p=0.008 n=5)
+InstanceRetrieval-4             20.000 ± ∞ ¹     5.000 ± ∞ ¹   -75.00% (p=0.008 n=5)   0.000 ± ∞ ¹  -100.00% (p=0.008 n=5)
+NestedDependencyResolution-4    104.00 ± ∞ ¹     26.00 ± ∞ ¹   -75.00% (p=0.008 n=5)    0.00 ± ∞ ¹  -100.00% (p=0.008 n=5)
+MultipleRetrievals-4            100.00 ± ∞ ¹     25.00 ± ∞ ¹   -75.00% (p=0.008 n=5)    0.00 ± ∞ ¹  -100.00% (p=0.008 n=5)
+UnregisteredTypeRetrieval-4    151.000 ± ∞ ¹   134.000 ± ∞ ¹   -11.26% (p=0.008 n=5)   5.000 ± ∞ ¹   -96.69% (p=0.008 n=5)
+geomean                          63.97           25.93         -59.47%                              ?                      ² ³
 ¹ need >= 6 samples for confidence interval at level 0.95
 ² summaries must be >0 to compute geomean
 ³ ratios must be >0 to compute geomean
