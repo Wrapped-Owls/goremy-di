@@ -78,7 +78,7 @@ func main() {
 ## Project Structure
 
 - `remy/`: Main library module (`go.mod`, implementation, tests).
-- `examples/`: Runnable usage samples (`basic`, `bindlogger`, `dynamiconstructor`, `guessing_types`).
+- `examples/`: Runnable usage samples (`basic`, `bindlogger`, `context_jwt_user`, `dynamiconstructor`, `guessing_types`).
 - `docs/`: Hugo documentation source and generated site assets.
 - `benchmark/`: Benchmark suites and benchstat comparison output.
 

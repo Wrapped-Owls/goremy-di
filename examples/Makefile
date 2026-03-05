@@ -7,6 +7,9 @@ test:
 	@echo "\nRunning bindlogger example..."
 	@cd bindlogger && go run .
 
+	@echo "\nRunning context_jwt_user example..."
+	@cd context_jwt_user && go run .
+
 	@echo "\nRunning dynamiconstructor example..."
 	@cd dynamiconstructor && go run .
 

@@ -12,6 +12,7 @@ the [examples directory](https://github.com/Wrapped-Owls/goremy-di/tree/main/exa
   singleton registration and retrieval
 - **[bindlogger](https://github.com/Wrapped-Owls/goremy-di/tree/main/examples/bindlogger)** - How to inject loggers and
   other utilities
+- **[context_jwt_user](https://github.com/Wrapped-Owls/goremy-di/tree/main/examples/context_jwt_user)** - Context-aware retrieval and JWT claim mapping into a User dependency
 - **[dynamiconstructor](https://github.com/Wrapped-Owls/goremy-di/tree/main/examples/dynamiconstructor)** - Dynamic
   constructor registration examples
 - **[guessing_types](https://github.com/Wrapped-Owls/goremy-di/tree/main/examples/guessing_types)** - Type guessing and

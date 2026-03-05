@@ -3,6 +3,7 @@ go 1.20
 use (
 	basic
 	bindlogger
+	context_jwt_user
 	dynamiconstructor
 	guessing_types
 
