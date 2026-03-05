@@ -1,0 +1,81 @@
+name: Benchmark Remy Release
+
+on:
+  push:
+    tags:
+      - 'remy/v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout tagged commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.x'
+
+      - name: Install benchstat
+        run: go install golang.org/x/perf/cmd/benchstat@latest
+
+      - name: Run benchmark suite
+        run: make -C benchmark benchstat
+
+      - name: Preserve benchmark artifacts
+        run: |
+          cp benchmark/.benchstat/dig.txt /tmp/dig.txt
+          cp benchmark/.benchstat/do.txt /tmp/do.txt
+          cp benchmark/.benchstat/remy.txt /tmp/remy.txt
+          cp benchmark/.benchstat/benchstat.txt /tmp/benchstat.txt
+
+      - name: Reset repository state
+        run: |
+          git reset --hard
+          git clean -fd
+
+      - name: Switch to main branch
+        run: |
+          git fetch origin main
+          git checkout -B main origin/main
+
+      - name: Restore benchmark artifacts on main
+        run: |
+          mkdir -p benchmark/.benchstat
+          cp /tmp/dig.txt benchmark/.benchstat/dig.txt
+          cp /tmp/do.txt benchmark/.benchstat/do.txt
+          cp /tmp/remy.txt benchmark/.benchstat/remy.txt
+          cp /tmp/benchstat.txt benchmark/.benchstat/benchstat.txt
+
+      - name: Update benchmark README
+        run: |
+          cd benchmark
+          go run ./cmd/update-readme \
+            -readme README.md \
+            .benchstat/dig.txt \
+            .benchstat/do.txt \
+            .benchstat/remy.txt
+
+      - name: Commit benchmark results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add benchmark/README.md benchmark/.benchstat/benchstat.txt
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          git commit -m "benchmark: update results for ${{ github.ref_name }}"
+          git push origin main
