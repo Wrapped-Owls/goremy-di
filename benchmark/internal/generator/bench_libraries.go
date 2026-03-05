@@ -4,6 +4,7 @@ const FixturesImportPath = "github.com/wrapped-owls/goremy-di/benchmark/internal
 
 type libraryConfig struct {
 	Name         string
+	BuildTag     string
 	FileName     string
 	TemplateName string
 	Imports      []string
@@ -12,6 +13,7 @@ type libraryConfig struct {
 var libraries = []libraryConfig{
 	{
 		Name:         "Remy",
+		BuildTag:     "bench_remy",
 		FileName:     "remy_benchmark_test.go",
 		TemplateName: "remy.go.tmpl",
 		Imports: []string{
@@ -21,6 +23,7 @@ var libraries = []libraryConfig{
 	},
 	{
 		Name:         "Do",
+		BuildTag:     "bench_do",
 		FileName:     "do_benchmark_test.go",
 		TemplateName: "do.go.tmpl",
 		Imports: []string{
@@ -30,6 +33,7 @@ var libraries = []libraryConfig{
 	},
 	{
 		Name:         "Dig",
+		BuildTag:     "bench_dig",
 		FileName:     "dig_benchmark_test.go",
 		TemplateName: "dig.go.tmpl",
 		Imports: []string{

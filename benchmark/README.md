@@ -3,67 +3,88 @@
 ## How to Run
 
 ```sh
-# Generate benchmark setup
-go generate ./...
+# Install benchmark tool
+make -C benchmark install-tools
 
-# Run benchmarks with memory allocation info
-go test -bench=. -benchmem ./benchmark/tests
+# Run all three benchmark suites, run benchstat, and auto-update this README
+make -C benchmark bench
+
+# Exact benchstat command used for the final comparison
+cd benchmark/.benchstat && benchstat dig.txt do.txt remy.txt
 ```
 
----
+## Notes
 
-## Results
+- Raw benchmark outputs are generated in `benchmark/.benchstat/`.
+- The section below is automatically updated by `make -C benchmark bench` and CI.
 
-All benchmark results below were obtained on the following test environment:
+<!-- BENCHSTAT:START -->
 
-- **OS:** Linux
-- **Architecture:** amd64
-- **CPU:** AMD Ryzen 7 5800X (8-Core Processor)
+## Latest Benchmark Comparison
+
+- Updated (UTC): 2026-03-05T07:03:38Z
+- Go: `go1.26.0`
+- OS/Arch: `linux/amd64`
+- CPU: `AMD Ryzen 7 5800X 8-Core Processor`
 
 ### Registration
 
-| Benchmark | ops (N) | ns/op  | B/op   | allocs/op |
-|-----------|---------|--------|--------|-----------|
-| **Dig**   | 49,867  | 24,437 | 24,641 | 332       |
-| **Do**    | 303,548 | 3,735  | 3,378  | 54        |
-| **Remy**  | 683,485 | 1,742  | 1,208  | 35        |
+| Library |     ops (N) |     ns/op |      B/op | allocs/op |
+|---------|------------:|----------:|----------:|----------:|
+| Dig     |      48,283 |    24,177 |    24,778 |       349 |
+| Do      |     179,978 |     6,612 |     4,539 |        74 |
+| Remy    | **839,143** | **1,407** | **1,104** |    **33** |
 
 ### Singleton Retrieval
 
-| Benchmark | ops (N)        | ns/op     | B/op  | allocs/op |
-|-----------|----------------|-----------|-------|-----------|
-| **Dig**   | 1,628,277      | 724.9     | 544   | 16        |
-| **Do**    | 4,998,186      | 237.4     | 176   | 5         |
-| **Remy**  | **24,148,269** | **47.40** | **0** | **0**     |
+| Library |        ops (N) |     ns/op |  B/op | allocs/op |
+|---------|---------------:|----------:|------:|----------:|
+| Dig     |      1,374,896 |       876 |   576 |        20 |
+| Do      |      4,580,288 |     263.4 |   176 |         5 |
+| Remy    | **41,592,746** | **27.99** | **0** |     **0** |
 
 ### Factory Retrieval
 
-| Benchmark | ops (N)   | ns/op | B/op  | allocs/op |
-|-----------|-----------|-------|-------|-----------|
-| **Dig**   | 1,638,084 | 730.1 | 544   | 16        |
-| **Do**    | 204,300   | 5,707 | 3,032 | 69        |
-| **Remy**  | 1,786,933 | 669.1 | 136   | 6         |
+| Library |       ops (N) |     ns/op |    B/op | allocs/op |
+|---------|--------------:|----------:|--------:|----------:|
+| Dig     |     1,510,795 |     806.2 |     576 |        20 |
+| Do      |       191,050 |     6,014 |   3,016 |        67 |
+| Remy    | **2,585,070** | **470.4** | **120** |     **4** |
 
 ### Instance Retrieval
 
-| Benchmark | ops (N)        | ns/op     | B/op  | allocs/op |
-|-----------|----------------|-----------|-------|-----------|
-| **Dig**   | 1,656,339      | 728.2     | 544   | 16        |
-| **Do**    | 5,117,502      | 234.4     | 176   | 5         |
-| **Remy**  | **25,066,693** | **47.48** | **0** | **0**     |
+| Library |        ops (N) |     ns/op |  B/op | allocs/op |
+|---------|---------------:|----------:|------:|----------:|
+| Dig     |      1,521,675 |       793 |   576 |        20 |
+| Do      |      4,793,290 |       250 |   176 |         5 |
+| Remy    | **39,992,311** | **28.48** | **0** |     **0** |
 
 ### Nested Dependency Resolution
 
-| Benchmark | ops (N)       | ns/op     | B/op  | allocs/op |
-|-----------|---------------|-----------|-------|-----------|
-| **Dig**   | 310,790       | 3,919     | 2,912 | 84        |
-| **Do**    | 847,618       | 1,300     | 960   | 26        |
-| **Remy**  | **5,563,692** | **211.3** | **0** | **0**     |
+| Library |       ops (N) |     ns/op |  B/op | allocs/op |
+|---------|--------------:|----------:|------:|----------:|
+| Dig     |       269,406 |     4,255 | 3,072 |       104 |
+| Do      |       722,618 |     1,443 |   960 |        26 |
+| Remy    | **8,763,864** | **134.2** | **0** |     **0** |
 
 ### Multiple Retrievals
 
-| Benchmark | ops (N)       | ns/op     | B/op  | allocs/op |
-|-----------|---------------|-----------|-------|-----------|
-| **Dig**   | 301,608       | 3,682     | 2,720 | 80        |
-| **Do**    | 1,013,702     | 1,195     | 880   | 25        |
-| **Remy**  | **5,083,998** | **237.0** | **0** | **0**     |
+| Library |       ops (N) |     ns/op |  B/op | allocs/op |
+|---------|--------------:|----------:|------:|----------:|
+| Dig     |       297,512 |     4,019 | 2,880 |       100 |
+| Do      |       826,291 |     1,339 |   880 |        25 |
+| Remy    | **7,974,126** | **143.5** | **0** |     **0** |
+
+### Unregistered Type Retrieval
+
+| Library |       ops (N) |     ns/op |   B/op | allocs/op |
+|---------|--------------:|----------:|-------:|----------:|
+| Dig     |       118,795 |    10,311 |  5,529 |       151 |
+| Do      |       138,446 |     8,447 | 10,210 |       134 |
+| Remy    | **5,189,788** | **232.4** | **80** |     **5** |
+
+<!-- BENCHSTAT:END -->
+
+## Benchstat Output
+
+- Raw file: [`.benchstat/benchstat.txt`](./.benchstat/benchstat.txt)
