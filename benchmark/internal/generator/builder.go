@@ -12,9 +12,9 @@ func buildTemplateData(lib libraryConfig) (TemplateData, error) {
 	}
 
 	return TemplateData{
-		LibraryName: lib.Name,
-		Imports:     lib.Imports,
-		Benchmarks:  benchmarks,
+		BuildTag:   lib.BuildTag,
+		Imports:    lib.Imports,
+		Benchmarks: benchmarks,
 	}, nil
 }
 

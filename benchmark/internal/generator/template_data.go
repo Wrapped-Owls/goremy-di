@@ -1,9 +1,9 @@
 package main
 
 type TemplateData struct {
-	LibraryName string
-	Imports     []string
-	Benchmarks  []BenchmarkTemplateData
+	BuildTag   string
+	Imports    []string
+	Benchmarks []BenchmarkTemplateData
 }
 
 type BenchmarkTemplateData struct {
