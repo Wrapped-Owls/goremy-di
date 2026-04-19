@@ -10,7 +10,7 @@ make -C benchmark install-tools
 make -C benchmark bench
 
 # Exact benchstat command used for the final comparison
-cd benchmark/.benchstat && benchstat dig.txt do.txt remy.txt
+cd benchmark/.benchstat && benchstat dig.txt do.txt gontainer.txt remy.txt
 ```
 
 ## Notes

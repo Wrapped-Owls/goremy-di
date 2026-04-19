@@ -32,11 +32,7 @@ jobs:
         run: make -C benchmark benchstat
 
       - name: Preserve benchmark artifacts
-        run: |
-          cp benchmark/.benchstat/dig.txt /tmp/dig.txt
-          cp benchmark/.benchstat/do.txt /tmp/do.txt
-          cp benchmark/.benchstat/remy.txt /tmp/remy.txt
-          cp benchmark/.benchstat/benchstat.txt /tmp/benchstat.txt
+        run: cp -r benchmark/.benchstat /tmp/benchstat-artifacts
 
       - name: Reset repository state
         run: |
@@ -49,21 +45,10 @@ jobs:
           git checkout -B main origin/main
 
       - name: Restore benchmark artifacts on main
-        run: |
-          mkdir -p benchmark/.benchstat
-          cp /tmp/dig.txt benchmark/.benchstat/dig.txt
-          cp /tmp/do.txt benchmark/.benchstat/do.txt
-          cp /tmp/remy.txt benchmark/.benchstat/remy.txt
-          cp /tmp/benchstat.txt benchmark/.benchstat/benchstat.txt
+        run: cp -r /tmp/benchstat-artifacts benchmark/.benchstat
 
       - name: Update benchmark README
-        run: |
-          cd benchmark
-          go run ./cmd/update-readme \
-            -readme README.md \
-            .benchstat/dig.txt \
-            .benchstat/do.txt \
-            .benchstat/remy.txt
+        run: make -C benchmark update-readme
 
       - name: Commit benchmark results
         run: |
