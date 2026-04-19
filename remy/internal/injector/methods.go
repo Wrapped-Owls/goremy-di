@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
+	"github.com/wrapped-owls/goremy-di/remy/internal/stgbind"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
@@ -167,7 +168,8 @@ func TryGet[T any](retriever types.DependencyRetriever, keyTag string) (result T
 func GetWithPairs[T any](
 	retriever types.DependencyRetriever, keyTag string, elements ...types.BindEntry,
 ) (result T, err error) {
-	subInjector := New(injopts.CacheOptNone, retriever)
+	stg := stgbind.NewStorage(injopts.CacheOptNone, uint(len(elements)))
+	subInjector := NewWithStorage(injopts.CacheOptNone, stg, retriever)
 	for _, element := range elements {
 		value, bindKey := element.Entry()
 		if bindKey == nil { // Gen a bindKey if none is provided
@@ -186,7 +188,8 @@ func GetWith[T any](
 	retriever types.DependencyRetriever, keyTag string,
 	binder func(injector types.Injector) error,
 ) (result T, err error) {
-	subInjector := New(injopts.CacheOptNone, retriever)
+	stg := stgbind.NewSliceStorage(injopts.CacheOptNone, 4)
+	subInjector := NewWithStorage(injopts.CacheOptNone, stg, retriever)
 	if err = binder(subInjector); err != nil {
 		return
 	}
