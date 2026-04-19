@@ -3,6 +3,7 @@ module github.com/wrapped-owls/goremy-di/benchmark
 go 1.26
 
 require (
+	github.com/NVIDIA/gontainer/v2 v2.3.1
 	github.com/samber/do/v2 v2.0.0
 	github.com/wrapped-owls/goremy-di/remy v1.10.2
 	go.uber.org/dig v1.19.0

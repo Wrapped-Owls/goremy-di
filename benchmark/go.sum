@@ -1,3 +1,5 @@
+github.com/NVIDIA/gontainer/v2 v2.3.1 h1:CGZJLcBICn4z2VzsY1nlOXpi5k3PUpv3Tp6LaT2vkJQ=
+github.com/NVIDIA/gontainer/v2 v2.3.1/go.mod h1:itUlioyrCwQsdDi5bY1T1WW4S6uvsVaRIEiCaOehi10=
 github.com/aclements/go-moremath v0.0.0-20241023150245-c8bbc672ef66 h1:siNQlUMcFUDZWCOt0p+RHl7et5Nnwwyq/sFZmr4iG1I=
 github.com/aclements/go-moremath v0.0.0-20241023150245-c8bbc672ef66/go.mod h1:FDw7qicTbJ1y1SZcNnOvym2BogPdC3lY9Z1iUM4MVhw=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
