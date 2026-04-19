@@ -41,4 +41,14 @@ var libraries = []libraryConfig{
 			"go.uber.org/dig",
 		},
 	},
+	{
+		Name:         "Gontainer",
+		BuildTag:     "bench_gontainer",
+		FileName:     "gontainer_benchmark_test.go",
+		TemplateName: "gontainer.go.tmpl",
+		Imports: []string{
+			FixturesImportPath,
+			"github.com/NVIDIA/gontainer/v2",
+		},
+	},
 }
