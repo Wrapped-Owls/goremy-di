@@ -160,13 +160,10 @@ func Get[T any](retriever types.DependencyRetriever, keyTag string) (element T, 
 	return
 }
 
-func shouldIgnoreGuessError(err error, requestedKey types.BindKey) bool {
-	var notRegistered remyErrs.ErrElementNotRegistered
-	if !errors.As(err, &notRegistered) {
-		return false
-	}
-
-	missingKey, ok := notRegistered.Key.(types.BindKey)
+func shouldIgnoreGuessError(checkErr error, requestedKey types.BindKey) bool {
+	notRegistered, ok := remyErrs.CheckError[remyErrs.ErrElementNotRegistered](checkErr)
+	var missingKey types.BindKey
+	missingKey, ok = notRegistered.Key.(types.BindKey)
 	return ok && missingKey.ID() == requestedKey.ID()
 }
 
