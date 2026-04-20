@@ -1,80 +1,37 @@
 package stgbind
 
 import (
-	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 )
 
-// ElementsStorage holds all dependencies
+// NewStorage returns the most efficient Storage implementation for the given
+// expected element count:
+//
+//   - size == 1: SingleStorage (flat fields, zero heap overhead)
+//   - 1 < size <= 4: SliceStorage (linear scan, one contiguous alloc)
+//   - size > 4: ElementsStorage (hash-map, O(1) lookup)
+func NewStorage(opts injopts.CacheConfOption, size uint) types.Storage[types.BindKey] {
+	switch {
+	case size == 1:
+		return NewSingleStorage[types.BindKey](opts)
+	case size <= 4:
+		return NewSliceStorage[types.BindKey](opts, size)
+	default:
+		return NewElementsStorage[types.BindKey](opts)
+	}
+}
+
 type (
 	stgKey interface {
 		types.BindKey
 		comparable
 	}
-	genericAnyMap[T comparable] map[T]any
+	baseStorage[T stgKey] struct {
+		opts injopts.CacheConfOption
+	}
 )
 
-func (s *ElementsStorage[T]) Set(key T, value any) (wasOverridden bool, err error) {
-	if _, ok := s.elements[s.keyID(key)]; ok {
-		if !s.opts.Is(injopts.CacheOptAllowOverride) {
-			return false, remyErrs.ErrAlreadyBound{Key: key}
-		}
-		wasOverridden = true
-	}
-	s.elements[s.keyID(key)] = value
-	return
-}
-
-func (s *ElementsStorage[T]) SetNamed(
-	elementType T, name string, value any,
-) (wasOverridden bool, err error) {
-	namedBinds := s.getNamedStorage(name)
-
-	if _, ok := namedBinds[s.keyID(elementType)]; ok {
-		if !s.opts.Is(injopts.CacheOptAllowOverride) {
-			return false, remyErrs.ErrAlreadyBound{Key: elementType}
-		}
-		wasOverridden = true
-	}
-	namedBinds[s.keyID(elementType)] = value
-	s.namedElements[name] = namedBinds
-	return
-}
-
-func (s *ElementsStorage[T]) GetNamed(elementType T, name string) (result any, err error) {
-	if elementMap, ok := s.namedElements[name]; ok && elementMap != nil {
-		result, ok = elementMap[s.keyID(elementType)]
-		if !ok {
-			err = remyErrs.ErrElementNotRegistered{Key: elementType}
-		}
-		return result, err
-	}
-	return nil, remyErrs.ErrElementNotRegistered{Key: elementType}
-}
-
-func (s *ElementsStorage[T]) Get(key T) (result any, err error) {
-	var ok bool
-	if result, ok = s.elements[s.keyID(key)]; !ok {
-		err = remyErrs.ErrElementNotRegistered{Key: key}
-	}
-	return
-}
-
-func (s *ElementsStorage[T]) GetAll(keyTag string) (resultList []any, err error) {
-	if !s.opts.Is(injopts.CacheOptReturnAll) {
-		err = remyErrs.ErrConfigNotAllowReturnAll
-		return
-	}
-
-	fromList := s.elements
-	if keyTag != "" {
-		fromList = s.namedElements[keyTag]
-	}
-
-	resultList = make([]any, 0, len(fromList))
-	for _, value := range fromList {
-		resultList = append(resultList, value)
-	}
-	return
+func newBaseStorage[T stgKey](opts injopts.CacheConfOption) baseStorage[T] {
+	return baseStorage[T]{opts: opts}
 }

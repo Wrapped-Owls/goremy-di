@@ -58,3 +58,38 @@ func (e baseErrorChecker[T, PT]) Is(target error) bool {
 	_, ok := target.(T) // Check the raw value directly
 	return ok
 }
+
+func CheckError[T any](checkErr any) (foundErr T, ok bool) {
+	type errUnwrap interface {
+		Unwrap() error
+	}
+
+	for {
+		asUnwrap, canUnwrap := checkErr.(errUnwrap)
+		if !canUnwrap || asUnwrap == nil {
+			break
+		}
+
+		unwrapped := asUnwrap.Unwrap()
+		if unwrapped == nil {
+			checkErr = nil
+			break
+		}
+
+		checkErr = unwrapped
+	}
+
+	switch val := checkErr.(type) {
+	case T:
+		foundErr = val
+	case *T:
+		if val == nil {
+			return foundErr, false
+		}
+		foundErr = *val
+	default:
+		return foundErr, false
+	}
+
+	return foundErr, true
+}

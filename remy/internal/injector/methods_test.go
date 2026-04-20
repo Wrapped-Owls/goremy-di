@@ -1,6 +1,7 @@
 package injector
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -638,5 +639,57 @@ func TestCheckSavedAsBind_pointerTypeDuckTyping(t *testing.T) {
 	}
 	if result != nil {
 		t.Fatal("checkSavedAsBind returned no-nil result, expected a nil result")
+	}
+}
+
+func TestGet_guessReturnsNestedMissingDependency(t *testing.T) {
+	i := New(injopts.CacheOptReturnAll)
+	if err := Register(
+		i, "", binds.Factory(
+			func(retriever types.DependencyRetriever) (fixtures.TestContextRepositoryImpl, error) {
+				ctx, err := Get[context.Context](retriever, "")
+				if err != nil {
+					return fixtures.TestContextRepositoryImpl{}, err
+				}
+
+				requestID, _ := ctx.Value("requestID").(string)
+				return fixtures.TestContextRepositoryImpl{RequestIDValue: requestID}, nil
+			},
+		),
+	); err != nil {
+		t.Fatal(err)
+	}
+
+	_, err := Get[fixtures.TestContextRepository](i, "")
+	if err == nil {
+		t.Fatal("expected error but got nil")
+	}
+
+	var notRegistered remyErrs.ErrElementNotRegistered
+	if !errors.As(err, &notRegistered) {
+		t.Fatalf("expected ErrElementNotRegistered, got %v", err)
+	}
+
+	missingKey, ok := notRegistered.Key.(types.BindKey)
+	if !ok {
+		t.Fatalf("expected missing key to implement BindKey, got %T", notRegistered.Key)
+	}
+
+	expectedKey := utils.NewKeyElem[context.Context]()
+	if missingKey.ID() != expectedKey.ID() {
+		t.Fatalf("expected missing key to be `%T`, got `%T`", expectedKey, missingKey)
+	}
+
+	const injectedReqID = "req-123"
+	ctx := context.WithValue(context.Background(), "requestID", injectedReqID)
+
+	var result fixtures.TestContextRepository
+	if result, err = GetWithPairs[fixtures.TestContextRepository](
+		i, "", types.NewBindPair(ctx, ""),
+	); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result.RequestID() != injectedReqID {
+		t.Fatalf("unexpected request id: %s", result.RequestID())
 	}
 }

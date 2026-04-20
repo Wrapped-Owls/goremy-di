@@ -21,6 +21,18 @@ func New(
 	opts injopts.CacheConfOption,
 	parent ...types.DependencyRetriever,
 ) *StdInjector {
+	return NewWithStorage(opts, stgbind.NewElementsStorage[types.BindKey](opts), parent...)
+}
+
+// NewWithStorage creates a StdInjector that uses the provided storage backend.
+// This allows callers to supply an optimised storage (e.g. SliceStorage for
+// ephemeral sub-injectors with a known, small number of entries) rather than
+// always allocating the default map-backed ElementsStorage.
+func NewWithStorage(
+	opts injopts.CacheConfOption,
+	storage types.Storage[types.BindKey],
+	parent ...types.DependencyRetriever,
+) *StdInjector {
 	var parentInjector types.DependencyRetriever
 	if len(parent) > 0 {
 		parentInjector = parent[0]
@@ -29,7 +41,7 @@ func New(
 	return &StdInjector{
 		cacheOpts:      opts,
 		parentInjector: parentInjector,
-		cacheStorage:   stgbind.NewElementsStorage[types.BindKey](opts),
+		cacheStorage:   storage,
 	}
 }
 

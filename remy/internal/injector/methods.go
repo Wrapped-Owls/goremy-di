@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
+	"github.com/wrapped-owls/goremy-di/remy/internal/stgbind"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
@@ -150,13 +151,20 @@ func Get[T any](retriever types.DependencyRetriever, keyTag string) (element T, 
 	if accessAllError == nil {
 		element = foundElement
 		err = nil
-	} else if !errors.Is(accessAllError, remyErrs.ErrElementNotRegisteredSentinel) &&
-		!errors.Is(accessAllError, remyErrs.ErrConfigNotAllowReturnAll) {
+	} else if !errors.Is(accessAllError, remyErrs.ErrConfigNotAllowReturnAll) &&
+		!shouldIgnoreGuessError(accessAllError, elementType) {
 		err = accessAllError
 	}
 
 	// retrieve values from cacheStorage
 	return
+}
+
+func shouldIgnoreGuessError(checkErr error, requestedKey types.BindKey) bool {
+	notRegistered, ok := remyErrs.CheckError[remyErrs.ErrElementNotRegistered](checkErr)
+	var missingKey types.BindKey
+	missingKey, ok = notRegistered.Key.(types.BindKey)
+	return ok && missingKey.ID() == requestedKey.ID()
 }
 
 func TryGet[T any](retriever types.DependencyRetriever, keyTag string) (result T) {
@@ -167,7 +175,8 @@ func TryGet[T any](retriever types.DependencyRetriever, keyTag string) (result T
 func GetWithPairs[T any](
 	retriever types.DependencyRetriever, keyTag string, elements ...types.BindEntry,
 ) (result T, err error) {
-	subInjector := New(injopts.CacheOptNone, retriever)
+	stg := stgbind.NewStorage(injopts.CacheOptNone, uint(len(elements)))
+	subInjector := NewWithStorage(injopts.CacheOptNone, stg, retriever)
 	for _, element := range elements {
 		value, bindKey := element.Entry()
 		if bindKey == nil { // Gen a bindKey if none is provided
@@ -186,7 +195,8 @@ func GetWith[T any](
 	retriever types.DependencyRetriever, keyTag string,
 	binder func(injector types.Injector) error,
 ) (result T, err error) {
-	subInjector := New(injopts.CacheOptNone, retriever)
+	stg := stgbind.NewStorage(injopts.CacheOptNone, 4)
+	subInjector := NewWithStorage(injopts.CacheOptNone, stg, retriever)
 	if err = binder(subInjector); err != nil {
 		return
 	}
