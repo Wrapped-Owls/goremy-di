@@ -2,18 +2,27 @@ package stgbind
 
 import (
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
-	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 )
 
-// ElementsStorage holds all dependencies
 type (
-	stgKey interface {
-		types.BindKey
-		comparable
-	}
 	genericAnyMap[T comparable] map[T]any
+	ElementsStorage[T stgKey]   struct {
+		baseStorage[T]
+		namedElements map[string]genericAnyMap[bindKeyID]
+		elements      genericAnyMap[bindKeyID]
+	}
 )
+
+func NewElementsStorage[T stgKey](
+	opts injopts.CacheConfOption,
+) *ElementsStorage[T] {
+	return &ElementsStorage[T]{
+		baseStorage:   newBaseStorage[T](opts),
+		namedElements: map[string]genericAnyMap[bindKeyID]{},
+		elements:      genericAnyMap[bindKeyID]{},
+	}
+}
 
 func (s *ElementsStorage[T]) Set(key T, value any) (wasOverridden bool, err error) {
 	if _, ok := s.elements[s.keyID(key)]; ok {
@@ -24,6 +33,16 @@ func (s *ElementsStorage[T]) Set(key T, value any) (wasOverridden bool, err erro
 	}
 	s.elements[s.keyID(key)] = value
 	return
+}
+
+func (s *ElementsStorage[T]) getNamedStorage(name string) genericAnyMap[bindKeyID] {
+	var namedBinds genericAnyMap[bindKeyID]
+	if elementMap, ok := s.namedElements[name]; ok {
+		namedBinds = elementMap
+	} else {
+		namedBinds = genericAnyMap[bindKeyID]{}
+	}
+	return namedBinds
 }
 
 func (s *ElementsStorage[T]) SetNamed(

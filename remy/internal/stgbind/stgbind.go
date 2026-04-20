@@ -21,3 +21,17 @@ func NewStorage(opts injopts.CacheConfOption, size uint) types.Storage[types.Bin
 		return NewElementsStorage[types.BindKey](opts)
 	}
 }
+
+type (
+	stgKey interface {
+		types.BindKey
+		comparable
+	}
+	baseStorage[T stgKey] struct {
+		opts injopts.CacheConfOption
+	}
+)
+
+func newBaseStorage[T stgKey](opts injopts.CacheConfOption) baseStorage[T] {
+	return baseStorage[T]{opts: opts}
+}
