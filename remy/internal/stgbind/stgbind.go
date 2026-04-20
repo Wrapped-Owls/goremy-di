@@ -14,7 +14,7 @@ import (
 func NewStorage(opts injopts.CacheConfOption, size uint) types.Storage[types.BindKey] {
 	switch {
 	case size == 1:
-		return NewSingleStorage(opts)
+		return NewSingleStorage[types.BindKey](opts)
 	case size <= 4:
 		return NewSliceStorage(opts, size)
 	default:

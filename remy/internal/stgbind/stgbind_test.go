@@ -30,9 +30,11 @@ func BenchmarkStorage_Set(b *testing.B) {
 		sizes       []uint
 	}{
 		{
-			name:        "Single Element Storage",
-			constructor: func(length uint) types.Storage[types.BindKey] { return NewSingleStorage(injopts.CacheOptNone) },
-			sizes:       []uint{1},
+			name: "Single Element Storage",
+			constructor: func(length uint) types.Storage[types.BindKey] {
+				return NewSingleStorage[types.BindKey](injopts.CacheOptNone)
+			},
+			sizes: []uint{1},
 		},
 		{
 			name:        "Slice Element Storage",
@@ -75,9 +77,11 @@ func BenchmarkStorage_Get(b *testing.B) {
 		sizes       []uint
 	}{
 		{
-			name:        "Single Element Storage",
-			constructor: func(length uint) types.Storage[types.BindKey] { return NewSingleStorage(injopts.CacheOptNone) },
-			sizes:       []uint{1},
+			name: "Single Element Storage",
+			constructor: func(length uint) types.Storage[types.BindKey] {
+				return NewSingleStorage[types.BindKey](injopts.CacheOptNone)
+			},
+			sizes: []uint{1},
 		},
 		{
 			name:        "Slice Element Storage",

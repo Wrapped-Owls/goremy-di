@@ -11,7 +11,7 @@ import (
 
 func TestSingleStorage_Set(t *testing.T) {
 	type setOp struct {
-		op           func(*SingleStorage) (bool, error)
+		op           func(*SingleStorage[types.BindKey]) (bool, error)
 		wantOverride bool
 	}
 	tests := []struct {
@@ -22,11 +22,11 @@ func TestSingleStorage_Set(t *testing.T) {
 			name: "Unnamed",
 			ops: []setOp{
 				{
-					func(s *SingleStorage) (bool, error) { return s.Set(types.KeyElem[uint]{}, 7) },
+					func(s *SingleStorage[types.BindKey]) (bool, error) { return s.Set(types.KeyElem[uint]{}, 7) },
 					false,
 				},
 				{
-					func(s *SingleStorage) (bool, error) { return s.Set(types.KeyElem[uint]{}, 11) },
+					func(s *SingleStorage[types.BindKey]) (bool, error) { return s.Set(types.KeyElem[uint]{}, 11) },
 					true,
 				},
 			},
@@ -35,11 +35,15 @@ func TestSingleStorage_Set(t *testing.T) {
 			name: "Named",
 			ops: []setOp{
 				{
-					func(s *SingleStorage) (bool, error) { return s.SetNamed(types.KeyElem[string]{}, "lang", "dart") },
+					func(s *SingleStorage[types.BindKey]) (bool, error) {
+						return s.SetNamed(types.KeyElem[string]{}, "lang", "dart")
+					},
 					false,
 				},
 				{
-					func(s *SingleStorage) (bool, error) { return s.SetNamed(types.KeyElem[string]{}, "lang", "go") },
+					func(s *SingleStorage[types.BindKey]) (bool, error) {
+						return s.SetNamed(types.KeyElem[string]{}, "lang", "go")
+					},
 					true,
 				},
 			},
@@ -47,7 +51,7 @@ func TestSingleStorage_Set(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stg := NewSingleStorage(injopts.CacheOptAllowOverride)
+			stg := NewSingleStorage[types.BindKey](injopts.CacheOptAllowOverride)
 			for _, op := range tt.ops {
 				wasOverridden, err := op.op(stg)
 				if err != nil {
@@ -65,7 +69,7 @@ func TestSingleStorage_Set__Override(t *testing.T) {
 	// Each test case needs its own SingleStorage because only one entry fits.
 	for _, tc := range generateStorageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
-			stg := NewSingleStorage(injopts.CacheOptNone)
+			stg := NewSingleStorage[types.BindKey](injopts.CacheOptNone)
 
 			wasOverridden, err := tc.setterFunc(stg, tc.values[0])
 			if err != nil {
@@ -87,7 +91,7 @@ func TestSingleStorage_Set__Override(t *testing.T) {
 }
 
 func TestSingleStorage_Set__SecondDistinctEntry(t *testing.T) {
-	stg := NewSingleStorage(injopts.CacheOptNone)
+	stg := NewSingleStorage[types.BindKey](injopts.CacheOptNone)
 	if _, err := stg.Set(types.KeyElem[uint]{}, 7); err != nil {
 		t.Fatalf("unexpected error on first set: %v", err)
 	}
@@ -136,7 +140,7 @@ func TestSingleStorage_Get(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stg := NewSingleStorage(injopts.CacheOptNone)
+			stg := NewSingleStorage[types.BindKey](injopts.CacheOptNone)
 
 			if _, err := stg.Get(tt.key); !errors.Is(
 				err,
@@ -176,7 +180,7 @@ func TestSingleStorage_GetNamed(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stg := NewSingleStorage(injopts.CacheOptNone)
+			stg := NewSingleStorage[types.BindKey](injopts.CacheOptNone)
 
 			if _, err := stg.SetNamed(tt.key, tt.tag, tt.value); err != nil {
 				t.Fatalf("unexpected error on SetNamed: %v", err)
@@ -208,7 +212,7 @@ func TestSingleStorage_GetAll(t *testing.T) {
 	tests := []struct {
 		name    string
 		opts    injopts.CacheConfOption
-		setup   func(*SingleStorage)
+		setup   func(*SingleStorage[types.BindKey])
 		tag     string
 		wantErr error
 		wantLen int
@@ -216,35 +220,35 @@ func TestSingleStorage_GetAll(t *testing.T) {
 		{
 			name:    "ReturnAllDisabled",
 			opts:    injopts.CacheOptNone,
-			setup:   func(s *SingleStorage) { _, _ = s.Set(types.KeyElem[uint]{}, 1) },
+			setup:   func(s *SingleStorage[types.BindKey]) { _, _ = s.Set(types.KeyElem[uint]{}, 1) },
 			tag:     "",
 			wantErr: remyErrs.ErrConfigNotAllowReturnAll,
 		},
 		{
 			name:    "unnamed entry returned",
 			opts:    injopts.CacheOptReturnAll,
-			setup:   func(s *SingleStorage) { _, _ = s.Set(types.KeyElem[uint]{}, 99) },
+			setup:   func(s *SingleStorage[types.BindKey]) { _, _ = s.Set(types.KeyElem[uint]{}, 99) },
 			tag:     "",
 			wantLen: 1,
 		},
 		{
 			name:    "named entry returned by tag",
 			opts:    injopts.CacheOptReturnAll,
-			setup:   func(s *SingleStorage) { _, _ = s.SetNamed(types.KeyElem[string]{}, "lang", "go") },
+			setup:   func(s *SingleStorage[types.BindKey]) { _, _ = s.SetNamed(types.KeyElem[string]{}, "lang", "go") },
 			tag:     "lang",
 			wantLen: 1,
 		},
 		{
 			name:    "tag mismatch returns empty",
 			opts:    injopts.CacheOptReturnAll,
-			setup:   func(s *SingleStorage) { _, _ = s.SetNamed(types.KeyElem[string]{}, "lang", "go") },
+			setup:   func(s *SingleStorage[types.BindKey]) { _, _ = s.SetNamed(types.KeyElem[string]{}, "lang", "go") },
 			tag:     "other",
 			wantLen: 0,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stg := NewSingleStorage(tt.opts)
+			stg := NewSingleStorage[types.BindKey](tt.opts)
 			tt.setup(stg)
 
 			all, err := stg.GetAll(tt.tag)
