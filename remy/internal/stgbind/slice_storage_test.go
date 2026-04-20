@@ -11,7 +11,7 @@ import (
 
 func TestSliceStorage_Set(t *testing.T) {
 	type setOp struct {
-		op           func(*SliceStorage) (bool, error)
+		op           func(*SliceStorage[types.BindKey]) (bool, error)
 		wantOverride bool
 	}
 	tests := []struct {
@@ -22,11 +22,11 @@ func TestSliceStorage_Set(t *testing.T) {
 			name: "Unnamed",
 			ops: []setOp{
 				{
-					func(s *SliceStorage) (bool, error) { return s.Set(types.KeyElem[uint]{}, 7) },
+					func(s *SliceStorage[types.BindKey]) (bool, error) { return s.Set(types.KeyElem[uint]{}, 7) },
 					false,
 				},
 				{
-					func(s *SliceStorage) (bool, error) { return s.Set(types.KeyElem[uint]{}, 11) },
+					func(s *SliceStorage[types.BindKey]) (bool, error) { return s.Set(types.KeyElem[uint]{}, 11) },
 					true,
 				},
 			},
@@ -35,11 +35,15 @@ func TestSliceStorage_Set(t *testing.T) {
 			name: "Named",
 			ops: []setOp{
 				{
-					func(s *SliceStorage) (bool, error) { return s.SetNamed(types.KeyElem[string]{}, "lang", "dart") },
+					func(s *SliceStorage[types.BindKey]) (bool, error) {
+						return s.SetNamed(types.KeyElem[string]{}, "lang", "dart")
+					},
 					false,
 				},
 				{
-					func(s *SliceStorage) (bool, error) { return s.SetNamed(types.KeyElem[string]{}, "lang", "go") },
+					func(s *SliceStorage[types.BindKey]) (bool, error) {
+						return s.SetNamed(types.KeyElem[string]{}, "lang", "go")
+					},
 					true,
 				},
 			},
@@ -47,7 +51,7 @@ func TestSliceStorage_Set(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stg := NewSliceStorage(injopts.CacheOptAllowOverride, 2)
+			stg := NewSliceStorage[types.BindKey](injopts.CacheOptAllowOverride, 2)
 			for _, op := range tt.ops {
 				wasOverridden, err := op.op(stg)
 				if err != nil {
@@ -62,7 +66,7 @@ func TestSliceStorage_Set(t *testing.T) {
 }
 
 func TestSliceStorage_Set__Override(t *testing.T) {
-	stg := NewSliceStorage(injopts.CacheOptNone, 2)
+	stg := NewSliceStorage[types.BindKey](injopts.CacheOptNone, 2)
 	for _, tc := range generateStorageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			wasOverridden, err := tc.setterFunc(stg, tc.values[0])
@@ -107,7 +111,7 @@ func TestSliceStorage_Get(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stg := NewSliceStorage(injopts.CacheOptNone, uint(len(tt.entries)))
+			stg := NewSliceStorage[types.BindKey](injopts.CacheOptNone, uint(len(tt.entries)))
 
 			for _, e := range tt.entries {
 				if _, err := stg.Get(e.key); !errors.Is(
@@ -151,7 +155,7 @@ func TestSliceStorage_GetNamed(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stg := NewSliceStorage(injopts.CacheOptNone, 2)
+			stg := NewSliceStorage[types.BindKey](injopts.CacheOptNone, 2)
 
 			if _, err := stg.SetNamed(tt.key, tt.tag, tt.value); err != nil {
 				t.Fatalf("unexpected error on SetNamed: %v", err)
@@ -183,7 +187,7 @@ func TestSliceStorage_GetAll(t *testing.T) {
 	tests := []struct {
 		name    string
 		opts    injopts.CacheConfOption
-		setup   func(*SliceStorage)
+		setup   func(*SliceStorage[types.BindKey])
 		tag     string
 		wantErr error
 		wantLen int
@@ -191,14 +195,14 @@ func TestSliceStorage_GetAll(t *testing.T) {
 		{
 			name:    "ReturnAllDisabled",
 			opts:    injopts.CacheOptNone,
-			setup:   func(s *SliceStorage) { _, _ = s.Set(types.KeyElem[uint]{}, 1) },
+			setup:   func(s *SliceStorage[types.BindKey]) { _, _ = s.Set(types.KeyElem[uint]{}, 1) },
 			tag:     "",
 			wantErr: remyErrs.ErrConfigNotAllowReturnAll,
 		},
 		{
 			name: "unnamed entries returned, named excluded",
 			opts: injopts.CacheOptReturnAll,
-			setup: func(s *SliceStorage) {
+			setup: func(s *SliceStorage[types.BindKey]) {
 				_, _ = s.Set(types.KeyElem[uint]{}, 1)
 				_, _ = s.Set(types.KeyElem[string]{}, "a")
 				_, _ = s.SetNamed(types.KeyElem[bool]{}, "flag", true)
@@ -209,7 +213,7 @@ func TestSliceStorage_GetAll(t *testing.T) {
 		{
 			name: "named entries returned by tag, unnamed excluded",
 			opts: injopts.CacheOptReturnAll,
-			setup: func(s *SliceStorage) {
+			setup: func(s *SliceStorage[types.BindKey]) {
 				_, _ = s.Set(types.KeyElem[uint]{}, 1)
 				_, _ = s.SetNamed(types.KeyElem[string]{}, "lang", "go")
 				_, _ = s.SetNamed(types.KeyElem[bool]{}, "lang", true)
@@ -220,7 +224,7 @@ func TestSliceStorage_GetAll(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stg := NewSliceStorage(tt.opts, 4)
+			stg := NewSliceStorage[types.BindKey](tt.opts, 4)
 			tt.setup(stg)
 
 			all, err := stg.GetAll(tt.tag)

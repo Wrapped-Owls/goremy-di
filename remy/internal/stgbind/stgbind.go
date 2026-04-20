@@ -16,7 +16,7 @@ func NewStorage(opts injopts.CacheConfOption, size uint) types.Storage[types.Bin
 	case size == 1:
 		return NewSingleStorage[types.BindKey](opts)
 	case size <= 4:
-		return NewSliceStorage(opts, size)
+		return NewSliceStorage[types.BindKey](opts, size)
 	default:
 		return NewElementsStorage[types.BindKey](opts)
 	}

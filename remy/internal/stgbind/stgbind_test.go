@@ -37,9 +37,11 @@ func BenchmarkStorage_Set(b *testing.B) {
 			sizes: []uint{1},
 		},
 		{
-			name:        "Slice Element Storage",
-			constructor: func(length uint) types.Storage[types.BindKey] { return NewSliceStorage(injopts.CacheOptNone, length) },
-			sizes:       []uint{1, 2, 3, 4},
+			name: "Slice Element Storage",
+			constructor: func(length uint) types.Storage[types.BindKey] {
+				return NewSliceStorage[types.BindKey](injopts.CacheOptNone, length)
+			},
+			sizes: []uint{1, 2, 3, 4},
 		},
 		{
 			name: "Map Element Storage",
@@ -84,9 +86,11 @@ func BenchmarkStorage_Get(b *testing.B) {
 			sizes: []uint{1},
 		},
 		{
-			name:        "Slice Element Storage",
-			constructor: func(length uint) types.Storage[types.BindKey] { return NewSliceStorage(injopts.CacheOptNone, length) },
-			sizes:       []uint{1, 2, 3, 4},
+			name: "Slice Element Storage",
+			constructor: func(length uint) types.Storage[types.BindKey] {
+				return NewSliceStorage[types.BindKey](injopts.CacheOptNone, length)
+			},
+			sizes: []uint{1, 2, 3, 4},
 		},
 		{
 			name: "Map Element Storage",
