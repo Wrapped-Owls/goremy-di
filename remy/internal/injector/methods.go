@@ -151,13 +151,23 @@ func Get[T any](retriever types.DependencyRetriever, keyTag string) (element T, 
 	if accessAllError == nil {
 		element = foundElement
 		err = nil
-	} else if !errors.Is(accessAllError, remyErrs.ErrElementNotRegisteredSentinel) &&
-		!errors.Is(accessAllError, remyErrs.ErrConfigNotAllowReturnAll) {
+	} else if !errors.Is(accessAllError, remyErrs.ErrConfigNotAllowReturnAll) &&
+		!shouldIgnoreGuessError(accessAllError, elementType) {
 		err = accessAllError
 	}
 
 	// retrieve values from cacheStorage
 	return
+}
+
+func shouldIgnoreGuessError(err error, requestedKey types.BindKey) bool {
+	var notRegistered remyErrs.ErrElementNotRegistered
+	if !errors.As(err, &notRegistered) {
+		return false
+	}
+
+	missingKey, ok := notRegistered.Key.(types.BindKey)
+	return ok && missingKey.ID() == requestedKey.ID()
 }
 
 func TryGet[T any](retriever types.DependencyRetriever, keyTag string) (result T) {
