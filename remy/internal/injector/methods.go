@@ -195,7 +195,7 @@ func GetWith[T any](
 	retriever types.DependencyRetriever, keyTag string,
 	binder func(injector types.Injector) error,
 ) (result T, err error) {
-	stg := stgbind.NewSliceStorage(injopts.CacheOptNone, 4)
+	stg := stgbind.NewStorage(injopts.CacheOptNone, 4)
 	subInjector := NewWithStorage(injopts.CacheOptNone, stg, retriever)
 	if err = binder(subInjector); err != nil {
 		return
