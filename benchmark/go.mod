@@ -5,9 +5,9 @@ go 1.26
 require (
 	github.com/NVIDIA/gontainer/v2 v2.3.1
 	github.com/samber/do/v2 v2.0.0
-	github.com/wrapped-owls/goremy-di/remy v1.10.2
+	github.com/wrapped-owls/goremy-di/remy v1.12.0
 	go.uber.org/dig v1.19.0
-	golang.org/x/perf v0.0.0-20260211190930-8161c38c6cdc
+	golang.org/x/perf v0.0.0-20260409210113-8e83ce0f7b1c
 )
 
 require (
