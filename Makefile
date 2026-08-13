@@ -10,15 +10,19 @@
 
 test:
 	$(MAKE) -C remy test
+	$(MAKE) -C remychef test
 
 test-race:
 	$(MAKE) -C remy test-race
+	$(MAKE) -C remychef test-race
 
 run-lint:
 	$(MAKE) -C remy lint
+	$(MAKE) -C remychef lint
 
 clean:
 	$(MAKE) -C remy clean
+	$(MAKE) -C remychef clean
 
 # --------------------
 # Formatting / Tools

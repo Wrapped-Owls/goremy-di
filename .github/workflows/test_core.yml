@@ -9,6 +9,8 @@ on:
       - 'Makefile'
       - 'remy/**'
       - 'remy/Makefile'
+      - 'remychef/**'
+      - 'remychef/Makefile'
       - '.github/workflows/test_core.yml'
   pull_request:
     branches:
@@ -18,6 +20,8 @@ on:
       - 'Makefile'
       - 'remy/**'
       - 'remy/Makefile'
+      - 'remychef/**'
+      - 'remychef/Makefile'
       - '.github/workflows/test_core.yml'
 
 jobs:
@@ -46,3 +50,29 @@ jobs:
 
       - name: Test `remy`
         run: make test-race
+
+  test-remychef:
+    strategy:
+      matrix:
+        go-version:
+          - 1.20.x
+          - 1.21.x
+          - 1.22.x
+          - 1.23.x
+          - 1.24.x
+          - 1.25.x
+          - 1.26.x
+        platform:
+          - ubuntu-latest
+          - windows-latest
+    runs-on: '${{ matrix.platform }}'
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '${{ matrix.go-version }}'
+
+      - name: Test `remychef`
+        run: make -C remychef test-race
