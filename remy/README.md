@@ -20,14 +20,15 @@ Remy can generate multiple injector instances, and by default it can configure a
 To generate a new Injector instance, the function `NewInjector` must be called passing a `Config` struct, which have the
 attributes:
 
-- AllowOverride - Determines if a element bind can be override
-- GenerifyInterface - Go interfaces are not exactly unique, so when an element is registered with an interface `A` and
-  it has the same methods signatures as interface `B`, this flag will tell to remy to treat both as the same.
-- UseReflectionType - Use reflection to get the type of the object/interface. This is useful when your program has a
-  type with the same package and type name from another module or subpackage.
 - ParentInjector - Make possible to pass an existing Injector as a parent injector, so the new injector can access all
   elements in its parent. Is good to know, that all binds registered in sub-injector can't be accessed by the parent
   injector, it is scope safe.
+- CanOverride - Determines if an element bind can be overridden by registering it again.
+- DuckTypeElements - Allows the injector to discover a requested interface among the already registered elements.
+  CAUTION: it costs an O(n) scan over registered elements when an interface lookup misses; prefer `RegisterAs` to
+  declare an explicit alias with an O(1) lookup.
+- MultiBinding - Enables the `GetAll` family, which lists every element under the requested tag that satisfies the
+  requested type, so `GetAll[Encoder](inj, "codecs")` collects the implementations registered under `codecs` alone.
 
 ```go
 package core
