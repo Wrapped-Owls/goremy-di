@@ -13,7 +13,6 @@ weight: 99
     - [x] Only use reflection if explicitly requested by the user
 - [x] Create an example directory showing how the injector can be used (v1.0.0)
 - [x] Add context-aware resolution (`WithContext`)  (v1.10.0)
-    - Works like the current GetWithPairs method, but it will explicitly pass a only the context.Context
 - [ ] Create an injector bind generator package using `//go:generate` comments
 
 ---
@@ -21,30 +20,47 @@ weight: 99
 ## Registration & Binding
 
 - [x] Add RegisterConstructor wrappers to allow registering constructors directly (v1.8.2)
-- [x] Add alias & multi-binding support (v1.8.2)
+- [x] Add alias and multi-binding support (v1.8.2)
     - [x] Allow registering a provider under multiple tags
     - [x] Support multiple implementations of the same interface
-- [ ] Add RegisterConstructorVariadic wrapper, to allow constructors like NewValue(...T)
+- [ ] Add RegisterConstructorVariadic wrapper to allow constructors like NewValue(...T)
 - [x] Add module pattern support  (v1.10.0)
+- [x] Add explicit interface aliasing with `RegisterAs` (v1.13.0)
+    - [x] Compile-time checked through a caller-supplied identity conversion
+    - [x] O(1) lookup, so duck typing is no longer needed for interface resolution
+- [x] Decouple the `GetAll` family from duck typing via `Config.MultiBinding` (v1.13.0)
+- [x] Add typed tags with `Tag` and collision-free `NewTag[Scope]` (v1.13.0)
 
 ---
 
 ## Error Handling & Developer Experience
 
-- [ ] Improve error messages
-    - [x] Swap error type to include more information about its origin (v1.9.0)
-    - [ ] Add dependency path traces (e.g., A → B → C failed)
-- [ ] Add dependency graph visualization
-    - [ ] Probably export dependency graph to DOT/Graphviz
-    - [ ] Add API: `GetDependencyGraph(injector remy.Injector)`
-        - Due to the need of building the graph internally, it must be behind a build tag
+- [x] Improve error messages
+    - [x] Swap the error type to include more information about its origin (v1.9.0)
+    - [x] Add dependency path traces (e.g., A → B → C failed) (v1.13.0)
+        - Opt-in via `Config.TraceResolution`, so the default failure path keeps its cost
+    - [x] Render the cycle path in `ErrCycleDependencyDetected` (v1.13.0)
+- [x] Add dependency graph visualization (v1.13.0)
+    - [x] Add API: `NewGraphInjector(Config) (Injector, Graph)`
+        - An opt-in decorator over the existing `RetrieverFor` seam instead of a build tag,
+          unified with the cycle detector: one ordered path both detects cycles and records edges
+    - [x] `Graph.ResolveAll` forces every registered bind, listing what could not be built
+    - [ ] Export dependency graph to DOT/Graphviz
+        - Renderers live outside the core, over the data-only `Graph` interface
 
 ---
 
-## Advanced Features
+## Advanced Features & Lifecycle (Framework Layer)
 
-- [ ] Add lifecycle hooks
+- [ ] Add lifecycle hooks (via external wrapper)
     - [ ] `OnRegister`, `OnResolve` callbacks
     - [ ] Support hook chaining
+- [ ] Implement Graceful Shutdown management
+    - [ ] Health check probes for registered services
+    - [ ] Shutdown sequence management
 - [ ] Provide a fluent builder API
     - [ ] Example: `CreateInjector().WithLogger(l).WithModules(m1, m2).Build()`
+- [x] Formalize Scoped Injectors (v1.13.0)
+    - [x] Name a scope with `Config.ScopeName`; read it back with `Injector.ScopeName`/`Parent`
+    - [x] `Config.Isolated` keeps a scope from falling back to its parent on lookups and `GetAll`
+    - [ ] Ensure proper resource cleanup for scoped dependencies independent of the parent injector
