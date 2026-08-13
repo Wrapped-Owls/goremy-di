@@ -37,6 +37,17 @@ func injectorOptsFromConfig(conf Config) injector.Options {
 	return opts
 }
 
+// every constructor builds its base the same way, so none of them can forget to
+// honour ParentInjector
+func newBaseInjector(conf Config) types.Injector {
+	opts := injectorOptsFromConfig(conf)
+	if conf.ParentInjector != nil {
+		return injector.New(opts, conf.ParentInjector)
+	}
+
+	return injector.New(opts)
+}
+
 func recoverInjectorPanic(err *error) {
 	applyRecovered(recover(), err)
 }

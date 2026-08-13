@@ -54,17 +54,7 @@ func NewBindKey[T any](_ ...T) BindKey {
 }
 
 func NewInjector(configs ...Config) Injector {
-	cfg := Config{}
-	if len(configs) > 0 {
-		cfg = configs[0]
-	}
-
-	opts := injectorOptsFromConfig(cfg)
-
-	if cfg.ParentInjector != nil {
-		return injector.New(opts, cfg.ParentInjector)
-	}
-	return injector.New(opts)
+	return newBaseInjector(firstOrDefault(configs...))
 }
 
 // Register must be called first, because the library doesn't support registering dependencies while get at same time.
