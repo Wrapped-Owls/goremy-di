@@ -14,7 +14,7 @@ import (
 // Receives: Injector (required); bindFunc (required); cast (required); tag (optional)
 func RegisterAs[Iface, Impl any](
 	i Injector,
-	bindFunc func(types.Binder[Iface]) Bind[Iface],
+	bindFunc func(Binder[Iface]) Bind[Iface],
 	cast func(Impl) Iface,
 	optTag ...Tag,
 ) {

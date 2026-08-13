@@ -98,21 +98,21 @@ func RegisterInstance[T any](i Injector, value T, optTag ...Tag) {
 // RegisterFactory directly generates a factory bind without needing to write it.
 //
 // Receives: Injector (required); Binder (required); tag (optional)
-func RegisterFactory[T any](i Injector, binder types.Binder[T], optTag ...Tag) {
+func RegisterFactory[T any](i Injector, binder Binder[T], optTag ...Tag) {
 	Register(mustInjector(i), Factory(binder), optTag...)
 }
 
 // RegisterSingleton directly generates a singleton bind without needing to write it.
 //
 // Receives: Injector (required); Binder (required); tag (optional)
-func RegisterSingleton[T any](i Injector, binder types.Binder[T], optTag ...Tag) {
+func RegisterSingleton[T any](i Injector, binder Binder[T], optTag ...Tag) {
 	Register(mustInjector(i), Singleton(binder), optTag...)
 }
 
 // RegisterLazySingleton directly generates a lazy-singleton bind without needing to write it.
 //
 // Receives: Injector (required); Binder (required); tag (optional)
-func RegisterLazySingleton[T any](i Injector, binder types.Binder[T], optTag ...Tag) {
+func RegisterLazySingleton[T any](i Injector, binder Binder[T], optTag ...Tag) {
 	Register(mustInjector(i), LazySingleton(binder), optTag...)
 }
 

@@ -14,6 +14,10 @@ type (
 	Bind[T any] interface {
 		types.Bind[T]
 	}
+
+	// Binder builds the element a Bind holds, resolving what it needs from the
+	// retriever it receives.
+	Binder[T any] func(DependencyRetriever) (T, error)
 )
 
 // Instance generates a bind that will be registered as a single instance during bind register in the Injector.
@@ -35,24 +39,24 @@ func Instance[T any](element T) Bind[T] {
 // As this bind doesn't hold any pointer and/or objects, there is no problem to use it in multiples goroutines at once.
 // Just be careful with calls of the DependencyRetriever,
 // if try to get and modify values from an Instance bind, it can end in a race-condition.
-func Factory[T any](binder types.Binder[T]) Bind[T] {
-	return binds.Factory(binder)
+func Factory[T any](binder Binder[T]) Bind[T] {
+	return binds.Factory(types.Binder[T](binder))
 }
 
 // Singleton generates a bind during the registration process.
 // At the end of the registration, it holds the same object instance across application lifetime.
 //
 // If you don't want to generate the bind immediately at its registration, you can use the LazySingleton bind.
-func Singleton[T any](binder types.Binder[T]) Bind[T] {
-	return binds.Singleton(binder)
+func Singleton[T any](binder Binder[T]) Bind[T] {
+	return binds.Singleton(types.Binder[T](binder))
 }
 
 // LazySingleton generates a bind that works the same as the Singleton, with the only difference being that it's a lazy
 // bind. So, it only will generate the singleton instance on the first Get call.
 //
 // It is useful in cases that you want to instantiate heavier objects only when it's needed.
-func LazySingleton[T any](binder types.Binder[T]) Bind[T] {
-	return binds.LazySingleton(binder)
+func LazySingleton[T any](binder Binder[T]) Bind[T] {
+	return binds.LazySingleton(types.Binder[T](binder))
 }
 
 // BindEntry is an interface used to pass temporary dependencies to GetWithPairs.
