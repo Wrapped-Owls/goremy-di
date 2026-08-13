@@ -3,6 +3,7 @@ package remy
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 )
 
@@ -189,5 +190,44 @@ func TestConfig_MultiBinding(t *testing.T) {
 				)
 			}
 		})
+	}
+}
+
+func TestGet_DependencyTrace(t *testing.T) {
+	inj := NewInjector()
+
+	// Register string that depends on int
+	Register(inj, Factory(func(r DependencyRetriever) (string, error) {
+		_, err := Get[int](r)
+		return "", err
+	}))
+
+	_, err := Get[string](inj)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	errMsg := err.Error()
+	// The message should contain both "string" and "int" as they are in the resolution path
+	if !strings.Contains(errMsg, "string") || !strings.Contains(errMsg, "int") {
+		t.Errorf("error message does not contain all types in the path: %s", errMsg)
+	}
+
+	// Check if we can still identify the root cause using errors.Is
+	if !errors.Is(err, ErrElementNotRegistered) {
+		t.Errorf("root cause ErrElementNotRegistered lost: %v", err)
+	}
+
+	// Test with deeper dependencies: string -> int -> bool
+	Register(inj, Factory(func(r DependencyRetriever) (int, error) {
+		_, err := Get[bool](r)
+		return 0, err
+	}))
+
+	_, err = Get[string](inj)
+	errMsg = err.Error()
+	if !strings.Contains(errMsg, "string") || !strings.Contains(errMsg, "int") ||
+		!strings.Contains(errMsg, "bool") {
+		t.Errorf("deep error message does not contain all types in the path: %s", errMsg)
 	}
 }

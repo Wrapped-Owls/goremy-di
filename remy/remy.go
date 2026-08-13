@@ -137,10 +137,12 @@ func MaybeGetAll[T any](i DependencyRetriever, optTag ...string) []T {
 //
 // Receives: DependencyRetriever (required); tag (optional)
 func Get[T any](i DependencyRetriever, optTag ...string) (result T, err error) {
-	defer recoverInjectorPanic(&err)
-
+	retriever := mustRetriever(i)
 	tag := firstOrDefault(optTag...)
-	result, err = injector.Get[T](mustRetriever(i), tag)
+	// reuses the defer panics already needed, keeping the resolve loop untouched
+	defer traceResolution[T](&err, retriever, tag)
+
+	result, err = injector.Get[T](retriever, tag)
 	return result, err
 }
 
