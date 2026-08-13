@@ -8,9 +8,9 @@ import (
 type (
 	genericAnyMap[T comparable] map[T]any
 	ElementsStorage[T stgKey]   struct {
-		baseStorage[T]
 		namedElements map[string]genericAnyMap[bindKeyID]
 		elements      genericAnyMap[bindKeyID]
+		baseStorage[T]
 	}
 )
 

@@ -7,9 +7,9 @@ import (
 
 // sliceEntry is a single record held by SliceStorage.
 type sliceEntry struct {
-	key   bindKeyID
-	tag   string // empty string means "unnamed"
 	value any
+	tag   string // empty string means "unnamed"
+	key   bindKeyID
 }
 
 // SliceStorage is a flat-slice Storage optimized for a small, constant
@@ -17,8 +17,8 @@ type sliceEntry struct {
 // created by GetWithPairs / GetWith) where the total element count is known
 // up-front and is typically 1–8.
 type SliceStorage[T stgKey] struct {
-	baseStorage[T]
 	entries []sliceEntry
+	baseStorage[T]
 }
 
 func NewSliceStorage[T stgKey](opts injopts.CacheConfOption, capacity uint) *SliceStorage[T] {

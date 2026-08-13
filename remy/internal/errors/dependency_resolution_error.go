@@ -19,8 +19,8 @@ type ErrDependencyResolution struct {
 	baseErrorChecker[ErrDependencyResolution, *ErrDependencyResolution]
 	Cause    error
 	entries  [inlinePathDepth]PathEntry
-	depth    int
 	overflow []PathEntry
+	depth    int
 }
 
 // WrapResolutionPath records (key, tag) as one more resolution level on top of

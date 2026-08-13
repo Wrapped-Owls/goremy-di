@@ -9,10 +9,10 @@ import (
 // hold exactly one dependency. The entry is kept in flat struct fields,
 // avoiding any heap allocation beyond the struct itself.
 type SingleStorage[T stgKey] struct {
+	value any
+	name  string
+	key   bindKeyID
 	baseStorage[T]
-	key      bindKeyID
-	name     string
-	value    any
 	hasValue bool
 }
 
