@@ -445,7 +445,12 @@ func TestGet_duckTypeInterface(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(
 			tt.name, func(t *testing.T) {
-				i := New(Options{Cache: injopts.CacheOptReturnAll, Resolve: injopts.ResolveOptDuckTyping})
+				i := New(
+					Options{
+						Cache:   injopts.CacheOptReturnAll,
+						Resolve: injopts.ResolveOptDuckTyping,
+					},
+				)
 				err := Register(
 					i, "", binds.Factory(
 						func(retriever types.DependencyRetriever) (result string, getErr error) {

@@ -36,22 +36,26 @@ func TestMethods_parallel_Get_variants(t *testing.T) {
 	}
 
 	// Register a factory that depends on values (uint8, bool, string[tag], interface)
-	if err := Register(i, "", binds.Factory(func(retriever types.DependencyRetriever) (string, error) {
-		// Compose a stable string:
-		// "I love <lang>, yes this is <bool>, as the answer <uint8>"
-		res := fmt.Sprintf(
-			"I love %s, yes this is %v, as the answer %d",
-			TryGet[string](retriever, "lang"),
-			TryGet[bool](retriever, ""),
-			TryGet[uint8](retriever, ""),
-		)
+	if err := Register(
+		i,
+		"",
+		binds.Factory(func(retriever types.DependencyRetriever) (string, error) {
+			// Compose a stable string:
+			// "I love <lang>, yes this is <bool>, as the answer <uint8>"
+			res := fmt.Sprintf(
+				"I love %s, yes this is %v, as the answer %d",
+				TryGet[string](retriever, "lang"),
+				TryGet[bool](retriever, ""),
+				TryGet[uint8](retriever, ""),
+			)
 
-		// Make sure interface retrieval also works
-		if _, err := Get[fixtures.Language](retriever, ""); err != nil {
-			return "", err
-		}
-		return res, nil
-	})); err != nil {
+			// Make sure interface retrieval also works
+			if _, err := Get[fixtures.Language](retriever, ""); err != nil {
+				return "", err
+			}
+			return res, nil
+		}),
+	); err != nil {
 		t.Fatalf("failed to register string factory: %v", err)
 	}
 

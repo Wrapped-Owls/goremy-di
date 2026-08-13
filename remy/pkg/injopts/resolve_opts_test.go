@@ -49,7 +49,13 @@ func TestResolveConfOption_Is(t *testing.T) {
 			t.Parallel()
 
 			if got := testCase.opts.Is(testCase.check); got != testCase.want {
-				t.Fatalf("Is(%b) on %b = %v, want %v", testCase.check, testCase.opts, got, testCase.want)
+				t.Fatalf(
+					"Is(%b) on %b = %v, want %v",
+					testCase.check,
+					testCase.opts,
+					got,
+					testCase.want,
+				)
 			}
 		})
 	}

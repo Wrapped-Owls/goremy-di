@@ -61,7 +61,11 @@ func TestInjection__GetStructImplementInterface(t *testing.T) {
 	if result != &expected[0] {
 		t.Errorf("element injected is different than the provided. Received %p", result)
 	} else if result.String() != expected[0].value {
-		t.Errorf("element was reseted. Expected: `%s`; Received: `%s`", expected[0].value, result.String())
+		t.Errorf(
+			"element was reseted. Expected: `%s`; Received: `%s`",
+			expected[0].value,
+			result.String(),
+		)
 	}
 
 	structResult := TryGet[guide](ij, "")
