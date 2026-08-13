@@ -12,7 +12,7 @@ import (
 )
 
 func injectorOptsFromConfig(conf Config) injector.Options {
-	var opts injector.Options
+	opts := injector.Options{ScopeName: conf.ScopeName}
 
 	if conf.CanOverride {
 		opts.Cache |= injopts.CacheOptAllowOverride
@@ -29,6 +29,10 @@ func injectorOptsFromConfig(conf Config) injector.Options {
 
 	if conf.TraceResolution {
 		opts.Resolve |= injopts.ResolveOptTracePath
+	}
+
+	if conf.Isolated {
+		opts.Resolve |= injopts.ResolveOptIsolated
 	}
 
 	return opts

@@ -11,13 +11,15 @@ import (
 
 type (
 	Options struct {
-		Cache   injopts.CacheConfOption
-		Resolve injopts.ResolveConfOption
+		ScopeName string
+		Cache     injopts.CacheConfOption
+		Resolve   injopts.ResolveConfOption
 	}
 
 	StdInjector struct {
 		parentInjector types.DependencyRetriever
 		cacheStorage   types.Storage[types.BindKey]
+		scopeName      string
 		cacheOpts      injopts.CacheConfOption
 		resolveOpts    injopts.ResolveConfOption
 	}
@@ -41,11 +43,22 @@ func NewWithStorage(
 	}
 
 	return &StdInjector{
+		scopeName:      opts.ScopeName,
 		cacheOpts:      opts.Cache,
 		resolveOpts:    opts.Resolve,
 		parentInjector: parentInjector,
 		cacheStorage:   storage,
 	}
+}
+
+// ScopeName returns the optional name this injector scope was created with.
+func (s *StdInjector) ScopeName() string {
+	return s.scopeName
+}
+
+// Parent returns the retriever lookups fall back to on misses, nil for roots.
+func (s *StdInjector) Parent() types.DependencyRetriever {
+	return s.parentInjector
 }
 
 func (s *StdInjector) SubInjector(overrides ...bool) types.Injector {
@@ -61,7 +74,7 @@ func (s *StdInjector) SubInjector(overrides ...bool) types.Injector {
 		subOpts -= injopts.CacheOptAllowOverride
 	}
 
-	return New(Options{Cache: subOpts, Resolve: s.resolveOpts}, s)
+	return New(Options{ScopeName: s.scopeName, Cache: subOpts, Resolve: s.resolveOpts}, s)
 }
 
 func (s *StdInjector) RetrieverFor(types.BindKey, string) types.Injector {
@@ -75,10 +88,21 @@ func (s *StdInjector) ResolveOptions() injopts.ResolveConfOption {
 	const inheritable = injopts.ResolveOptDuckTyping | injopts.ResolveOptTracePath
 
 	opts := s.resolveOpts
+	if s.isolated() {
+		return opts
+	}
 	if holder, ok := s.parentInjector.(types.ResolveOptionsHolder); ok {
 		opts |= holder.ResolveOptions() & inheritable
 	}
 	return opts
+}
+
+func (s *StdInjector) inheritsFromParent() bool {
+	return s.parentInjector != nil && !s.isolated()
+}
+
+func (s *StdInjector) isolated() bool {
+	return s.resolveOpts.Is(injopts.ResolveOptIsolated)
 }
 
 func (s *StdInjector) checkValidOverride(
@@ -111,7 +135,7 @@ func (s *StdInjector) RetrieveBind(bindKey types.BindKey, tag string) (result an
 		result, err = s.cacheStorage.GetNamed(bindKey, tag)
 	}
 
-	if err != nil && s.parentInjector != nil {
+	if err != nil && s.inheritsFromParent() {
 		cacheErr := err
 		result, err = s.parentInjector.RetrieveBind(bindKey, tag)
 		if err != nil {
@@ -133,7 +157,7 @@ func (s *StdInjector) GetAll(keyTag string) (resultList []any, err error) {
 		return
 	}
 
-	if s.parentInjector != nil {
+	if s.inheritsFromParent() {
 		originalError := err
 		if parentElements, err = s.parentInjector.GetAll(keyTag); err != nil {
 			err = remyErrs.ErrWrapParentSubErrors{MainError: err}

@@ -72,6 +72,14 @@ func (c cycleDetectorInjector) RetrieverFor(bindKey types.BindKey, tag string) I
 	return inj
 }
 
+func (c cycleDetectorInjector) ScopeName() string {
+	return c.ij.ScopeName()
+}
+
+func (c cycleDetectorInjector) Parent() types.DependencyRetriever {
+	return c.ij.Parent()
+}
+
 func (c cycleDetectorInjector) RetrieveBind(bindKey types.BindKey, tag string) (any, error) {
 	return c.ij.RetrieveBind(bindKey, tag)
 }

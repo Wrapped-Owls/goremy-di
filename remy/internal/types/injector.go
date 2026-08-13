@@ -50,6 +50,12 @@ type (
 		BindElem(depKey BindKey, val any, opts BindOptions) error
 		SubInjector(allowOverrides ...bool) Injector
 
+		// ScopeName returns the name given to this scope, empty when anonymous
+		ScopeName() string
+
+		// Parent returns the retriever this scope falls back to, nil on a root
+		Parent() DependencyRetriever
+
 		DependencyRetriever
 	}
 

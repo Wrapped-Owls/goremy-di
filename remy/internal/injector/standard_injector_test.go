@@ -155,6 +155,18 @@ func TestStdInjector_ResolveOptions(t *testing.T) {
 			child:  Options{Resolve: injopts.ResolveOptDuckTyping},
 			want:   injopts.ResolveOptDuckTyping | injopts.ResolveOptTracePath,
 		},
+		{
+			name:   "an isolated scope inherits nothing",
+			parent: New(Options{Resolve: injopts.ResolveOptTracePath}),
+			child:  Options{Resolve: injopts.ResolveOptIsolated},
+			want:   injopts.ResolveOptIsolated,
+		},
+		{
+			name:   "isolation itself never propagates to a child",
+			parent: New(Options{Resolve: injopts.ResolveOptIsolated}),
+			child:  Options{},
+			want:   injopts.ResolveOptNone,
+		},
 	}
 
 	for _, testCase := range testCases {

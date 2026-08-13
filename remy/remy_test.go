@@ -232,6 +232,72 @@ func TestConfig_MultiBinding(t *testing.T) {
 	}
 }
 
+func TestConfig_ScopedInjector(t *testing.T) {
+	parent := NewInjector(Config{ScopeName: "app", MultiBinding: true})
+	RegisterInstance(parent, uint16(42))
+	RegisterInstance(parent, "from-parent", "origin")
+
+	testCases := []struct {
+		name          string
+		child         Injector
+		wantScopeName string
+		wantParentHit bool
+	}{
+		{
+			name:          "named scope falls back to parent by default",
+			child:         NewInjector(Config{ParentInjector: parent, ScopeName: "request"}),
+			wantScopeName: "request",
+			wantParentHit: true,
+		},
+		{
+			name: "isolated scope never reads the parent",
+			child: NewInjector(
+				Config{ParentInjector: parent, ScopeName: "sandbox", Isolated: true},
+			),
+			wantScopeName: "sandbox",
+			wantParentHit: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testCase := testCase // go.mod pins 1.20: loop vars are still shared
+		t.Run(testCase.name, func(t *testing.T) {
+			if name := testCase.child.ScopeName(); name != testCase.wantScopeName {
+				t.Fatalf("ScopeName() = %q, want %q", name, testCase.wantScopeName)
+			}
+			if testCase.child.Parent() == nil {
+				t.Fatal("Parent() = nil, want the parent injector")
+			}
+
+			_, err := Get[uint16](testCase.child)
+			if parentHit := err == nil; parentHit != testCase.wantParentHit {
+				t.Fatalf(
+					"parent fallback = %v (err %v), want %v",
+					parentHit,
+					err,
+					testCase.wantParentHit,
+				)
+			}
+		})
+	}
+}
+
+func TestConfig_IsolatedScopeGetAll(t *testing.T) {
+	parent := NewInjector(Config{MultiBinding: true})
+	RegisterInstance(parent, "from-parent", "origin")
+
+	child := NewInjector(Config{ParentInjector: parent, MultiBinding: true, Isolated: true})
+	RegisterInstance(child, "from-child", "origin")
+
+	elements, err := GetAll[string](child, "origin")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(elements) != 1 || elements[0] != "from-child" {
+		t.Fatalf("isolated GetAll = %v, want only [from-child]", elements)
+	}
+}
+
 func TestConfig_TraceResolution(t *testing.T) {
 	testCases := []struct {
 		name       string

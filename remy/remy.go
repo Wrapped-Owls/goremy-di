@@ -19,6 +19,10 @@ type (
 		// registered binds.
 		ParentInjector Injector
 
+		// ScopeName optionally labels this injector scope for diagnostics.
+		// Anonymous scopes (the default) cost nothing.
+		ScopeName string
+
 		// CanOverride defines if a bind can be overridden if it is registered twice.
 		CanOverride bool
 
@@ -32,6 +36,10 @@ type (
 		// can be listed together. Unlike DuckTypeElements it does not enable implicit
 		// interface discovery, so Get keeps its direct lookup.
 		MultiBinding bool
+
+		// Isolated stops lookup misses from falling back to ParentInjector, so this
+		// scope resolves and lists only its own binds.
+		Isolated bool
 
 		// TraceResolution makes failed resolutions carry the dependency path that led
 		// to them (A -> B -> C), readable through DependencyResolutionError.
