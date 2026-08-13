@@ -143,6 +143,12 @@ func Get[T any](retriever types.DependencyRetriever, keyTag string) (element T, 
 		return // If the element is indeed an interface, we skip the guess recover
 	}
 
+	// MultiBinding alone must not pay this O(n) scan on an interface miss
+	if holder, ok := retriever.(types.ResolveOptionsHolder); ok &&
+		!holder.ResolveOptions().Is(injopts.ResolveOptDuckTyping) {
+		return
+	}
+
 	// Start to search for every element if it is configured in this way
 	foundElement, accessAllError := getByGuess[T](retriever, keyTag)
 	if accessAllError == nil {

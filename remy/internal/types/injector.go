@@ -1,5 +1,7 @@
 package types
 
+import "github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
+
 type (
 	ValuesSetter[K comparable, T any] interface {
 		// Set uses the T key given to save the value.
@@ -49,6 +51,11 @@ type (
 		SubInjector(allowOverrides ...bool) Injector
 
 		DependencyRetriever
+	}
+
+	// ResolveOptionsHolder exposes the resolution options in effect for an injector
+	ResolveOptionsHolder interface {
+		ResolveOptions() injopts.ResolveConfOption
 	}
 
 	// AnyGenerator generates an element without knowing its type parameter

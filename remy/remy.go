@@ -27,6 +27,11 @@ type (
 		//
 		// CAUTION: It costly a lot, since it will try to discover all registered elements
 		DuckTypeElements bool
+
+		// MultiBinding enables the GetAll family, so multiple binds of the same type
+		// can be listed together. Unlike DuckTypeElements it does not enable implicit
+		// interface discovery, so Get keeps its direct lookup.
+		MultiBinding bool
 	}
 )
 

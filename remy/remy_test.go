@@ -126,3 +126,68 @@ func TestGetWithContext_Error(t *testing.T) {
 		t.Fatalf("expected ErrElementNotRegistered but got %v", err)
 	}
 }
+
+type multiBindGreeter interface{ Greet() string }
+
+type multiBindEnglish struct{}
+
+func (multiBindEnglish) Greet() string { return "hello" }
+
+func TestConfig_MultiBinding(t *testing.T) {
+	testCases := []struct {
+		name          string
+		config        Config
+		wantGetAllErr error
+		wantDuckTyped bool
+	}{
+		{
+			name:          "multi binding enables GetAll without implicit discovery",
+			config:        Config{MultiBinding: true},
+			wantGetAllErr: nil,
+			wantDuckTyped: false,
+		},
+		{
+			name:          "duck typing implies multi binding and implicit discovery",
+			config:        Config{DuckTypeElements: true},
+			wantGetAllErr: nil,
+			wantDuckTyped: true,
+		},
+		{
+			name:   "default config allows neither",
+			config: Config{},
+			wantGetAllErr: errors.New(
+				"the current injector config does not allow returning all elements",
+			),
+			wantDuckTyped: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testCase := testCase // go.mod pins 1.20: loop vars are still shared
+		t.Run(testCase.name, func(t *testing.T) {
+			inj := NewInjector(testCase.config)
+			Register(inj, Instance(multiBindEnglish{}))
+			RegisterInstance(inj, "first", "one")
+			RegisterInstance(inj, "second", "two")
+
+			_, getAllErr := GetAll[string](inj, "one")
+			if (getAllErr != nil) != (testCase.wantGetAllErr != nil) {
+				t.Fatalf(
+					"GetAll error = %v, want error presence %v",
+					getAllErr,
+					testCase.wantGetAllErr != nil,
+				)
+			}
+
+			_, duckErr := Get[multiBindGreeter](inj)
+			if duckTyped := duckErr == nil; duckTyped != testCase.wantDuckTyped {
+				t.Fatalf(
+					"implicit interface discovery = %v (err %v), want %v",
+					duckTyped,
+					duckErr,
+					testCase.wantDuckTyped,
+				)
+			}
+		})
+	}
+}

@@ -20,6 +20,10 @@ func injectorOptsFromConfig(conf Config) injector.Options {
 		opts.Resolve |= injopts.ResolveOptDuckTyping
 	}
 
+	if conf.MultiBinding {
+		opts.Cache |= injopts.CacheOptReturnAll
+	}
+
 	return opts
 }
 

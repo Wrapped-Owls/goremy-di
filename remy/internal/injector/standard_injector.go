@@ -68,6 +68,19 @@ func (s *StdInjector) RetrieverFor(types.BindKey, string) types.Injector {
 	return nil
 }
 
+// ResolveOptions returns this scope options merged with the inheritable ones
+// coming from its ancestors.
+func (s *StdInjector) ResolveOptions() injopts.ResolveConfOption {
+	// what a sub-injector picks up from its ancestors; Isolated is per scope
+	const inheritable = injopts.ResolveOptDuckTyping | injopts.ResolveOptTracePath
+
+	opts := s.resolveOpts
+	if holder, ok := s.parentInjector.(types.ResolveOptionsHolder); ok {
+		opts |= holder.ResolveOptions() & inheritable
+	}
+	return opts
+}
+
 func (s *StdInjector) checkValidOverride(
 	key types.BindKey, shouldOverride, wasOverridden bool,
 ) error {

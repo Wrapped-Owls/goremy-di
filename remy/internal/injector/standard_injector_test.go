@@ -6,6 +6,7 @@ import (
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 )
 
 func TestStdInjector_SubInjector(t *testing.T) {
@@ -125,6 +126,53 @@ func TestStdInjector_SubInjector__OverrideParent(t *testing.T) {
 	parentResult := TryGet[uint8](parent, "")
 	if parentResult != 101 {
 		t.Errorf("parent value was overrided, it should not occur")
+	}
+}
+
+func TestStdInjector_ResolveOptions(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name   string
+		parent *StdInjector
+		child  Options
+		want   injopts.ResolveConfOption
+	}{
+		{
+			name:  "own options are reported",
+			child: Options{Resolve: injopts.ResolveOptDuckTyping},
+			want:  injopts.ResolveOptDuckTyping,
+		},
+		{
+			name:   "inheritable options come down from the parent",
+			parent: New(Options{Resolve: injopts.ResolveOptTracePath}),
+			child:  Options{},
+			want:   injopts.ResolveOptTracePath,
+		},
+		{
+			name:   "own and inherited options merge",
+			parent: New(Options{Resolve: injopts.ResolveOptTracePath}),
+			child:  Options{Resolve: injopts.ResolveOptDuckTyping},
+			want:   injopts.ResolveOptDuckTyping | injopts.ResolveOptTracePath,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testCase := testCase // go.mod pins 1.20: loop vars are still shared
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			var inj *StdInjector
+			if testCase.parent != nil {
+				inj = New(testCase.child, testCase.parent)
+			} else {
+				inj = New(testCase.child)
+			}
+
+			if got := inj.ResolveOptions(); got != testCase.want {
+				t.Fatalf("ResolveOptions() = %b, want %b", got, testCase.want)
+			}
+		})
 	}
 }
 
