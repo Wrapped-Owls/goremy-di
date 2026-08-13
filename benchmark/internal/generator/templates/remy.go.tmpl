@@ -1,5 +1,12 @@
 {{define "op_init_container"}}
-    inj := remy.NewInjector()
+    // heavy options on, so the comparison covers remy's slow paths: duck
+    // typing, multi-binding and dependency path traces
+    inj := remy.NewInjector(remy.Config{
+        DuckTypeElements: true,
+        MultiBinding:     true,
+        TraceResolution:  true,
+        ScopeName:        "benchmark",
+    })
 {{end}}
 
 {{define "remy_constructor_suffix"}}
