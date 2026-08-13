@@ -42,8 +42,9 @@ func recoverInjectorPanic(err *error) {
 	applyRecovered(recover(), err)
 }
 
-// deferred as a single direct call, never a closure, so recover() still works and
-// the success path keeps costing one open-coded defer
+// traceResolution recovers an injector panic and records key as one more step of
+// the failing path. It must be deferred directly, never in a closure, or recover
+// stops working.
 func traceResolution[T any](err *error, retriever DependencyRetriever, tag string) {
 	applyRecovered(recover(), err)
 	if *err == nil {
@@ -56,8 +57,8 @@ func traceResolution[T any](err *error, retriever DependencyRetriever, tag strin
 	}
 }
 
-// separate from recoverInjectorPanic because recover() only works when called
-// directly by the deferred function
+// applyRecovered folds a recovered panic value into err. It is split out because
+// recover only works when called directly by the deferred function.
 func applyRecovered(r any, err *error) {
 	if r == nil || err == nil {
 		return

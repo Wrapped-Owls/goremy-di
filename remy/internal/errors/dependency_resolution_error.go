@@ -9,7 +9,8 @@ import (
 // PathEntry identifies one step of a dependency-resolution chain
 type PathEntry = types.PathEntry
 
-// keeps the common A -> B -> C chain at a single allocation; deeper chains spill
+// inlinePathDepth keeps the common A -> B -> C chain at a single allocation;
+// deeper chains spill into the overflow slice.
 const inlinePathDepth = 3
 
 // ErrDependencyResolution carries the resolution path that led to Cause, stored

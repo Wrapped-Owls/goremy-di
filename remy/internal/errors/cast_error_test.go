@@ -69,7 +69,7 @@ func TestErrTypeCastInRuntime_Error(t *testing.T) {
 		{
 			name: "interface actual value",
 			err: ErrTypeCastInRuntime{
-				ActualValue: interface{}(42),
+				ActualValue: any(42),
 				Expected:    "string",
 			},
 			want: "unable to cast `int` to given type `string`",
