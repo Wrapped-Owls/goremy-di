@@ -3,6 +3,7 @@ package remy
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 )
 
@@ -127,6 +128,45 @@ func TestGetWithContext_Error(t *testing.T) {
 	}
 }
 
+func TestGet_DependencyTrace(t *testing.T) {
+	inj := NewInjector(Config{TraceResolution: true})
+
+	// Register string that depends on int
+	Register(inj, Factory(func(r DependencyRetriever) (string, error) {
+		_, err := Get[int](r)
+		return "", err
+	}))
+
+	_, err := Get[string](inj)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	errMsg := err.Error()
+	// The message should contain both "string" and "int" as they are in the resolution path
+	if !strings.Contains(errMsg, "string") || !strings.Contains(errMsg, "int") {
+		t.Errorf("error message does not contain all types in the path: %s", errMsg)
+	}
+
+	// Check if we can still identify the root cause using errors.Is
+	if !errors.Is(err, ErrElementNotRegistered) {
+		t.Errorf("root cause ErrElementNotRegistered lost: %v", err)
+	}
+
+	// Test with deeper dependencies: string -> int -> bool
+	Register(inj, Factory(func(r DependencyRetriever) (int, error) {
+		_, err := Get[bool](r)
+		return 0, err
+	}))
+
+	_, err = Get[string](inj)
+	errMsg = err.Error()
+	if !strings.Contains(errMsg, "string") || !strings.Contains(errMsg, "int") ||
+		!strings.Contains(errMsg, "bool") {
+		t.Errorf("deep error message does not contain all types in the path: %s", errMsg)
+	}
+}
+
 type multiBindGreeter interface{ Greet() string }
 
 type multiBindEnglish struct{}
@@ -187,6 +227,60 @@ func TestConfig_MultiBinding(t *testing.T) {
 					duckErr,
 					testCase.wantDuckTyped,
 				)
+			}
+		})
+	}
+}
+
+func TestConfig_TraceResolution(t *testing.T) {
+	testCases := []struct {
+		name       string
+		config     Config
+		wantTraced bool
+	}{
+		{
+			name:       "tracing records the whole resolution path",
+			config:     Config{TraceResolution: true},
+			wantTraced: true,
+		},
+		{
+			name:       "tracing is off by default, keeping the failure path cheap",
+			config:     Config{},
+			wantTraced: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testCase := testCase // go.mod pins 1.20: loop vars are still shared
+		t.Run(testCase.name, func(t *testing.T) {
+			inj := NewInjector(testCase.config)
+			Register(inj, Factory(func(r DependencyRetriever) (string, error) {
+				_, err := Get[int](r)
+				return "", err
+			}))
+
+			_, err := Get[string](inj)
+			if err == nil {
+				t.Fatal("expected error, got nil")
+			}
+			// the root cause survives either way
+			if !errors.Is(err, ErrElementNotRegistered) {
+				t.Fatalf("root cause lost: %v", err)
+			}
+
+			var traced *DependencyResolutionError
+			if isTraced := errors.As(err, &traced); isTraced != testCase.wantTraced {
+				t.Fatalf("traced = %v (err %v), want %v", isTraced, err, testCase.wantTraced)
+			}
+			if !testCase.wantTraced {
+				return
+			}
+			if path := traced.Path(); len(path) != 2 {
+				t.Fatalf("path = %v, want the string -> int chain", path)
+			}
+			if errMsg := err.Error(); !strings.Contains(errMsg, "string") ||
+				!strings.Contains(errMsg, "int") {
+				t.Fatalf("message %q must name both steps", errMsg)
 			}
 		})
 	}

@@ -32,6 +32,12 @@ type (
 		// can be listed together. Unlike DuckTypeElements it does not enable implicit
 		// interface discovery, so Get keeps its direct lookup.
 		MultiBinding bool
+
+		// TraceResolution makes failed resolutions carry the dependency path that led
+		// to them (A -> B -> C), readable through DependencyResolutionError.
+		//
+		// Opt-in: it costs one allocation per failed Get, nothing on success.
+		TraceResolution bool
 	}
 )
 
@@ -137,10 +143,12 @@ func MaybeGetAll[T any](i DependencyRetriever, optTag ...string) []T {
 //
 // Receives: DependencyRetriever (required); tag (optional)
 func Get[T any](i DependencyRetriever, optTag ...string) (result T, err error) {
-	defer recoverInjectorPanic(&err)
-
+	retriever := mustRetriever(i)
 	tag := firstOrDefault(optTag...)
-	result, err = injector.Get[T](mustRetriever(i), tag)
+	// reuses the defer panics already needed, keeping the resolve loop untouched
+	defer traceResolution[T](&err, retriever, tag)
+
+	result, err = injector.Get[T](retriever, tag)
 	return result, err
 }
 

@@ -12,4 +12,13 @@ var (
 	ErrCycleDependencyDetected = errors.ErrCycleDependencyDetectedSentinel
 	ErrTypeCastInRuntime       = errors.ErrTypeCastInRuntimeSentinel
 	ErrFoundMoreThanOneValidDI = errors.ErrFoundMoreThanOneValidDISentinel
+	ErrDependencyResolution    = errors.ErrDependencyResolutionSentinel
+)
+
+type (
+	// DependencyResolutionError carries the path of a failed Get chain
+	DependencyResolutionError = errors.ErrDependencyResolution
+
+	// ResolutionPathEntry is one step of a DependencyResolutionError path
+	ResolutionPathEntry = errors.PathEntry
 )

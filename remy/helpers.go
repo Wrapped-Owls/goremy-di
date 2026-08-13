@@ -4,8 +4,11 @@ import (
 	"errors"
 	"fmt"
 
+	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 	"github.com/wrapped-owls/goremy-di/remy/internal/injector"
+	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
+	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 )
 
 func injectorOptsFromConfig(conf Config) injector.Options {
@@ -24,11 +27,34 @@ func injectorOptsFromConfig(conf Config) injector.Options {
 		opts.Cache |= injopts.CacheOptReturnAll
 	}
 
+	if conf.TraceResolution {
+		opts.Resolve |= injopts.ResolveOptTracePath
+	}
+
 	return opts
 }
 
 func recoverInjectorPanic(err *error) {
-	r := recover()
+	applyRecovered(recover(), err)
+}
+
+// deferred as a single direct call, never a closure, so recover() still works and
+// the success path keeps costing one open-coded defer
+func traceResolution[T any](err *error, retriever DependencyRetriever, tag string) {
+	applyRecovered(recover(), err)
+	if *err == nil {
+		return
+	}
+
+	if holder, ok := retriever.(types.ResolveOptionsHolder); ok &&
+		holder.ResolveOptions().Is(injopts.ResolveOptTracePath) {
+		*err = remyErrs.WrapResolutionPath(*err, utils.NewKeyElem[T](), tag)
+	}
+}
+
+// separate from recoverInjectorPanic because recover() only works when called
+// directly by the deferred function
+func applyRecovered(r any, err *error) {
 	if r == nil || err == nil {
 		return
 	}
