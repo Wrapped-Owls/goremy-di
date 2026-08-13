@@ -16,6 +16,13 @@ type (
 	}
 
 	KeyElem[T any] struct{}
+
+	// PathEntry identifies one step of a resolution: the key requested and the
+	// optional tag used to disambiguate it
+	PathEntry struct {
+		Key BindKey
+		Tag string
+	}
 )
 
 // ID returns a stable, type-unique identifier for KeyElem[T].

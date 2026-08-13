@@ -18,6 +18,7 @@ var (
 	ErrCycleDependencyDetectedSentinel = &ErrCycleDependencyDetected{}
 	ErrTypeCastInRuntimeSentinel       = &ErrTypeCastInRuntime{}
 	ErrFoundMoreThanOneValidDISentinel = &ErrMultipleDIDuckTypingCandidates{}
+	ErrDependencyResolutionSentinel    = &ErrDependencyResolution{}
 )
 
 func genDebugKeyTypeName(typeKey any) (givenType string) {
