@@ -18,9 +18,7 @@ func NewElementsStorage[T stgKey](
 	opts injopts.CacheConfOption,
 ) *ElementsStorage[T] {
 	return &ElementsStorage[T]{
-		baseStorage:   newBaseStorage[T](opts),
-		namedElements: map[string]genericAnyMap[bindKeyID]{},
-		elements:      genericAnyMap[bindKeyID]{},
+		baseStorage: newBaseStorage[T](opts),
 	}
 }
 
@@ -30,6 +28,9 @@ func (s *ElementsStorage[T]) Set(key T, value any) (wasOverridden bool, err erro
 			return false, remyErrs.ErrAlreadyBound{Key: key}
 		}
 		wasOverridden = true
+	}
+	if s.elements == nil { // reading a nil map is safe, so it waits for a write
+		s.elements = genericAnyMap[bindKeyID]{}
 	}
 	s.elements[s.keyID(key)] = value
 	return
@@ -57,6 +58,9 @@ func (s *ElementsStorage[T]) SetNamed(
 		wasOverridden = true
 	}
 	namedBinds[s.keyID(elementType)] = value
+	if s.namedElements == nil { // an injector without tagged binds never allocates it
+		s.namedElements = map[string]genericAnyMap[bindKeyID]{}
+	}
 	s.namedElements[name] = namedBinds
 	return
 }

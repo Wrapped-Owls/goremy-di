@@ -7,6 +7,7 @@ import (
 )
 
 type SingletonBind[T any] struct {
+	elemType[T]
 	dependency *T
 	binder     types.Binder[T]
 	mutex      sync.RWMutex
@@ -47,4 +48,8 @@ func (b *SingletonBind[T]) Type() types.BindType {
 		return types.BindLazySingleton
 	}
 	return types.BindSingleton
+}
+
+func (b *SingletonBind[T]) GenAsAny(injector types.DependencyRetriever) (any, error) {
+	return b.Generates(injector)
 }
