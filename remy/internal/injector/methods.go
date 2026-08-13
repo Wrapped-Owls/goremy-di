@@ -175,18 +175,26 @@ func TryGet[T any](retriever types.DependencyRetriever, keyTag string) (result T
 	return
 }
 
+// StandardScope is the ScopeFactory used when nothing decorates the retriever.
+func StandardScope(
+	parent types.DependencyRetriever, storage types.Storage[types.BindKey],
+) types.Injector {
+	return NewWithStorage(Options{}, storage, parent)
+}
+
 func GetWithPairs[T any](
-	retriever types.DependencyRetriever, keyTag string, elements ...types.BindEntry,
+	retriever types.DependencyRetriever, keyTag string,
+	newScope types.ScopeFactory, elements ...types.BindEntry,
 ) (result T, err error) {
 	stg := stgbind.NewStorage(injopts.CacheOptNone, uint(len(elements)))
-	subInjector := NewWithStorage(Options{}, stg, retriever)
+	scope := newScope(retriever, stg)
 	for _, element := range elements {
 		value, bindKey := element.Entry()
 		if bindKey == nil { // Gen a bindKey if none is provided
 			err = remyErrs.ErrImpossibleIdentifyType{Type: (*T)(nil)}
 			return
 		}
-		if err = subInjector.BindElem(
+		if err = scope.BindElem(
 			bindKey,
 			value,
 			types.BindOptions{Tag: element.Tag()},
@@ -195,17 +203,17 @@ func GetWithPairs[T any](
 		}
 	}
 
-	return Get[T](subInjector, keyTag)
+	return Get[T](scope, keyTag)
 }
 
 func GetWith[T any](
 	retriever types.DependencyRetriever, keyTag string,
-	binder func(injector types.Injector) error,
+	newScope types.ScopeFactory, binder func(injector types.Injector) error,
 ) (result T, err error) {
-	stg := stgbind.NewStorage(injopts.CacheOptNone, 4)
-	subInjector := NewWithStorage(Options{}, stg, retriever)
-	if err = binder(subInjector); err != nil {
+	scope := newScope(retriever, stgbind.NewStorage(injopts.CacheOptNone, 4))
+	if err = binder(scope); err != nil {
 		return
 	}
-	return Get[T](subInjector, keyTag)
+
+	return Get[T](scope, keyTag)
 }

@@ -86,7 +86,7 @@ func TestMethods_parallel_Get_variants(t *testing.T) {
 
 				// GetWithPairs overriding only within the sub-injector
 				valPairs, err := GetWithPairs[string](
-					i, "",
+					i, "", StandardScope,
 					types.NewBindPair(true, ""), // override bool only for this call
 					types.NewBindPair[fixtures.Language](
 						fixtures.CountryLanguage{Language: "ptBr"}, "",
@@ -105,7 +105,7 @@ func TestMethods_parallel_Get_variants(t *testing.T) {
 
 				// GetWith binder variant
 				var valWith string
-				valWith, err = GetWith[string](i, "", func(ij types.Injector) error {
+				valWith, err = GetWith[string](i, "", StandardScope, func(ij types.Injector) error {
 					// supply only the overrides for this call
 					return errors.Join(
 						Register(ij, "", binds.Instance(true)),

@@ -197,7 +197,7 @@ func TestGetWith(t *testing.T) {
 			name: "GetWithPairs[string]",
 			getGenCallback: func(ij types.Injector) string {
 				result, _ := GetWithPairs[string](
-					ij, "",
+					ij, "", StandardScope,
 					types.NewBindPair(uint8(42), ""),
 					types.NewBindPair("Go", "lang"),
 					types.NewBindPair(true, ""),
@@ -210,7 +210,7 @@ func TestGetWith(t *testing.T) {
 			name: "GetWith[string]",
 			getGenCallback: func(i types.Injector) string {
 				result, _ := GetWith[string](
-					i, "", func(ij types.Injector) error {
+					i, "", StandardScope, func(ij types.Injector) error {
 						err := errors.Join(
 							Register(ij, "", binds.Instance[uint8](42)),
 							Register(ij, "lang", binds.Instance("Go")),
@@ -319,7 +319,7 @@ func TestGetWithPairs_withDirectBindKey(t *testing.T) {
 
 	// Test with direct BindKey provided - when Key is provided, InterfaceValue is not needed
 	result, err := GetWithPairs[string](
-		i, "",
+		i, "", StandardScope,
 		types.NewBindPair(uint8(42), ""),
 		types.NewBindPair("Mordecai", "employee1"),
 		types.NewBindPair("Rigby", "employee2"),
@@ -378,7 +378,7 @@ func TestGetGen_raiseCastError(t *testing.T) {
 	t.Run(
 		"Correctly bind registration", func(t *testing.T) {
 			_, err = GetWithPairs[string](
-				i, "", types.NewBindPair[fixtures.Language](interfaceValue, ""),
+				i, "", StandardScope, types.NewBindPair[fixtures.Language](interfaceValue, ""),
 			)
 			if err != nil {
 				t.Error(err)
@@ -390,7 +390,7 @@ func TestGetGen_raiseCastError(t *testing.T) {
 	t.Run(
 		"Register pointer interface value", func(t *testing.T) {
 			_, err = GetWithPairs[string](
-				i, "",
+				i, "", StandardScope,
 				types.InstancePair[*fixtures.Language]{
 					Key:   utils.NewKeyElem[fixtures.Language](),
 					Value: &interfaceValue,
@@ -569,7 +569,7 @@ func TestGetWith_withParentDuckTyping(t *testing.T) {
 	// Use GetWith which creates a sub-injector with CacheOptNone (doesn't allow GetAll)
 	// The sub-injector should be able to find the interface via duck typing by delegating to parent
 	result, err := GetWith[fixtures.Language](
-		parent, "", func(ij types.Injector) error {
+		parent, "", StandardScope, func(ij types.Injector) error {
 			// Sub-injector doesn't need to register anything
 			// It should find the interface from the parent via duck typing
 			return nil
@@ -690,7 +690,7 @@ func TestGet_guessReturnsNestedMissingDependency(t *testing.T) {
 
 	var result fixtures.TestContextRepository
 	if result, err = GetWithPairs[fixtures.TestContextRepository](
-		i, "", types.NewBindPair(ctx, ""),
+		i, "", StandardScope, types.NewBindPair(ctx, ""),
 	); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
