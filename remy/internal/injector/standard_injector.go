@@ -10,26 +10,28 @@ import (
 )
 
 type (
+	Options struct {
+		Cache   injopts.CacheConfOption
+		Resolve injopts.ResolveConfOption
+	}
+
 	StdInjector struct {
 		parentInjector types.DependencyRetriever
 		cacheStorage   types.Storage[types.BindKey]
 		cacheOpts      injopts.CacheConfOption
+		resolveOpts    injopts.ResolveConfOption
 	}
 )
 
-func New(
-	opts injopts.CacheConfOption,
-	parent ...types.DependencyRetriever,
-) *StdInjector {
-	return NewWithStorage(opts, stgbind.NewElementsStorage[types.BindKey](opts), parent...)
+func New(opts Options, parent ...types.DependencyRetriever) *StdInjector {
+	return NewWithStorage(opts, stgbind.NewElementsStorage[types.BindKey](opts.Cache), parent...)
 }
 
-// NewWithStorage creates a StdInjector that uses the provided storage backend.
-// This allows callers to supply an optimised storage (e.g. SliceStorage for
-// ephemeral sub-injectors with a known, small number of entries) rather than
-// always allocating the default map-backed ElementsStorage.
+// NewWithStorage creates a StdInjector that uses the provided storage backend, so
+// callers can supply an optimised one (e.g. SliceStorage for ephemeral
+// sub-injectors with a known, small number of entries).
 func NewWithStorage(
-	opts injopts.CacheConfOption,
+	opts Options,
 	storage types.Storage[types.BindKey],
 	parent ...types.DependencyRetriever,
 ) *StdInjector {
@@ -39,7 +41,8 @@ func NewWithStorage(
 	}
 
 	return &StdInjector{
-		cacheOpts:      opts,
+		cacheOpts:      opts.Cache,
+		resolveOpts:    opts.Resolve,
 		parentInjector: parentInjector,
 		cacheStorage:   storage,
 	}
@@ -58,7 +61,7 @@ func (s *StdInjector) SubInjector(overrides ...bool) types.Injector {
 		subOpts -= injopts.CacheOptAllowOverride
 	}
 
-	return New(subOpts, s)
+	return New(Options{Cache: subOpts, Resolve: s.resolveOpts}, s)
 }
 
 func (s *StdInjector) WrapRetriever() types.Injector {

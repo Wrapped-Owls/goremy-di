@@ -40,12 +40,12 @@ func NewInjector(configs ...Config) Injector {
 		cfg = configs[0]
 	}
 
-	cacheOpts := cacheOptsFromConfig(cfg)
+	opts := injectorOptsFromConfig(cfg)
 
 	if cfg.ParentInjector != nil {
-		return injector.New(cacheOpts, cfg.ParentInjector)
+		return injector.New(opts, cfg.ParentInjector)
 	}
-	return injector.New(cacheOpts)
+	return injector.New(opts)
 }
 
 // Register must be called first, because the library doesn't support registering dependencies while get at same time.

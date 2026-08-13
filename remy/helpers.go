@@ -4,19 +4,23 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/wrapped-owls/goremy-di/remy/internal/injector"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 )
 
-func cacheOptsFromConfig(conf Config) (options injopts.CacheConfOption) {
+func injectorOptsFromConfig(conf Config) injector.Options {
+	var opts injector.Options
+
 	if conf.CanOverride {
-		options |= injopts.CacheOptAllowOverride
+		opts.Cache |= injopts.CacheOptAllowOverride
 	}
 
 	if conf.DuckTypeElements {
-		options |= injopts.CacheOptReturnAll
+		opts.Cache |= injopts.CacheOptReturnAll
+		opts.Resolve |= injopts.ResolveOptDuckTyping
 	}
 
-	return
+	return opts
 }
 
 func recoverInjectorPanic(err *error) {

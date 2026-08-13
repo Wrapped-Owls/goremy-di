@@ -176,7 +176,7 @@ func GetWithPairs[T any](
 	retriever types.DependencyRetriever, keyTag string, elements ...types.BindEntry,
 ) (result T, err error) {
 	stg := stgbind.NewStorage(injopts.CacheOptNone, uint(len(elements)))
-	subInjector := NewWithStorage(injopts.CacheOptNone, stg, retriever)
+	subInjector := NewWithStorage(Options{}, stg, retriever)
 	for _, element := range elements {
 		value, bindKey := element.Entry()
 		if bindKey == nil { // Gen a bindKey if none is provided
@@ -196,7 +196,7 @@ func GetWith[T any](
 	binder func(injector types.Injector) error,
 ) (result T, err error) {
 	stg := stgbind.NewStorage(injopts.CacheOptNone, 4)
-	subInjector := NewWithStorage(injopts.CacheOptNone, stg, retriever)
+	subInjector := NewWithStorage(Options{}, stg, retriever)
 	if err = binder(subInjector); err != nil {
 		return
 	}

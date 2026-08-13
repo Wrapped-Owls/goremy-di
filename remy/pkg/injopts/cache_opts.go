@@ -1,5 +1,6 @@
 package injopts
 
+// CacheConfOption configures the storage that backs an injector.
 type CacheConfOption uint8
 
 const (

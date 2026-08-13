@@ -6,12 +6,11 @@ import (
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
-	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 )
 
 func TestStdInjector_SubInjector(t *testing.T) {
 	const strFirstHalf = "the counter is at"
-	parent := New(injopts.CacheOptNone)
+	parent := New(Options{})
 	subInjector := parent.SubInjector(false)
 
 	var counter uint8 = 0
@@ -47,7 +46,7 @@ func TestStdInjector_SubInjector(t *testing.T) {
 
 func TestStdInjector_SubInjectorEmpty(t *testing.T) {
 	const elementKey = "game-name"
-	parent := New(injopts.CacheOptNone)
+	parent := New(Options{})
 	subInjector := parent.SubInjector(false)
 
 	_ = Register(parent, elementKey, binds.Instance("snake-pong"))
@@ -63,7 +62,7 @@ func TestStdInjector_SubInjectorEmpty(t *testing.T) {
 
 func TestStdInjector_GetUnboundedElement(t *testing.T) {
 	const errMessage = "An error have not been returned when getting unbounded element"
-	parentInjector := New(injopts.CacheOptNone)
+	parentInjector := New(Options{})
 	for _, ij := range [...]types.Injector{parentInjector, parentInjector.SubInjector()} {
 		if _, err := Get[string](ij, ""); err == nil {
 			t.Error(errMessage)
@@ -76,7 +75,7 @@ func TestStdInjector_GetUnboundedElement(t *testing.T) {
 
 func TestStdInjector_SubInjector__OverrideParent(t *testing.T) {
 	const strFirstHalf = "The totally value of it is"
-	parent := New(injopts.CacheOptNone)
+	parent := New(Options{})
 	subInjector := parent.SubInjector(false)
 
 	_ = Register(
