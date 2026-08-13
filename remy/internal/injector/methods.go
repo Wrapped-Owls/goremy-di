@@ -21,16 +21,17 @@ func RegisterWithOverride[T any](ij types.Injector, keyTag string, bind types.Bi
 
 func registerNewDep[T any](ij types.Injector, bind types.Bind[T], opts types.BindOptions) error {
 	elementType := utils.NewKeyElem[T]()
-	var retriever types.DependencyRetriever = ij
-	if wrappedRetriever := retriever.WrapRetriever(); wrappedRetriever != nil {
-		retriever = wrappedRetriever
-	}
-
 	var (
 		value any = bind
 		err   error
 	)
 	if bindType := bind.Type(); bindType == types.BindInstance || bindType == types.BindSingleton {
+		// entering here reports a cycle when the chain circles back into this key,
+		// instead of failing as an unregistered element
+		var retriever types.DependencyRetriever = ij
+		if scoped := retriever.RetrieverFor(elementType, opts.Tag); scoped != nil {
+			retriever = scoped
+		}
 		if value, err = bind.Generates(retriever); err != nil {
 			return err
 		}
@@ -42,11 +43,7 @@ func registerNewDep[T any](ij types.Injector, bind types.Bind[T], opts types.Bin
 func checkSavedAsBind[T any](
 	retriever types.DependencyRetriever, checkElem any,
 ) (foundElem *T, err error) {
-	if genericBind, assertOk := checkElem.(interface {
-		PointerValue() any
-		DefaultValue() any
-		GenAsAny(injector types.DependencyRetriever) (any, error)
-	}); assertOk {
+	if genericBind, assertOk := checkElem.(types.GuessableBind); assertOk {
 		// Check if the returned value can implement the requested interface
 		anyVal := genericBind.DefaultValue()
 		if _, ok := anyVal.(T); !ok {
@@ -126,8 +123,8 @@ func getByGuess[T any](
 func Get[T any](retriever types.DependencyRetriever, keyTag string) (element T, err error) {
 	elementType := utils.NewKeyElem[T]()
 
-	if wrappedRetriever := retriever.WrapRetriever(); wrappedRetriever != nil {
-		retriever = wrappedRetriever
+	if scoped := retriever.RetrieverFor(elementType, keyTag); scoped != nil {
+		retriever = scoped
 	}
 
 	var bind any
@@ -183,7 +180,11 @@ func GetWithPairs[T any](
 			err = remyErrs.ErrImpossibleIdentifyType{Type: (*T)(nil)}
 			return
 		}
-		if err = subInjector.BindElem(bindKey, value, types.BindOptions{Tag: element.Tag()}); err != nil {
+		if err = subInjector.BindElem(
+			bindKey,
+			value,
+			types.BindOptions{Tag: element.Tag()},
+		); err != nil {
 			return
 		}
 	}

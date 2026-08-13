@@ -39,8 +39,16 @@ func (c loggerInjector) SubInjector(allowOverrides ...bool) remy.Injector {
 	return inj
 }
 
-func (c loggerInjector) WrapRetriever() remy.Injector {
-	c.logger.Info("Injector[WrapRetriever] - Returning nil")
+func (c loggerInjector) ScopeName() string {
+	return c.ij.ScopeName()
+}
+
+func (c loggerInjector) Parent() remy.DependencyRetriever {
+	return c.ij.Parent()
+}
+
+func (c loggerInjector) RetrieverFor(key remy.BindKey, tag string) remy.Injector {
+	c.logger.Infof("Injector[RetrieverFor](%v, %s) - Returning nil\n", key, tag)
 	return nil
 }
 

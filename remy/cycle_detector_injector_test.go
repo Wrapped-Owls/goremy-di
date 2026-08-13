@@ -56,6 +56,40 @@ func TestCycleDetectorInjector_Register(t *testing.T) {
 	)
 }
 
+func TestCycleDetectorInjector_RegisterTimeSelfCycle(t *testing.T) {
+	defer func() {
+		recovered := recover()
+		asErr, ok := recovered.(error)
+		if !ok {
+			t.Fatalf("Register() should panic with an error, got %v", recovered)
+		}
+		if !errors.Is(asErr, remyErrs.ErrCycleDependencyDetectedSentinel) {
+			t.Errorf("expected cycle detection, got: %v", asErr)
+		}
+	}()
+
+	ij := NewCycleDetectorInjector()
+	Register(
+		ij, Factory(
+			func(retriever DependencyRetriever) (int, error) {
+				value, err := Get[uint8](retriever)
+				return int(value), err
+			},
+		),
+	)
+	// registering this singleton generates it immediately; its chain circles
+	// back into uint8 (the key being registered), which must be a cycle error,
+	// not an element-not-registered one
+	Register(
+		ij, Singleton(
+			func(retriever DependencyRetriever) (uint8, error) {
+				value, err := Get[int](retriever)
+				return uint8(value), err
+			},
+		),
+	)
+}
+
 func TestCycleDetectorInjector_Get(t *testing.T) {
 	ij := NewCycleDetectorInjector(Config{CanOverride: true})
 	const cycleKey = "name"

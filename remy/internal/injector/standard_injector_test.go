@@ -127,3 +127,13 @@ func TestStdInjector_SubInjector__OverrideParent(t *testing.T) {
 		t.Errorf("parent value was overrided, it should not occur")
 	}
 }
+
+func TestStdInjector_RetrieverForOptsOut(t *testing.T) {
+	t.Parallel()
+
+	// the default injector does not track resolutions, so it keeps the caller's
+	// retriever instead of allocating a scoped one
+	if scoped := New(Options{}).RetrieverFor(types.KeyElem[string]{}, ""); scoped != nil {
+		t.Fatalf("RetrieverFor = %v, want nil on the non-tracking injector", scoped)
+	}
+}

@@ -46,7 +46,7 @@ func (c cycleDetectorInjector) SubInjector(allowOverrides ...bool) types.Injecto
 	return inj
 }
 
-func (c cycleDetectorInjector) WrapRetriever() Injector {
+func (c cycleDetectorInjector) RetrieverFor(bindKey types.BindKey, tag string) Injector {
 	inj := NewCycleDetectorInjector(c.config)
 	inj.ij = c.ij
 	newGraph := types.DependencyGraph{
@@ -68,10 +68,15 @@ func (c cycleDetectorInjector) WrapRetriever() Injector {
 		}
 		inj.dependencyGraph = &newGraph
 	}
+	inj.recordDependency(bindKey, tag)
 	return inj
 }
 
 func (c cycleDetectorInjector) RetrieveBind(bindKey types.BindKey, tag string) (any, error) {
+	return c.ij.RetrieveBind(bindKey, tag)
+}
+
+func (c cycleDetectorInjector) recordDependency(bindKey types.BindKey, tag string) {
 	if c.dependencyGraph != nil {
 		var hasKey bool
 		if tag == "" {
@@ -93,7 +98,6 @@ func (c cycleDetectorInjector) RetrieveBind(bindKey types.BindKey, tag string) (
 			panic(&remyErrs.ErrCycleDependencyDetected{Path: c.dependencyGraph})
 		}
 	}
-	return c.ij.RetrieveBind(bindKey, tag)
 }
 
 func (c cycleDetectorInjector) GetAll(keyTag string) ([]any, error) {

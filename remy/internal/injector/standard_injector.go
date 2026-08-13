@@ -64,7 +64,7 @@ func (s *StdInjector) SubInjector(overrides ...bool) types.Injector {
 	return New(Options{Cache: subOpts, Resolve: s.resolveOpts}, s)
 }
 
-func (s *StdInjector) WrapRetriever() types.Injector {
+func (s *StdInjector) RetrieverFor(types.BindKey, string) types.Injector {
 	return nil
 }
 

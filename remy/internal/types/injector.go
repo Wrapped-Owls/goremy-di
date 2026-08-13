@@ -34,7 +34,10 @@ type (
 
 	// DependencyRetriever is the main element used to obtain registered binds/instances
 	DependencyRetriever interface {
-		WrapRetriever() Injector
+		// RetrieverFor returns the retriever to use while resolving key and its
+		// dependencies, or nil to keep using this one
+		RetrieverFor(key BindKey, tag string) Injector
+
 		RetrieveBind(bindKey BindKey, tag string) (any, error)
 
 		AllValuesGetter[any]
@@ -44,6 +47,19 @@ type (
 	Injector interface {
 		BindElem(depKey BindKey, val any, opts BindOptions) error
 		SubInjector(allowOverrides ...bool) Injector
+
 		DependencyRetriever
+	}
+
+	// AnyGenerator generates an element without knowing its type parameter
+	AnyGenerator interface {
+		GenAsAny(retriever DependencyRetriever) (any, error)
+	}
+
+	// GuessableBind tells whether a bind satisfies an interface before generating it
+	GuessableBind interface {
+		PointerValue() any
+		DefaultValue() any
+		AnyGenerator
 	}
 )
