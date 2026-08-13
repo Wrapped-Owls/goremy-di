@@ -16,7 +16,7 @@ func RegisterAs[Iface, Impl any](
 	i Injector,
 	bindFunc func(types.Binder[Iface]) Bind[Iface],
 	cast func(Impl) Iface,
-	optTag ...string,
+	optTag ...Tag,
 ) {
 	Register(mustInjector(i), bindFunc(
 		func(retriever types.DependencyRetriever) (result Iface, err error) {

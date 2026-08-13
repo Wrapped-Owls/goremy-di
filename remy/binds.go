@@ -75,6 +75,6 @@ func NewBindEntry[T any](value T) BindEntry {
 //
 // The type key is automatically generated from the value's type, so you don't need to
 // manually specify it.
-func NewBindEntryTagged[T any](value T, tag string) BindEntry {
-	return types.NewBindPair(value, tag)
+func NewBindEntryTagged[T any](value T, tag Tag) BindEntry {
+	return types.NewBindPair(value, string(tag))
 }

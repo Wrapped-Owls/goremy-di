@@ -15,7 +15,7 @@ func TestRegisterAs(t *testing.T) {
 	testCases := []struct {
 		name     string
 		setup    func(inj Injector)
-		tag      []string
+		tag      []Tag
 		wantErr  error
 		wantWord string
 	}{
@@ -54,7 +54,7 @@ func TestRegisterAs(t *testing.T) {
 					"polite",
 				)
 			},
-			tag:      []string{"polite"},
+			tag:      []Tag{"polite"},
 			wantWord: "hello there",
 		},
 		{

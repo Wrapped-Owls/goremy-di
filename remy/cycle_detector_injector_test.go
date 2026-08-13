@@ -21,7 +21,7 @@ func TestCycleDetectorInjector_Register(t *testing.T) {
 		}
 	}()
 	ij := NewCycleDetectorInjector(Config{CanOverride: false})
-	cycleKey := [...]string{"lang", "tool"}
+	cycleKey := [...]Tag{"lang", "tool"}
 	Register(
 		ij, Factory(
 			func(retriever DependencyRetriever) (result string, err error) {
