@@ -32,6 +32,12 @@ type (
 		// can be listed together. Unlike DuckTypeElements it does not enable implicit
 		// interface discovery, so Get keeps its direct lookup.
 		MultiBinding bool
+
+		// TraceResolution makes failed resolutions carry the dependency path that led
+		// to them (A -> B -> C), readable through DependencyResolutionError.
+		//
+		// Opt-in: it costs one allocation per failed Get, nothing on success.
+		TraceResolution bool
 	}
 )
 

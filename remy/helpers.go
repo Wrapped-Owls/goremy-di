@@ -6,6 +6,7 @@ import (
 
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 	"github.com/wrapped-owls/goremy-di/remy/internal/injector"
+	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 )
@@ -26,6 +27,10 @@ func injectorOptsFromConfig(conf Config) injector.Options {
 		opts.Cache |= injopts.CacheOptReturnAll
 	}
 
+	if conf.TraceResolution {
+		opts.Resolve |= injopts.ResolveOptTracePath
+	}
+
 	return opts
 }
 
@@ -41,7 +46,10 @@ func traceResolution[T any](err *error, retriever DependencyRetriever, tag strin
 		return
 	}
 
-	*err = remyErrs.WrapResolutionPath(*err, utils.NewKeyElem[T](), tag)
+	if holder, ok := retriever.(types.ResolveOptionsHolder); ok &&
+		holder.ResolveOptions().Is(injopts.ResolveOptTracePath) {
+		*err = remyErrs.WrapResolutionPath(*err, utils.NewKeyElem[T](), tag)
+	}
 }
 
 // separate from recoverInjectorPanic because recover() only works when called
