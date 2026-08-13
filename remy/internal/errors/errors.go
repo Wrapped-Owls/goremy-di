@@ -2,6 +2,7 @@ package errors
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
@@ -32,6 +33,19 @@ func genDebugKeyTypeName(typeKey any) (givenType string) {
 		givenType = " `" + givenType + "`"
 	}
 	return givenType
+}
+
+// FromRecovered turns a recovered panic value into an error, nil when nothing
+// was recovered. Callers must pass the result of recover directly.
+func FromRecovered(recovered any) error {
+	if recovered == nil {
+		return nil
+	}
+	if asError, ok := recovered.(error); ok {
+		return asError
+	}
+
+	return fmt.Errorf("%v", recovered)
 }
 
 func debugBindKey(value types.BindKey) (keyVal string) {

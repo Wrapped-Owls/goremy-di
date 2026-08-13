@@ -2,7 +2,6 @@ package remy
 
 import (
 	"errors"
-	"fmt"
 
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 	"github.com/wrapped-owls/goremy-di/remy/internal/injector"
@@ -57,19 +56,11 @@ func traceResolution[T any](err *error, retriever DependencyRetriever, tag strin
 	}
 }
 
-// applyRecovered folds a recovered panic value into err. It is split out because
-// recover only works when called directly by the deferred function.
-func applyRecovered(r any, err *error) {
-	if r == nil || err == nil {
+// split out because recover only works when called directly by the deferred func
+func applyRecovered(recovered any, err *error) {
+	asError := remyErrs.FromRecovered(recovered)
+	if asError == nil || err == nil {
 		return
-	}
-
-	var asError error
-	switch asVal := r.(type) {
-	case error:
-		asError = asVal
-	default:
-		asError = fmt.Errorf("%v", r)
 	}
 
 	if *err != nil {
