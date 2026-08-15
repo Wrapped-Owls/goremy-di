@@ -105,27 +105,26 @@ func (s *StdInjector) isolated() bool {
 	return s.resolveOpts.Is(injopts.ResolveOptIsolated)
 }
 
-func (s *StdInjector) checkValidOverride(
-	key types.BindKey, shouldOverride, wasOverridden bool,
-) error {
-	if wasOverridden && (!s.cacheOpts.Is(injopts.CacheOptAllowOverride) || !shouldOverride) {
-		return remyErrs.ErrAlreadyBound{Key: key}
-	}
-	return nil
+func (s *StdInjector) allowsOverride(opts types.BindOptions) bool {
+	return s.cacheOpts.Is(injopts.CacheOptAllowOverride) && opts.SoftOverride
 }
 
-func (s *StdInjector) BindElem(bType types.BindKey, value any, opts types.BindOptions) (err error) {
+func (s *StdInjector) BindElem(key types.BindKey, value any, opts types.BindOptions) (err error) {
 	var wasOverridden bool
 	if opts.Tag == "" {
-		wasOverridden, err = s.cacheStorage.Set(bType, value)
+		wasOverridden, err = s.cacheStorage.Set(key, value)
 	} else {
-		wasOverridden, err = s.cacheStorage.SetNamed(bType, opts.Tag, value)
+		wasOverridden, err = s.cacheStorage.SetNamed(key, opts.Tag, value)
 	}
 	if err != nil {
 		return err
 	}
 
-	return s.checkValidOverride(bType, opts.SoftOverride, wasOverridden)
+	if wasOverridden && !s.allowsOverride(opts) {
+		return remyErrs.ErrAlreadyBound{Key: key}
+	}
+
+	return nil
 }
 
 func (s *StdInjector) RetrieveBind(bindKey types.BindKey, tag string) (result any, err error) {
