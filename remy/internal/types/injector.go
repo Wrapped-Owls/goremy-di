@@ -64,6 +64,9 @@ type (
 		ResolveOptions() injopts.ResolveConfOption
 	}
 
+	// ScopeFactory builds the temporary scope a GetWith call resolves through
+	ScopeFactory func(parent DependencyRetriever, storage Storage[BindKey]) Injector
+
 	// AnyGenerator generates an element without knowing its type parameter
 	AnyGenerator interface {
 		GenAsAny(retriever DependencyRetriever) (any, error)

@@ -1,4 +1,4 @@
-package injector
+package injcontainer
 
 import (
 	"errors"
@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
+	"github.com/wrapped-owls/goremy-di/remy/internal/injcontainer/stdinj"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 	"github.com/wrapped-owls/goremy-di/remy/test/fixtures"
@@ -21,7 +22,9 @@ func TestMethods_parallel_Get_variants(t *testing.T) {
 	)
 
 	// Create injector and register all dependencies on the main goroutine
-	i := New(Options{Cache: injopts.CacheOptReturnAll, Resolve: injopts.ResolveOptDuckTyping})
+	i := stdinj.New(
+		stdinj.Options{Cache: injopts.CacheOptReturnAll, Resolve: injopts.ResolveOptDuckTyping},
+	)
 
 	if registerErr := errors.Join(
 		// Base registrations that should remain unchanged across all workers
@@ -86,7 +89,7 @@ func TestMethods_parallel_Get_variants(t *testing.T) {
 
 				// GetWithPairs overriding only within the sub-injector
 				valPairs, err := GetWithPairs[string](
-					i, "",
+					i, "", StandardScope,
 					types.NewBindPair(true, ""), // override bool only for this call
 					types.NewBindPair[fixtures.Language](
 						fixtures.CountryLanguage{Language: "ptBr"}, "",
@@ -105,7 +108,7 @@ func TestMethods_parallel_Get_variants(t *testing.T) {
 
 				// GetWith binder variant
 				var valWith string
-				valWith, err = GetWith[string](i, "", func(ij types.Injector) error {
+				valWith, err = GetWith[string](i, "", StandardScope, func(ij types.Injector) error {
 					// supply only the overrides for this call
 					return errors.Join(
 						Register(ij, "", binds.Instance(true)),
