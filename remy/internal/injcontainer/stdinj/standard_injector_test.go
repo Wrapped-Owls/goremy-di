@@ -1,8 +1,11 @@
 package stdinj
 
 import (
+	"errors"
+	"reflect"
 	"testing"
 
+	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 )
@@ -97,6 +100,161 @@ func TestStdInjector_RetrieveBindUnbound(t *testing.T) {
 				if _, err := inj.RetrieveBind(types.KeyElem[string]{}, testCase.tag); err == nil {
 					t.Errorf("RetrieveBind on %T returned no error for an unbound key", inj)
 				}
+			}
+		})
+	}
+}
+
+func TestStdInjector_BindElemOverride(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name         string
+		cache        injopts.CacheConfOption
+		softOverride bool
+		tag          string
+		wantErr      error
+	}{
+		{
+			name:    "rebinding is refused by default",
+			cache:   injopts.CacheOptNone,
+			wantErr: remyErrs.ErrAlreadyBoundSentinel,
+		},
+		{
+			name:         "an allowed scope still refuses an unflagged rebind",
+			cache:        injopts.CacheOptAllowOverride,
+			softOverride: false,
+			wantErr:      remyErrs.ErrAlreadyBoundSentinel,
+		},
+		{
+			name:         "a flagged rebind on an allowed scope succeeds",
+			cache:        injopts.CacheOptAllowOverride,
+			softOverride: true,
+			wantErr:      nil,
+		},
+		{
+			name:         "the flag alone is not enough",
+			cache:        injopts.CacheOptNone,
+			softOverride: true,
+			wantErr:      remyErrs.ErrAlreadyBoundSentinel,
+		},
+		{
+			name:         "a tagged key follows the same rule",
+			cache:        injopts.CacheOptNone,
+			softOverride: true,
+			tag:          "edition",
+			wantErr:      remyErrs.ErrAlreadyBoundSentinel,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testCase := testCase // go.mod pins 1.20: loop vars are still shared
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			inj := New(Options{Cache: testCase.cache})
+			key := types.KeyElem[string]{}
+			first := types.BindOptions{Tag: testCase.tag}
+			if err := inj.BindElem(key, "first", first); err != nil {
+				t.Fatalf("first BindElem: %v", err)
+			}
+
+			rebind := types.BindOptions{Tag: testCase.tag, SoftOverride: testCase.softOverride}
+			err := inj.BindElem(key, "second", rebind)
+			if !errors.Is(err, testCase.wantErr) {
+				t.Fatalf("second BindElem = %v, want %v", err, testCase.wantErr)
+			}
+		})
+	}
+}
+
+func TestStdInjector_GetAll(t *testing.T) {
+	t.Parallel()
+
+	const listing = injopts.CacheOptReturnAll
+
+	testCases := []struct {
+		name             string
+		parentOpts       Options
+		childOpts        Options
+		tag              string
+		want             []any
+		wantErr          error
+		wantParentBlamed bool
+	}{
+		{
+			name:       "a scope lists its own elements before its parent's",
+			parentOpts: Options{Cache: listing},
+			childOpts:  Options{Cache: listing},
+			want:       []any{42, "from-parent"},
+		},
+		{
+			name:       "a tagged listing merges the same way",
+			parentOpts: Options{Cache: listing},
+			childOpts:  Options{Cache: listing},
+			tag:        "edition",
+			want:       []any{42, "from-parent"},
+		},
+		{
+			name:       "a scope that may not list still gets its parent's",
+			parentOpts: Options{Cache: listing},
+			childOpts:  Options{},
+			want:       []any{"from-parent"},
+		},
+		{
+			name:       "an isolated scope never reads the parent",
+			parentOpts: Options{Cache: listing},
+			childOpts:  Options{Cache: listing, Resolve: injopts.ResolveOptIsolated},
+			want:       []any{42},
+		},
+		{
+			name:             "a parent that may not list fails the whole listing",
+			parentOpts:       Options{},
+			childOpts:        Options{Cache: listing},
+			wantErr:          remyErrs.ErrConfigNotAllowReturnAll,
+			wantParentBlamed: true,
+		},
+		{
+			name:       "when neither may list, the scope reports its own refusal",
+			parentOpts: Options{},
+			childOpts:  Options{},
+			wantErr:    remyErrs.ErrConfigNotAllowReturnAll,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testCase := testCase // go.mod pins 1.20: loop vars are still shared
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			parent := New(testCase.parentOpts)
+			child := New(testCase.childOpts, parent)
+			store(t, parent, testCase.tag, "from-parent")
+			store(t, child, testCase.tag, 42)
+
+			got, err := child.GetAll(testCase.tag)
+			if !errors.Is(err, testCase.wantErr) {
+				t.Fatalf("GetAll error = %v, want %v", err, testCase.wantErr)
+			}
+
+			var fromParent remyErrs.ErrWrapParentSubErrors
+			if blamesParent := errors.As(
+				err,
+				&fromParent,
+			); blamesParent != testCase.wantParentBlamed {
+				t.Fatalf(
+					"blamed the parent = %v, want %v (err %v)",
+					blamesParent,
+					testCase.wantParentBlamed,
+					err,
+				)
+			}
+			if testCase.wantErr != nil {
+				return
+			}
+
+			if !reflect.DeepEqual(got, testCase.want) {
+				t.Fatalf("GetAll = %#v, want %#v", got, testCase.want)
 			}
 		})
 	}
