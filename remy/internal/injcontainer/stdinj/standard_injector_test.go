@@ -1,131 +1,104 @@
 package stdinj
 
 import (
-	"fmt"
 	"testing"
 
-	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 )
 
-func TestStdInjector_SubInjector(t *testing.T) {
-	const strFirstHalf = "the counter is at"
-	parent := New(Options{})
-	subInjector := parent.SubInjector(false)
+// the container stores whatever it is handed and gives it back untouched, so plain
+// values keep these assertions about the container instead of about binds
+func store[T any](tb testing.TB, inj types.Injector, tag string, value T) {
+	tb.Helper()
 
-	var counter uint8 = 0
-	_ = Register(
-		parent, "", binds.Factory(
-			func(retriever types.DependencyRetriever) (uint8, error) {
-				counter++
-				return counter, nil
-			},
-		),
-	)
-
-	_ = Register(
-		subInjector, "", binds.Factory(
-			func(retriever types.DependencyRetriever) (string, error) {
-				return fmt.Sprintf("%s %d", strFirstHalf, TryGet[uint8](retriever, "")), nil
-			},
-		),
-	)
-
-	for i := 0; i < 255; i++ {
-		expected := fmt.Sprintf("%s %d", strFirstHalf, i+1)
-		if result := TryGet[string](subInjector, ""); result != expected {
-			t.Errorf(
-				"sub-injector is not calling parent injector correctly. Received: `%s`; Expected: `%s`",
-				result,
-				expected,
-			)
-			t.FailNow()
-		}
+	if err := inj.BindElem(types.KeyElem[T]{}, value, types.BindOptions{Tag: tag}); err != nil {
+		tb.Fatalf("BindElem: %v", err)
 	}
 }
 
-func TestStdInjector_SubInjectorEmpty(t *testing.T) {
-	const elementKey = "game-name"
+func fetch[T any](tb testing.TB, retriever types.DependencyRetriever, tag string) (result T) {
+	tb.Helper()
+
+	stored, err := retriever.RetrieveBind(types.KeyElem[T]{}, tag)
+	if err != nil {
+		tb.Fatalf("RetrieveBind: %v", err)
+	}
+
+	value, ok := stored.(T)
+	if !ok {
+		tb.Fatalf("stored value is %T, want %T", stored, result)
+	}
+	return value
+}
+
+func TestStdInjector_SubInjectorFallsBackToParent(t *testing.T) {
+	t.Parallel()
+
 	parent := New(Options{})
 	subInjector := parent.SubInjector(false)
 
-	_ = Register(parent, elementKey, binds.Instance("snake-pong"))
+	var calls int
+	store(t, parent, "", func() int { calls++; return calls })
+	store(t, parent, "game-name", "snake-pong")
 
-	results := [...]string{
-		TryGet[string](parent, elementKey),
-		TryGet[string](subInjector, elementKey),
+	// a function proves identity: the container hands back the very closure it was
+	// given, so calling it through the sub-injector advances the parent's counter
+	for round := 1; round <= 3; round++ {
+		if got := fetch[func() int](t, subInjector, "")(); got != round {
+			t.Fatalf("call %d through the sub-injector returned %d, want %d", round, got, round)
+		}
 	}
-	if results[0] != results[1] {
-		t.Error("Result isn't the same for parent and sub injectors")
+
+	if got := fetch[string](t, subInjector, "game-name"); got != "snake-pong" {
+		t.Fatalf("tagged lookup through the sub-injector = %q, want %q", got, "snake-pong")
 	}
 }
 
-func TestStdInjector_GetUnboundedElement(t *testing.T) {
-	const errMessage = "An error have not been returned when getting unbounded element"
-	parentInjector := New(Options{})
-	for _, ij := range [...]types.Injector{parentInjector, parentInjector.SubInjector()} {
-		if _, err := Get[string](ij, ""); err == nil {
-			t.Error(errMessage)
-		}
-		if _, err := Get[uint8](ij, "release-date"); err == nil {
-			t.Error(errMessage)
-		}
-	}
-}
+func TestStdInjector_SubInjectorShadowsParent(t *testing.T) {
+	t.Parallel()
 
-func TestStdInjector_SubInjector__OverrideParent(t *testing.T) {
-	const strFirstHalf = "The totally value of it is"
 	parent := New(Options{})
 	subInjector := parent.SubInjector(false)
+	store(t, parent, "", 101)
 
-	_ = Register(
-		parent, "", binds.Factory(
-			func(retriever types.DependencyRetriever) (uint8, error) {
-				return 101, nil
-			},
-		),
-	)
-
-	_ = Register(
-		subInjector, "", binds.Factory(
-			func(retriever types.DependencyRetriever) (string, error) {
-				return fmt.Sprintf("%s %d", strFirstHalf, TryGet[uint8](retriever, "")), nil
-			},
-		),
-	)
-
-	expected := fmt.Sprintf("%s 101", strFirstHalf)
-	if result := TryGet[string](subInjector, ""); result != expected {
-		t.Errorf(
-			"sub-injector is not calling parent injector correctly. Received: `%s`; Expected: `%s`",
-			result, expected,
-		)
-		t.FailNow()
+	if got := fetch[int](t, subInjector, ""); got != 101 {
+		t.Fatalf("before shadowing = %d, want the parent value 101", got)
 	}
 
-	// Register a new uint8 to override parent
-	_ = Register(
-		subInjector, "", binds.Singleton(
-			func(retriever types.DependencyRetriever) (uint8, error) {
-				return 42, nil
-			},
-		),
-	)
+	store(t, subInjector, "", 42)
 
-	expected = fmt.Sprintf("%s 42", strFirstHalf)
-	if result := TryGet[string](subInjector, ""); result != expected {
-		t.Errorf(
-			"sub-injector is not calling parent injector correctly. Received: `%s`; Expected: `%s`",
-			result, expected,
-		)
-		t.FailNow()
+	if got := fetch[int](t, subInjector, ""); got != 42 {
+		t.Fatalf("after shadowing = %d, want the sub-injector value 42", got)
+	}
+	if got := fetch[int](t, parent, ""); got != 101 {
+		t.Fatalf("parent = %d, want 101: shadowing must not reach upwards", got)
+	}
+}
+
+func TestStdInjector_RetrieveBindUnbound(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name string
+		tag  string
+	}{
+		{name: "untagged key was never bound", tag: ""},
+		{name: "tagged key was never bound", tag: "release-date"},
 	}
 
-	// Checks if parent still returns the same old value
-	parentResult := TryGet[uint8](parent, "")
-	if parentResult != 101 {
-		t.Errorf("parent value was overrided, it should not occur")
+	for _, testCase := range testCases {
+		testCase := testCase // go.mod pins 1.20: loop vars are still shared
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			parent := New(Options{})
+			for _, inj := range [...]types.Injector{parent, parent.SubInjector()} {
+				if _, err := inj.RetrieveBind(types.KeyElem[string]{}, testCase.tag); err == nil {
+					t.Errorf("RetrieveBind on %T returned no error for an unbound key", inj)
+				}
+			}
+		})
 	}
 }
 
