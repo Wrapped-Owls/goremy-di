@@ -1,4 +1,4 @@
-package injcontainer
+package stdinj
 
 import (
 	"errors"

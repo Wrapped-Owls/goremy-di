@@ -3,6 +3,8 @@ package injcontainer
 import (
 	"errors"
 
+	"github.com/wrapped-owls/goremy-di/remy/internal/injcontainer/stdinj"
+
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 	"github.com/wrapped-owls/goremy-di/remy/internal/injcontainer/stgbind"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
@@ -179,7 +181,7 @@ func TryGet[T any](retriever types.DependencyRetriever, keyTag string) (result T
 func StandardScope(
 	parent types.DependencyRetriever, storage types.Storage[types.BindKey],
 ) types.Injector {
-	return NewWithStorage(Options{}, storage, parent)
+	return stdinj.NewWithStorage(stdinj.Options{}, storage, parent)
 }
 
 func GetWithPairs[T any](

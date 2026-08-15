@@ -4,14 +4,14 @@ import (
 	"errors"
 
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
-	"github.com/wrapped-owls/goremy-di/remy/internal/injcontainer"
+	"github.com/wrapped-owls/goremy-di/remy/internal/injcontainer/stdinj"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 )
 
-func injectorOptsFromConfig(conf Config) injcontainer.Options {
-	opts := injcontainer.Options{ScopeName: conf.ScopeName}
+func injectorOptsFromConfig(conf Config) stdinj.Options {
+	opts := stdinj.Options{ScopeName: conf.ScopeName}
 
 	if conf.CanOverride {
 		opts.Cache |= injopts.CacheOptAllowOverride
@@ -42,10 +42,10 @@ func injectorOptsFromConfig(conf Config) injcontainer.Options {
 func newBaseInjector(conf Config) types.Injector {
 	opts := injectorOptsFromConfig(conf)
 	if conf.ParentInjector != nil {
-		return injcontainer.New(opts, conf.ParentInjector)
+		return stdinj.New(opts, conf.ParentInjector)
 	}
 
-	return injcontainer.New(opts)
+	return stdinj.New(opts)
 }
 
 func recoverInjectorPanic(err *error) {

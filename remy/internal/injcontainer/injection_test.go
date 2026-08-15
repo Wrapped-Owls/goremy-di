@@ -4,13 +4,15 @@ import (
 	"math"
 	"testing"
 
+	"github.com/wrapped-owls/goremy-di/remy/internal/injcontainer/stdinj"
+
 	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 )
 
 func TestInjection__GetNoRegistered(t *testing.T) {
-	ij := New(Options{})
+	ij := stdinj.New(stdinj.Options{})
 
 	// Verify if an error is returned when trying to retrieve a non-registered object
 	if _, err := Get[string](ij, ""); err == nil {
@@ -51,7 +53,7 @@ func TestInjection__GetStructImplementInterface(t *testing.T) {
 	type universalAnswer interface {
 		String() string
 	}
-	ij := New(Options{})
+	ij := stdinj.New(stdinj.Options{})
 
 	_ = Register(ij, "", binds.Instance[universalAnswer](&expected[0]))
 	// Register again as another type, to check if it works
@@ -83,7 +85,7 @@ func TestInjection__RegisterSameKeyDifferentType(t *testing.T) {
 		expectedInt = 42
 	)
 
-	ij := New(Options{})
+	ij := stdinj.New(stdinj.Options{})
 	_ = Register(ij, "truth", binds.Instance(expectedStr))
 	_ = Register(ij, "truth", binds.Instance(expectedInt))
 
@@ -116,7 +118,7 @@ func TestInjection__RetrieveSameTypeDifferentKey(t *testing.T) {
 		},
 	)
 
-	ij := New(Options{Cache: injopts.CacheOptAllowOverride})
+	ij := stdinj.New(stdinj.Options{Cache: injopts.CacheOptAllowOverride})
 	_ = Register(ij, "lang", binds.Instance(resultParts[1]))
 	_ = Register(ij, "", a)
 	result := TryGet[string](ij, "")
@@ -150,7 +152,7 @@ func TestInjection__RegisterEqualInterfaces(t *testing.T) {
 		{sound: "woof woof"},
 	}
 
-	ij := New(Options{Cache: injopts.CacheOptAllowOverride})
+	ij := stdinj.New(stdinj.Options{Cache: injopts.CacheOptAllowOverride})
 	_ = Register(ij, storageKey, binds.Instance[spk1](elements[0]))
 	_ = Register(ij, storageKey, binds.Instance[spk2](elements[1]))
 

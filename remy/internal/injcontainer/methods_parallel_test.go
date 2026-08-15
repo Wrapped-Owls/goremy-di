@@ -6,6 +6,8 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/wrapped-owls/goremy-di/remy/internal/injcontainer/stdinj"
+
 	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
@@ -21,7 +23,9 @@ func TestMethods_parallel_Get_variants(t *testing.T) {
 	)
 
 	// Create injector and register all dependencies on the main goroutine
-	i := New(Options{Cache: injopts.CacheOptReturnAll, Resolve: injopts.ResolveOptDuckTyping})
+	i := stdinj.New(
+		stdinj.Options{Cache: injopts.CacheOptReturnAll, Resolve: injopts.ResolveOptDuckTyping},
+	)
 
 	if registerErr := errors.Join(
 		// Base registrations that should remain unchanged across all workers
