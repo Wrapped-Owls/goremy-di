@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
-	"github.com/wrapped-owls/goremy-di/remy/internal/stgbind"
+	"github.com/wrapped-owls/goremy-di/remy/internal/injcontainer/stgbind"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
