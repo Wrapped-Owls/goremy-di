@@ -6,9 +6,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/wrapped-owls/goremy-di/remy/internal/injcontainer/stdinj"
-
 	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
+	"github.com/wrapped-owls/goremy-di/remy/internal/injcontainer/stdinj"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 	"github.com/wrapped-owls/goremy-di/remy/test/fixtures"

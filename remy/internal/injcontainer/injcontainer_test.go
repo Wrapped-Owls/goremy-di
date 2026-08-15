@@ -4,9 +4,8 @@ import (
 	"math"
 	"testing"
 
-	"github.com/wrapped-owls/goremy-di/remy/internal/injcontainer/stdinj"
-
 	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
+	"github.com/wrapped-owls/goremy-di/remy/internal/injcontainer/stdinj"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
 )
