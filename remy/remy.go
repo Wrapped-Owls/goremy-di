@@ -3,7 +3,7 @@ package remy
 import (
 	"context"
 
-	"github.com/wrapped-owls/goremy-di/remy/internal/injector"
+	"github.com/wrapped-owls/goremy-di/remy/internal/injcontainer"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/utils"
 )
@@ -61,7 +61,7 @@ func NewInjector(configs ...Config) Injector {
 // This is not supported in multithreading applications because it does not have race protection
 func Register[T any](i Injector, bind Bind[T], optTag ...Tag) {
 	tag := string(firstOrDefault(optTag...))
-	if err := injector.Register[T](mustInjector(i), tag, bind); err != nil {
+	if err := injcontainer.Register[T](mustInjector(i), tag, bind); err != nil {
 		panic(err)
 	}
 }
@@ -73,7 +73,7 @@ func Register[T any](i Injector, bind Bind[T], optTag ...Tag) {
 // This is not supported in multithreading applications because it does not have race protection
 func Override[T any](i Injector, bind Bind[T], optTag ...Tag) {
 	tag := string(firstOrDefault(optTag...))
-	if err := injector.RegisterWithOverride[T](mustInjector(i), tag, bind); err != nil {
+	if err := injcontainer.RegisterWithOverride[T](mustInjector(i), tag, bind); err != nil {
 		panic(err)
 	}
 }
@@ -112,7 +112,7 @@ func RegisterLazySingleton[T any](i Injector, binder Binder[T], optTag ...Tag) {
 // Receives: DependencyRetriever (required); tag (optional)
 func GetAll[T any](i DependencyRetriever, optTag ...Tag) (result []T, err error) {
 	tag := string(firstOrDefault(optTag...))
-	return injector.GetAll[T](mustRetriever(i), tag)
+	return injcontainer.GetAll[T](mustRetriever(i), tag)
 }
 
 // MustGetAll directly access a retriever and returns all instance types that was bound in it and match qualifier.
@@ -146,7 +146,7 @@ func Get[T any](i DependencyRetriever, optTag ...Tag) (result T, err error) {
 	// reuses the defer panics already needed, keeping the resolve loop untouched
 	defer traceResolution[T](&err, retriever, tag)
 
-	result, err = injector.Get[T](retriever, tag)
+	result, err = injcontainer.Get[T](retriever, tag)
 	return result, err
 }
 
@@ -181,7 +181,9 @@ func GetWithPairs[T any](
 	defer recoverInjectorPanic(&err)
 
 	tag := string(firstOrDefault(optTag...))
-	result, err = injector.GetWithPairs[T](mustRetriever(i), tag, injector.StandardScope, elements...)
+	result, err = injcontainer.GetWithPairs[T](
+		mustRetriever(i), tag, injcontainer.StandardScope, elements...,
+	)
 	return result, err
 }
 
@@ -220,7 +222,7 @@ func GetWith[T any](
 	defer recoverInjectorPanic(&err)
 
 	tag := string(firstOrDefault(optTag...))
-	result, err = injector.GetWith[T](mustRetriever(i), tag, injector.StandardScope, binder)
+	result, err = injcontainer.GetWith[T](mustRetriever(i), tag, injcontainer.StandardScope, binder)
 	return result, err
 }
 
