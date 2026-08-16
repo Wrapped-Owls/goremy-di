@@ -8,6 +8,27 @@ import (
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 )
 
+func TestNewGraphInjector(t *testing.T) {
+	inj, graph := NewGraphInjector()
+	Register(inj, Factory(func(r DependencyRetriever) (string, error) {
+		value, err := Get[int](r)
+		return string(rune(value)), err
+	}))
+	RegisterInstance(inj, 65)
+
+	if _, err := Get[string](inj); err != nil {
+		t.Fatalf("unexpected resolution error: %v", err)
+	}
+
+	edges := graph.Edges()
+	if len(edges) != 1 {
+		t.Fatalf("edges = %d, want the string -> int pair: %v", len(edges), edges)
+	}
+	if edges[0].From.Key != NewBindKey[string]() || edges[0].To.Key != NewBindKey[int]() {
+		t.Fatalf("unexpected edge: %v", edges[0])
+	}
+}
+
 func TestNewCycleDetector(t *testing.T) {
 	inj := NewCycleDetector()
 	Register(inj, Factory(func(r DependencyRetriever) (string, error) {
@@ -21,6 +42,16 @@ func TestNewCycleDetector(t *testing.T) {
 
 	if _, err := Get[string](inj); !errors.Is(err, ErrCycleDependencyDetected) {
 		t.Fatalf("expected cycle error, got: %v", err)
+	}
+}
+
+func TestNewGraphInjector_HonoursParentInjector(t *testing.T) {
+	parent := NewInjector()
+	RegisterInstance(parent, "from-parent")
+
+	inj, _ := NewGraphInjector(Config{ParentInjector: parent})
+	if got := MustGet[string](inj); got != "from-parent" {
+		t.Fatalf("Get = %q, want the parent bind", got)
 	}
 }
 
@@ -176,8 +207,3 @@ func TestNewCycleDetectorInjector_DelegatesToDetector(t *testing.T) {
 		t.Fatalf("deprecated wrapper lost cycle detection: %v", err)
 	}
 }
-
-type (
-	cycleHead struct{ depth int }
-	cycleTail struct{ depth int }
-)
