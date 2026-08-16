@@ -16,8 +16,12 @@ type SingletonBind[T any] struct {
 
 func (b *SingletonBind[T]) BuildDependency(injector types.DependencyRetriever) error {
 	dep, err := b.binder(injector)
+	if err != nil {
+		return err
+	}
+
 	b.dependency = &dep
-	return err
+	return nil
 }
 
 func (b *SingletonBind[T]) Generates(injector types.DependencyRetriever) (result T, err error) {
