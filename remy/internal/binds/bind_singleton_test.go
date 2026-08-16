@@ -2,6 +2,7 @@ package binds
 
 import (
 	"errors"
+	"runtime"
 	"sync"
 	"testing"
 
@@ -132,4 +133,20 @@ func TestSingletonBind_GenAsAny(t *testing.T) {
 	if got != "gopher" {
 		t.Fatalf("GenAsAny() = %#v, want the string gopher", got)
 	}
+}
+
+// the already-built path is the hot one: a singleton builds once and is read forever
+func BenchmarkSingletonBind_Generates(b *testing.B) {
+	bind := Singleton(constantBinder(42))
+	if _, err := bind.Generates(nil); err != nil {
+		b.Fatalf("warm up: %v", err)
+	}
+
+	var sink int
+	b.ReportAllocs()
+	b.ResetTimer()
+	for iteration := 0; iteration < b.N; iteration++ {
+		sink, _ = bind.Generates(nil)
+	}
+	runtime.KeepAlive(sink)
 }
