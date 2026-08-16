@@ -8,13 +8,21 @@ import (
 
 const inlinePathCapacity = 6
 
-// Injector tracks the resolution path: a repeat inside the current path is a cycle,
-// one across siblings a diamond.
+// Injector records the graph while resolving: a repeat inside the current path is a
+// cycle, one across siblings a diamond. A nil state only detects cycles.
 type Injector struct {
 	types.Injector
+	state *state
 
 	buf  [inlinePathCapacity]types.GraphNode
 	path []types.GraphNode
+}
+
+func New(base types.Injector) (*Injector, Graph) {
+	root := &Injector{Injector: base, state: newState()}
+	binds, _ := base.(types.BindEnumerator)
+
+	return root, &view{root: root, binds: binds}
 }
 
 func NewDetector(base types.Injector) *Injector {
@@ -37,10 +45,17 @@ func (g *Injector) WrapScopeFactory(base types.ScopeFactory) types.ScopeFactory 
 }
 
 func (g *Injector) decorate(inj types.Injector) *Injector {
-	scoped := &Injector{Injector: inj}
+	scoped := &Injector{Injector: inj, state: g.state}
 	scoped.path = append(scoped.buf[:0], g.path...)
 
 	return scoped
+}
+
+func (g *Injector) rootedAt(node types.GraphNode) *Injector {
+	rooted := &Injector{Injector: g.Injector, state: g.state}
+	rooted.path = append(rooted.buf[:0], node)
+
+	return rooted
 }
 
 func (g *Injector) RetrieverFor(key types.BindKey, tag string) types.Injector {
@@ -53,7 +68,11 @@ func (g *Injector) RetrieverFor(key types.BindKey, tag string) types.Injector {
 		}
 	}
 
-	fork := &Injector{Injector: g.Injector}
+	if g.state != nil && len(g.path) > 0 {
+		g.state.recordEdge(Edge{From: g.path[len(g.path)-1], To: node})
+	}
+
+	fork := &Injector{Injector: g.Injector, state: g.state}
 	fork.path = append(append(fork.buf[:0], g.path...), node)
 	return fork
 }

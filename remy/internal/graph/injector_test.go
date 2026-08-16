@@ -38,6 +38,64 @@ func newBase() types.Injector {
 	return stdinj.New(stdinj.Options{})
 }
 
+// registerChain wires string -> int -> bool, each resolved lazily
+func registerChain(t *testing.T, inj types.Injector) {
+	t.Helper()
+
+	err := errors.Join(
+		injcontainer.Register[string](inj, "", binds.Factory(
+			func(r types.DependencyRetriever) (string, error) {
+				value, getErr := injcontainer.Get[int](r, "")
+				return string(rune(value)), getErr
+			},
+		)),
+		injcontainer.Register[int](inj, "", binds.Factory(
+			func(r types.DependencyRetriever) (int, error) {
+				_, getErr := injcontainer.Get[bool](r, "")
+				return 65, getErr
+			},
+		)),
+		injcontainer.Register[bool](inj, "", binds.Instance(true)),
+	)
+	if err != nil {
+		t.Fatalf("register chain: %v", err)
+	}
+}
+
+func TestInjector_RecordsEdges(t *testing.T) {
+	t.Parallel()
+
+	inj, graph := New(newBase())
+	registerChain(t, inj)
+
+	if _, err := injcontainer.Get[string](inj, ""); err != nil {
+		t.Fatalf("unexpected resolution error: %v", err)
+	}
+
+	edges := graph.Edges()
+	if len(edges) != 2 {
+		t.Fatalf("edges = %d, want 2 (string->int, int->bool): %v", len(edges), edges)
+	}
+
+	wantPairs := map[[2]types.BindKey]bool{
+		{types.KeyElem[string]{}, types.KeyElem[int]{}}: false,
+		{types.KeyElem[int]{}, types.KeyElem[bool]{}}:   false,
+	}
+	for _, edge := range edges {
+		pair := [2]types.BindKey{edge.From.Key, edge.To.Key}
+		if _, expected := wantPairs[pair]; !expected {
+			t.Errorf("unexpected edge: %v", edge)
+			continue
+		}
+		wantPairs[pair] = true
+	}
+	for pair, found := range wantPairs {
+		if !found {
+			t.Errorf("missing edge %v", pair)
+		}
+	}
+}
+
 func TestInjector_CycleRendersOrderedPath(t *testing.T) {
 	t.Parallel()
 
@@ -79,6 +137,48 @@ func TestInjector_CycleRendersOrderedPath(t *testing.T) {
 		if positions[index-1] < 0 || positions[index-1] >= positions[index] {
 			t.Fatalf("cycle path is not ordered string -> int -> bool -> string: %q", errMsg)
 		}
+	}
+}
+
+func TestInjector_DiamondIsNotCycle(t *testing.T) {
+	t.Parallel()
+
+	inj, graph := New(newBase())
+
+	// string and int both depend on leafDep, and bool depends on both
+	registerErr := errors.Join(
+		injcontainer.Register[leafDep](inj, "", binds.Instance(leafDep{value: "shared"})),
+		injcontainer.Register[string](inj, "", binds.Factory(
+			func(r types.DependencyRetriever) (string, error) {
+				leaf, err := injcontainer.Get[leafDep](r, "")
+				return leaf.value, err
+			},
+		)),
+		injcontainer.Register[int](inj, "", binds.Factory(
+			func(r types.DependencyRetriever) (int, error) {
+				leaf, err := injcontainer.Get[leafDep](r, "")
+				return len(leaf.value), err
+			},
+		)),
+		injcontainer.Register[bool](inj, "", binds.Factory(
+			func(r types.DependencyRetriever) (bool, error) {
+				if _, err := injcontainer.Get[string](r, ""); err != nil {
+					return false, err
+				}
+				_, err := injcontainer.Get[int](r, "")
+				return true, err
+			},
+		)),
+	)
+	if registerErr != nil {
+		t.Fatalf("register diamond: %v", registerErr)
+	}
+
+	if _, err := injcontainer.Get[bool](inj, ""); err != nil {
+		t.Fatalf("diamond resolution must not be a cycle: %v", err)
+	}
+	if edges := graph.Edges(); len(edges) != 4 {
+		t.Fatalf("edges = %d, want 4: %v", len(edges), edges)
 	}
 }
 
