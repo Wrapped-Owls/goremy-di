@@ -31,5 +31,8 @@ type (
 	Storage[K comparable] interface {
 		ValuesSetter[K, any]
 		ValuesGetter[K, any]
+
+		// ForEach visits every stored entry with its tag, stopping when visit is false
+		ForEach(visit func(tag string, value any) bool)
 	}
 )

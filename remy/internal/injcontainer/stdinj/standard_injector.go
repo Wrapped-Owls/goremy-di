@@ -81,6 +81,11 @@ func (s *StdInjector) RetrieverFor(types.BindKey, string) types.Injector {
 	return nil
 }
 
+// ForEachBind visits every entry stored in this injector, skipping its parents.
+func (s *StdInjector) ForEachBind(visit func(tag string, value any) bool) {
+	s.cacheStorage.ForEach(visit)
+}
+
 // ResolveOptions returns this scope options merged with the inheritable ones
 // coming from its ancestors.
 func (s *StdInjector) ResolveOptions() injopts.ResolveConfOption {

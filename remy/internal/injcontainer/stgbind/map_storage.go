@@ -101,3 +101,18 @@ func (s *ElementsStorage[T]) GetAll(keyTag string) (resultList []any, err error)
 	}
 	return
 }
+
+func (s *ElementsStorage[T]) ForEach(visit func(tag string, value any) bool) {
+	for _, value := range s.elements {
+		if !visit("", value) {
+			return
+		}
+	}
+	for tag, tagged := range s.namedElements {
+		for _, value := range tagged {
+			if !visit(tag, value) {
+				return
+			}
+		}
+	}
+}

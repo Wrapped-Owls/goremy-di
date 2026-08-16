@@ -88,3 +88,11 @@ func (s *SliceStorage[T]) GetAll(keyTag string) (resultList []any, err error) {
 	}
 	return resultList, nil
 }
+
+func (s *SliceStorage[T]) ForEach(visit func(tag string, value any) bool) {
+	for _, entry := range s.entries {
+		if !visit(entry.tag, entry.value) {
+			return
+		}
+	}
+}

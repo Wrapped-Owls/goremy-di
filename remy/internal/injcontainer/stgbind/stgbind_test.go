@@ -192,3 +192,109 @@ func TestNewStorage(t *testing.T) {
 		})
 	}
 }
+
+func TestStorage_ForEach(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name    string
+		storage types.Storage[types.BindKey]
+		entries map[string]any
+	}{
+		{
+			name:    "single storage visits its only entry",
+			storage: NewSingleStorage[types.BindKey](injopts.CacheOptNone),
+			entries: map[string]any{"": 42},
+		},
+		{
+			name:    "slice storage visits tagged and untagged entries",
+			storage: NewSliceStorage[types.BindKey](injopts.CacheOptNone, 3),
+			entries: map[string]any{"": 1, "second": 2, "third": 3},
+		},
+		{
+			name:    "map storage visits tagged and untagged entries",
+			storage: NewElementsStorage[types.BindKey](injopts.CacheOptNone),
+			entries: map[string]any{"": 1, "second": 2, "third": 3},
+		},
+	}
+
+	for _, testCase := range testCases {
+		testCase := testCase // go.mod pins 1.20: loop vars are still shared
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			keys := map[string]types.BindKey{
+				"":       types.KeyElem[int]{},
+				"second": types.KeyElem[string]{},
+				"third":  types.KeyElem[bool]{},
+			}
+			for tag, value := range testCase.entries {
+				var err error
+				if tag == "" {
+					_, err = testCase.storage.Set(keys[tag], value)
+				} else {
+					_, err = testCase.storage.SetNamed(keys[tag], tag, value)
+				}
+				if err != nil {
+					t.Fatalf("set %q: %v", tag, err)
+				}
+			}
+
+			seen := map[string]any{}
+			testCase.storage.ForEach(func(tag string, value any) bool {
+				seen[tag] = value
+				return true
+			})
+
+			if len(seen) != len(testCase.entries) {
+				t.Fatalf("visited %v, want %v", seen, testCase.entries)
+			}
+			for tag, want := range testCase.entries {
+				if seen[tag] != want {
+					t.Errorf("entry %q = %v, want %v", tag, seen[tag], want)
+				}
+			}
+		})
+	}
+}
+
+func TestStorage_ForEachStopsEarly(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name    string
+		storage types.Storage[types.BindKey]
+	}{
+		{name: "slice storage", storage: NewSliceStorage[types.BindKey](injopts.CacheOptNone, 3)},
+		{name: "map storage", storage: NewElementsStorage[types.BindKey](injopts.CacheOptNone)},
+	}
+
+	for _, testCase := range testCases {
+		testCase := testCase // go.mod pins 1.20: loop vars are still shared
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			for index, key := range []types.BindKey{
+				types.KeyElem[int]{}, types.KeyElem[string]{}, types.KeyElem[bool]{},
+			} {
+				if _, err := testCase.storage.SetNamed(
+					key,
+					string(rune('a'+index)),
+					index,
+				); err != nil {
+					t.Fatalf("set: %v", err)
+				}
+			}
+
+			var visited int
+			testCase.storage.ForEach(func(string, any) bool {
+				visited++
+				return false // asking to stop after the first entry
+			})
+
+			if visited != 1 {
+				t.Fatalf("visited %d entries, want to stop at 1", visited)
+			}
+		})
+	}
+}
