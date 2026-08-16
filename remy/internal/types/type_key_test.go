@@ -6,7 +6,7 @@ import (
 )
 
 func TestBindKey_AsMapKey(t *testing.T) {
-	dependenciesBool := BindDependencies[any]{}
+	dependenciesBool := map[BindKey]any{}
 
 	testList := []struct {
 		key   BindKey
@@ -42,7 +42,7 @@ func TestBindKey_AsMapKey(t *testing.T) {
 		if val, exists := dependenciesBool[subject.key]; !exists ||
 			!reflect.DeepEqual(val, subject.value) {
 			t.Errorf(
-				"Expected BindDependencies[any] to store and retrieve value correctly, got %v",
+				"Expected the key map to store and retrieve value correctly, got %v",
 				val,
 			)
 		}

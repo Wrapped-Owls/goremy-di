@@ -8,6 +8,32 @@ import (
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
 )
 
+func TestNewCycleDetector(t *testing.T) {
+	inj := NewCycleDetector()
+	Register(inj, Factory(func(r DependencyRetriever) (string, error) {
+		_, err := Get[int](r)
+		return "", err
+	}))
+	Register(inj, Factory(func(r DependencyRetriever) (int, error) {
+		_, err := Get[string](r)
+		return 0, err
+	}))
+
+	if _, err := Get[string](inj); !errors.Is(err, ErrCycleDependencyDetected) {
+		t.Fatalf("expected cycle error, got: %v", err)
+	}
+}
+
+func TestNewCycleDetector_HonoursParentInjector(t *testing.T) {
+	parent := NewInjector()
+	RegisterInstance(parent, "from-parent")
+
+	inj := NewCycleDetector(Config{ParentInjector: parent})
+	if got := MustGet[string](inj); got != "from-parent" {
+		t.Fatalf("Get = %q, want the parent bind", got)
+	}
+}
+
 func TestCycleDetectorInjector_Register(t *testing.T) {
 	defer func() {
 		r := recover()
@@ -20,7 +46,7 @@ func TestCycleDetectorInjector_Register(t *testing.T) {
 			t.Error(r)
 		}
 	}()
-	ij := NewCycleDetectorInjector(Config{CanOverride: false})
+	ij := NewCycleDetector(Config{CanOverride: false})
 	cycleKey := [...]Tag{"lang", "tool"}
 	Register(
 		ij, Factory(
@@ -68,7 +94,7 @@ func TestCycleDetectorInjector_RegisterTimeSelfCycle(t *testing.T) {
 		}
 	}()
 
-	ij := NewCycleDetectorInjector()
+	ij := NewCycleDetector()
 	Register(
 		ij, Factory(
 			func(retriever DependencyRetriever) (int, error) {
@@ -91,7 +117,7 @@ func TestCycleDetectorInjector_RegisterTimeSelfCycle(t *testing.T) {
 }
 
 func TestCycleDetectorInjector_Get(t *testing.T) {
-	ij := NewCycleDetectorInjector(Config{CanOverride: true})
+	ij := NewCycleDetector(Config{CanOverride: true})
 	const cycleKey = "name"
 	RegisterInstance(ij, "go")
 	RegisterInstance(ij, uint8(42))
@@ -133,3 +159,25 @@ func TestCycleDetectorInjector_Get(t *testing.T) {
 		t.Errorf("The returned error is not ErrCycleDependencyDetected")
 	}
 }
+
+//nolint:staticcheck // exercises the deprecated wrapper on purpose
+func TestNewCycleDetectorInjector_DelegatesToDetector(t *testing.T) {
+	inj := NewCycleDetectorInjector()
+	Register(inj, Factory(func(r DependencyRetriever) (string, error) {
+		_, err := Get[int](r)
+		return "", err
+	}))
+	Register(inj, Factory(func(r DependencyRetriever) (int, error) {
+		_, err := Get[string](r)
+		return 0, err
+	}))
+
+	if _, err := Get[string](inj); !errors.Is(err, ErrCycleDependencyDetected) {
+		t.Fatalf("deprecated wrapper lost cycle detection: %v", err)
+	}
+}
+
+type (
+	cycleHead struct{ depth int }
+	cycleTail struct{ depth int }
+)

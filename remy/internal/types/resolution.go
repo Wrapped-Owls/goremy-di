@@ -6,3 +6,7 @@ type PathEntry struct {
 	Key BindKey
 	Tag string
 }
+
+// GraphNode identifies one dependency in a resolution graph; it is the same
+// (key, tag) pair a failed resolution records as its path
+type GraphNode = PathEntry

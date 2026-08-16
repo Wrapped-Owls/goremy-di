@@ -221,7 +221,12 @@ func GetWith[T any](
 	defer recoverInjectorPanic(&err)
 
 	tag := string(firstOrDefault(optTag...))
-	result, err = injcontainer.GetWith[T](retrieverOrGlobal(i), tag, injcontainer.StandardScope, binder)
+	result, err = injcontainer.GetWith[T](
+		retrieverOrGlobal(i),
+		tag,
+		injcontainer.StandardScope,
+		binder,
+	)
 	return result, err
 }
 
