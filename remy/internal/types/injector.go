@@ -15,7 +15,8 @@ type (
 		SetNamed(K, string, T) (wasOverridden bool, err error)
 	}
 	AllValuesGetter[T any] interface {
-		// GetAll returns all elements from the storage that hasn't a key
+		// GetAll returns every element stored under keyTag, whatever its type, or the
+		// untagged ones when keyTag is empty
 		GetAll(keyTag string) ([]T, error)
 	}
 	ValuesGetter[K comparable, T any] interface {

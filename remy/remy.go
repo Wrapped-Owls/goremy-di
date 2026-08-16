@@ -32,9 +32,8 @@ type (
 		// CAUTION: It costly a lot, since it will try to discover all registered elements
 		DuckTypeElements bool
 
-		// MultiBinding enables the GetAll family, so multiple binds of the same type
-		// can be listed together. Unlike DuckTypeElements it does not enable implicit
-		// interface discovery, so Get keeps its direct lookup.
+		// MultiBinding enables the GetAll family, which lists every element under the
+		// requested tag satisfying T, without the implicit interface discovery of Get.
 		MultiBinding bool
 
 		// Isolated stops lookup misses from falling back to ParentInjector, so this
@@ -106,8 +105,8 @@ func RegisterLazySingleton[T any](i Injector, binder Binder[T], optTag ...Tag) {
 	Register(mustInjector(i), LazySingleton(binder), optTag...)
 }
 
-// GetAll directly access a retriever and returns a list of element that match requested types that was bound in it.
-// Additionally, it returns an error which indicates if the instance was found or not.
+// GetAll directly access a retriever and returns every element under the given tag that satisfies T.
+// The tag scopes the search, so omitting it lists only the untagged binds.
 //
 // Receives: DependencyRetriever (required); tag (optional)
 func GetAll[T any](i DependencyRetriever, optTag ...Tag) (result []T, err error) {
