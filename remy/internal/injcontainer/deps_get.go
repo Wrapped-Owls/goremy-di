@@ -95,7 +95,7 @@ func shouldIgnoreGuessError(checkErr error, requestedKey types.BindKey) bool {
 func checkSavedAsBind[T any](
 	retriever types.DependencyRetriever, checkElem any,
 ) (foundElem *T, err error) {
-	if genericBind, assertOk := checkElem.(types.GuessableBind); assertOk {
+	if genericBind, assertOk := utils.Satisfies[types.GuessableBind](checkElem); assertOk {
 		// Check if the returned value can implement the requested interface
 		if _, ok := utils.Satisfies[T](genericBind.DefaultValue()); !ok {
 			// Check again but now for pointer value, this fallback works because is known that
