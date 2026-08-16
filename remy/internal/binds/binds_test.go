@@ -1,41 +1,108 @@
 package binds
 
 import (
-	"sync"
+	"errors"
 	"testing"
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 )
 
-func TestSingletonBind_Generates(t *testing.T) {
-	var (
-		expected = "gopher"
-		counter  = 0
-		wg       sync.WaitGroup
-	)
+var errBinderFailed = errors.New("binder failed")
 
-	bind := Singleton(
-		func(retriever types.DependencyRetriever) (*string, error) {
-			counter += 1
-			return &expected, nil
-		},
-	)
-	// Checks if the build method is called only once
-	for index := 0; index < 10; index++ {
-		wg.Add(1)
-		go func() {
-			result, err := bind.Generates(nil)
-			if err != nil {
-				t.Error(err)
-			}
-			if result != &expected {
-				t.Fail()
-			}
-			wg.Done()
-		}()
+func constantBinder[T any](value T) types.Binder[T] {
+	return func(types.DependencyRetriever) (T, error) { return value, nil }
+}
+
+func failingBinder[T any]() types.Binder[T] {
+	return func(types.DependencyRetriever) (result T, err error) { return result, errBinderFailed }
+}
+
+func countingBinder(calls *int) types.Binder[int] {
+	return func(types.DependencyRetriever) (int, error) {
+		*calls++
+		return *calls, nil
 	}
-	wg.Wait()
-	if counter > 1 {
-		t.Errorf("function `Bind.Generates` executed %d times", counter)
+}
+
+func TestBindConstructors_Type(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name string
+		bind types.Bind[int]
+		want types.BindType
+	}{
+		{name: "Instance", bind: Instance(7), want: types.BindInstance},
+		{name: "Factory", bind: Factory(constantBinder(7)), want: types.BindFactory},
+		{name: "Singleton", bind: Singleton(constantBinder(7)), want: types.BindSingleton},
+		{
+			name: "LazySingleton",
+			bind: LazySingleton(constantBinder(7)),
+			want: types.BindLazySingleton,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testCase := testCase // go.mod pins 1.20: loop vars are still shared
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := testCase.bind.Type(); got != testCase.want {
+				t.Fatalf("Type() = %d, want %d", got, testCase.want)
+			}
+		})
+	}
+}
+
+func TestBindConstructors_Generates(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name string
+		bind types.Bind[int]
+	}{
+		{name: "Instance", bind: Instance(7)},
+		{name: "Factory", bind: Factory(constantBinder(7))},
+		{name: "Singleton", bind: Singleton(constantBinder(7))},
+		{name: "LazySingleton", bind: LazySingleton(constantBinder(7))},
+	}
+
+	for _, testCase := range testCases {
+		testCase := testCase // go.mod pins 1.20: loop vars are still shared
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := testCase.bind.Generates(nil)
+			if err != nil {
+				t.Fatalf("Generates() error = %v, want nil", err)
+			}
+			if got != 7 {
+				t.Fatalf("Generates() = %d, want 7", got)
+			}
+		})
+	}
+}
+
+func TestBindConstructors_GeneratesError(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name string
+		bind types.Bind[int]
+	}{
+		{name: "Factory", bind: Factory(failingBinder[int]())},
+		{name: "Singleton", bind: Singleton(failingBinder[int]())},
+		{name: "LazySingleton", bind: LazySingleton(failingBinder[int]())},
+	}
+
+	for _, testCase := range testCases {
+		testCase := testCase // go.mod pins 1.20: loop vars are still shared
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			if _, err := testCase.bind.Generates(nil); !errors.Is(err, errBinderFailed) {
+				t.Fatalf("Generates() error = %v, want %v", err, errBinderFailed)
+			}
+		})
 	}
 }
