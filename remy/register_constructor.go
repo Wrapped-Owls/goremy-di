@@ -108,7 +108,7 @@ func RegisterConstructorErr[T any](
 	constructor func() (T, error), optTag ...Tag,
 ) {
 	generator := ConstructorEmpty[T](constructor)
-	Register(mustInjector(i), bindFunc(generator.Binder), optTag...)
+	Register(injectorOrGlobal(i), bindFunc(generator.Binder), optTag...)
 }
 
 // RegisterConstructor registers a constructor function with no arguments.
@@ -131,7 +131,7 @@ func RegisterConstructorArgs1Err[T, A any](
 	constructor func(A) (T, error), optTag ...Tag,
 ) {
 	generator := ConstructorArg1[T, A](constructor)
-	Register(mustInjector(i), bindFunc(generator.Binder), optTag...)
+	Register(injectorOrGlobal(i), bindFunc(generator.Binder), optTag...)
 }
 
 // RegisterConstructorArgs1 registers a constructor function with one argument.
@@ -154,7 +154,7 @@ func RegisterConstructorArgs2Err[T, A, B any](
 	constructor func(A, B) (T, error), optTag ...Tag,
 ) {
 	generator := ConstructorArg2[T, A, B](constructor)
-	Register(mustInjector(i), bindFunc(generator.Binder), optTag...)
+	Register(injectorOrGlobal(i), bindFunc(generator.Binder), optTag...)
 }
 
 // RegisterConstructorArgs2 registers a constructor function with two arguments.
@@ -177,7 +177,7 @@ func RegisterConstructorArgs3Err[T, A, B, C any](
 	constructor func(A, B, C) (T, error), optTag ...Tag,
 ) {
 	generator := ConstructorArg3[T, A, B, C](constructor)
-	Register(mustInjector(i), bindFunc(generator.Binder), optTag...)
+	Register(injectorOrGlobal(i), bindFunc(generator.Binder), optTag...)
 }
 
 // RegisterConstructorArgs3 registers a constructor function with three arguments.
@@ -200,7 +200,7 @@ func RegisterConstructorArgs4Err[T, A, B, C, D any](
 	constructor func(A, B, C, D) (T, error), optTag ...Tag,
 ) {
 	generator := ConstructorArg4[T, A, B, C, D](constructor)
-	Register(mustInjector(i), bindFunc(generator.Binder), optTag...)
+	Register(injectorOrGlobal(i), bindFunc(generator.Binder), optTag...)
 }
 
 // RegisterConstructorArgs4 registers a constructor function with four arguments.

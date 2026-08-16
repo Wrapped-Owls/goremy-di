@@ -9,15 +9,15 @@ var (
 	ErrOverrideGlobalInjectWithNil = errors.New("tried to override global injector with nil param")
 )
 
-// mustInjector receives an injector instance, and then returns it if exists or the global injector if it doesn't exist.
-func mustInjector(ij Injector) Injector {
+// injectorOrGlobal returns the given injector, falling back to the global one when it is nil.
+func injectorOrGlobal(ij Injector) Injector {
 	if ij != nil {
 		return ij
 	}
 	return __globalInjector
 }
 
-func mustRetriever(retriever DependencyRetriever) DependencyRetriever {
+func retrieverOrGlobal(retriever DependencyRetriever) DependencyRetriever {
 	if retriever != nil {
 		return retriever
 	}
