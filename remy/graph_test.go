@@ -207,3 +207,58 @@ func TestNewCycleDetectorInjector_DelegatesToDetector(t *testing.T) {
 		t.Fatalf("deprecated wrapper lost cycle detection: %v", err)
 	}
 }
+
+type (
+	cycleHead struct{ depth int }
+	cycleTail struct{ depth int }
+)
+
+func TestNewCycleDetector_CycleCrossingATemporaryScope(t *testing.T) {
+	testCases := []struct {
+		name  string
+		reach func(retriever DependencyRetriever) (cycleTail, error)
+	}{
+		{
+			name: "through GetWith",
+			reach: func(retriever DependencyRetriever) (cycleTail, error) {
+				return GetWith[cycleTail](retriever, func(Injector) error { return nil })
+			},
+		},
+		{
+			name: "through GetWithPairs",
+			reach: func(retriever DependencyRetriever) (cycleTail, error) {
+				return GetWithPairs[cycleTail](retriever, []BindEntry{NewBindEntry("scoped")})
+			},
+		},
+		{
+			name: "through a sub-injector taken mid-resolution",
+			reach: func(retriever DependencyRetriever) (cycleTail, error) {
+				injector, isInjector := retriever.(Injector)
+				if !isInjector {
+					return cycleTail{}, errors.New("retriever is not an Injector")
+				}
+				return Get[cycleTail](injector.SubInjector())
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		testCase := testCase // go.mod pins 1.20: loop vars are still shared
+		t.Run(testCase.name, func(t *testing.T) {
+			inj := NewCycleDetector()
+			RegisterFactory(inj, func(retriever DependencyRetriever) (cycleHead, error) {
+				tail, err := testCase.reach(retriever)
+				return cycleHead{depth: tail.depth + 1}, err
+			})
+			RegisterFactory(inj, func(retriever DependencyRetriever) (cycleTail, error) {
+				head, err := Get[cycleHead](retriever)
+				return cycleTail{depth: head.depth + 1}, err
+			})
+
+			_, err := Get[cycleHead](inj)
+			if !errors.Is(err, ErrCycleDependencyDetected) {
+				t.Fatalf("err = %v, want a reported cycle", err)
+			}
+		})
+	}
+}
