@@ -55,3 +55,10 @@ func (b *SingletonBind[T]) Type() types.BindType {
 func (b *SingletonBind[T]) GenAsAny(injector types.DependencyRetriever) (any, error) {
 	return b.Generates(injector)
 }
+
+func (b *SingletonBind[T]) decorate(decorator types.Decorator[T]) types.Bind[T] {
+	return &SingletonBind[T]{
+		binder: decorateBinder(b.binder, decorator),
+		IsLazy: b.IsLazy,
+	}
+}

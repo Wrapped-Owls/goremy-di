@@ -3,7 +3,10 @@ package types
 type (
 	BindType      uint8
 	Binder[T any] func(DependencyRetriever) (T, error)
-	Bind[T any]   interface {
+
+	// Decorator enriches the value a bind produced before it reaches the caller
+	Decorator[T any] func(DependencyRetriever, T) (T, error)
+	Bind[T any]      interface {
 		Generates(DependencyRetriever) (T, error)
 		Type() BindType
 	}

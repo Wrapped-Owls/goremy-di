@@ -18,7 +18,16 @@ type (
 	// Binder builds the element a Bind holds, resolving what it needs from the
 	// retriever it receives.
 	Binder[T any] func(DependencyRetriever) (T, error)
+
+	// Decorator enriches the value a bind produced, before it reaches the caller.
+	Decorator[T any] func(DependencyRetriever, T) (T, error)
 )
+
+// Decorate wraps bind so decorator runs on every value it produces, keeping the
+// wrapped bind kind and its lifecycle. Binds nobody decorates pay nothing.
+func Decorate[T any](bind Bind[T], decorator Decorator[T]) Bind[T] {
+	return binds.Decorate[T](bind, types.Decorator[T](decorator))
+}
 
 // Instance generates a bind that will be registered as a single instance during bind register in the Injector.
 //

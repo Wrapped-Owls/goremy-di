@@ -22,3 +22,10 @@ func (b FactoryBind[T]) Type() types.BindType {
 func (b FactoryBind[T]) GenAsAny(injector types.DependencyRetriever) (any, error) {
 	return b.Generates(injector)
 }
+
+func (b FactoryBind[T]) decorate(decorator types.Decorator[T]) types.Bind[T] {
+	return FactoryBind[T]{
+		binder:    decorateBinder(b.binder, decorator),
+		IsFactory: b.IsFactory,
+	}
+}
