@@ -2,6 +2,7 @@ package injcontainer
 
 import (
 	"errors"
+	"runtime"
 	"testing"
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/binds"
@@ -214,4 +215,48 @@ func TestCheckSavedAsBind_pointerTypeDuckTyping(t *testing.T) {
 	if result != nil {
 		t.Fatal("checkSavedAsBind returned no-nil result, expected a nil result")
 	}
+}
+
+func BenchmarkGet_StoredAsValue(b *testing.B) {
+	inj := stdinj.New(stdinj.Options{})
+	if err := Register(inj, "", binds.Instance(42)); err != nil {
+		b.Fatalf("register: %v", err)
+	}
+
+	var sink int
+	b.ReportAllocs()
+	b.ResetTimer()
+	for iteration := 0; iteration < b.N; iteration++ {
+		sink, _ = Get[int](inj, "")
+	}
+	runtime.KeepAlive(sink)
+}
+
+func BenchmarkGet_StoredAsBind(b *testing.B) {
+	inj := stdinj.New(stdinj.Options{})
+	if err := Register(inj, "", binds.Factory(
+		func(types.DependencyRetriever) (int, error) { return 42, nil },
+	)); err != nil {
+		b.Fatalf("register: %v", err)
+	}
+
+	var sink int
+	b.ReportAllocs()
+	b.ResetTimer()
+	for iteration := 0; iteration < b.N; iteration++ {
+		sink, _ = Get[int](inj, "")
+	}
+	runtime.KeepAlive(sink)
+}
+
+func BenchmarkGet_InterfaceMissWithoutDuckTyping(b *testing.B) {
+	inj := stdinj.New(stdinj.Options{})
+
+	var sink fixtures.Language
+	b.ReportAllocs()
+	b.ResetTimer()
+	for iteration := 0; iteration < b.N; iteration++ {
+		sink, _ = Get[fixtures.Language](inj, "")
+	}
+	runtime.KeepAlive(sink)
 }

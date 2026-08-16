@@ -61,8 +61,8 @@ func traceResolution[T any](err *error, retriever DependencyRetriever, tag strin
 		return
 	}
 
-	if holder, ok := retriever.(types.ResolveOptionsHolder); ok &&
-		holder.ResolveOptions().Is(injopts.ResolveOptTracePath) {
+	if opts, ok := types.ResolveOptionsOf(retriever); ok &&
+		opts.Is(injopts.ResolveOptTracePath) {
 		*err = remyErrs.WrapResolutionPath(*err, utils.NewKeyElem[T](), tag)
 	}
 }

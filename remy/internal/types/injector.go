@@ -36,3 +36,14 @@ type (
 	// ScopeFactory builds the temporary scope a GetWith call resolves through
 	ScopeFactory func(parent DependencyRetriever, storage Storage[BindKey]) Injector
 )
+
+// ResolveOptionsOf returns the options the given injector resolves with, and
+// whether it exposes them at all.
+func ResolveOptionsOf(value any) (opts injopts.ResolveConfOption, ok bool) {
+	holder, ok := value.(ResolveOptionsHolder)
+	if !ok {
+		return injopts.ResolveOptNone, false
+	}
+
+	return holder.ResolveOptions(), true
+}

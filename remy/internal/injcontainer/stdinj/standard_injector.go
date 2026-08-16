@@ -91,8 +91,8 @@ func (s *StdInjector) ResolveOptions() injopts.ResolveConfOption {
 	if s.isolated() {
 		return opts
 	}
-	if holder, ok := s.parentInjector.(types.ResolveOptionsHolder); ok {
-		opts |= holder.ResolveOptions() & inheritable
+	if parentOpts, ok := types.ResolveOptionsOf(s.parentInjector); ok {
+		opts |= parentOpts & inheritable
 	}
 	return opts
 }

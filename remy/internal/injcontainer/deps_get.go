@@ -33,8 +33,8 @@ func Get[T any](retriever types.DependencyRetriever, keyTag string) (element T, 
 	}
 
 	// MultiBinding alone must not pay this O(n) scan on an interface miss
-	if holder, ok := retriever.(types.ResolveOptionsHolder); ok &&
-		!holder.ResolveOptions().Is(injopts.ResolveOptDuckTyping) {
+	if opts, ok := types.ResolveOptionsOf(retriever); ok &&
+		!opts.Is(injopts.ResolveOptDuckTyping) {
 		return
 	}
 
