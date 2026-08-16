@@ -29,7 +29,7 @@ func RegisterModuleFunc(inj Injector, modules ...func(Injector)) (err error) {
 // RegisterModule registers one or more Module instances using the provided Injector.
 // Each Module's Register method is adapted and delegated to RegisterModuleFunc.
 func RegisterModule(inj Injector, modules ...Module) (err error) {
-	inj = mustInjector(inj)
+	inj = injectorOrGlobal(inj)
 	var errList []error
 	for _, module := range modules {
 		if err = RegisterModuleFunc(inj, module.Register); err != nil {

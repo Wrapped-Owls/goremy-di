@@ -18,7 +18,7 @@ func RegisterAs[Iface, Impl any](
 	cast func(Impl) Iface,
 	optTag ...Tag,
 ) {
-	Register(mustInjector(i), bindFunc(
+	Register(injectorOrGlobal(i), bindFunc(
 		func(retriever types.DependencyRetriever) (result Iface, err error) {
 			var impl Impl
 			if impl, err = Get[Impl](retriever, optTag...); err != nil {
