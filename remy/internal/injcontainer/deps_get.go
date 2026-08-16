@@ -22,7 +22,7 @@ func Get[T any](retriever types.DependencyRetriever, keyTag string) (element T, 
 		if typedBind, assertOk := bind.(types.Bind[T]); assertOk {
 			return typedBind.Generates(retriever)
 		}
-		if instanceBind, assertOk := bind.(T); assertOk {
+		if instanceBind, assertOk := utils.Satisfies[T](bind); assertOk {
 			return instanceBind, nil
 		}
 		err = remyErrs.ErrTypeCastInRuntime{ActualValue: bind, Expected: (*T)(nil)}
@@ -97,19 +97,19 @@ func checkSavedAsBind[T any](
 ) (foundElem *T, err error) {
 	if genericBind, assertOk := checkElem.(types.GuessableBind); assertOk {
 		// Check if the returned value can implement the requested interface
-		anyVal := genericBind.DefaultValue()
-		if _, ok := anyVal.(T); !ok {
+		if _, ok := utils.Satisfies[T](genericBind.DefaultValue()); !ok {
 			// Check again but now for pointer value, this fallback works because is known that
 			// the registered value cannot be an interface at this point
-			anyVal = genericBind.PointerValue()
-			if _, ok = anyVal.(T); !ok {
+			if _, ok = utils.Satisfies[T](genericBind.PointerValue()); !ok {
 				// Value is not applicable to the type
 				return nil, nil
 			}
 		}
+
+		var anyVal any
 		if anyVal, err = genericBind.GenAsAny(retriever); err != nil {
 			return
-		} else if bindElem, ok := anyVal.(T); ok {
+		} else if bindElem, ok := utils.Satisfies[T](anyVal); ok {
 			foundElem = &bindElem
 		}
 	}

@@ -26,3 +26,17 @@ func (l CountryLanguage) Name() string {
 func (l CountryLanguage) Kind() string {
 	return "idiom"
 }
+
+// PointerLanguage satisfies Language only through a pointer receiver, which is what
+// makes the duck typing scan fall back to PointerValue
+type PointerLanguage struct {
+	Language string
+}
+
+func (l *PointerLanguage) Name() string {
+	return l.Language
+}
+
+func (l *PointerLanguage) Kind() string {
+	return "pointer"
+}

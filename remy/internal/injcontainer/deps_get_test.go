@@ -260,3 +260,25 @@ func BenchmarkGet_InterfaceMissWithoutDuckTyping(b *testing.B) {
 	}
 	runtime.KeepAlive(sink)
 }
+
+func BenchmarkGet_DuckTyped(b *testing.B) {
+	inj := stdinj.New(stdinj.Options{
+		Cache:   injopts.CacheOptReturnAll,
+		Resolve: injopts.ResolveOptDuckTyping,
+	})
+	if err := Register(inj, "", binds.Factory(
+		func(types.DependencyRetriever) (fixtures.GoProgrammingLang, error) {
+			return fixtures.GoProgrammingLang{}, nil
+		},
+	)); err != nil {
+		b.Fatalf("register: %v", err)
+	}
+
+	var sink fixtures.Language
+	b.ReportAllocs()
+	b.ResetTimer()
+	for iteration := 0; iteration < b.N; iteration++ {
+		sink, _ = Get[fixtures.Language](inj, "")
+	}
+	runtime.KeepAlive(sink)
+}

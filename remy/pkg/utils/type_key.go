@@ -30,3 +30,9 @@ func IsInterface[T any]() bool {
 func NewKeyElem[T any]() types.KeyElem[T] {
 	return types.KeyElem[T]{}
 }
+
+// Satisfies reports whether value can stand in for T, returning it already typed.
+func Satisfies[T any](value any) (result T, ok bool) {
+	result, ok = value.(T)
+	return result, ok
+}

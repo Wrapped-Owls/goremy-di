@@ -5,6 +5,7 @@ import (
 	"unsafe"
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
+	"github.com/wrapped-owls/goremy-di/remy/test/fixtures"
 	aTypes "github.com/wrapped-owls/goremy-di/remy/test/fixtures/a/testtypes"
 	bTypes "github.com/wrapped-owls/goremy-di/remy/test/fixtures/b/testtypes"
 )
@@ -211,6 +212,81 @@ func TestIsInterface(t *testing.T) {
 				}
 			default:
 				t.Fatalf("invalid test fn")
+			}
+		})
+	}
+}
+
+func TestSatisfies(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name   string
+		check  func() (any, bool)
+		want   any
+		wantOK bool
+	}{
+		{
+			name:   "a value matches its own concrete type",
+			check:  func() (any, bool) { return Satisfies[int](42) },
+			want:   42,
+			wantOK: true,
+		},
+		{
+			name:   "a different concrete type does not match",
+			check:  func() (any, bool) { return Satisfies[int]("gopher") },
+			want:   0,
+			wantOK: false,
+		},
+		{
+			name: "a value receiver satisfies the interface",
+			check: func() (any, bool) {
+				return Satisfies[fixtures.Language](fixtures.GoProgrammingLang{})
+			},
+			want:   fixtures.GoProgrammingLang{},
+			wantOK: true,
+		},
+		{
+			name: "a pointer receiver is not satisfied by the zero value",
+			check: func() (any, bool) {
+				return Satisfies[fixtures.Language](fixtures.PointerLanguage{})
+			},
+			want:   nil,
+			wantOK: false,
+		},
+		{
+			name: "a typed nil pointer still satisfies the interface",
+			check: func() (any, bool) {
+				return Satisfies[fixtures.Language]((*fixtures.PointerLanguage)(nil))
+			},
+			want:   (*fixtures.PointerLanguage)(nil),
+			wantOK: true,
+		},
+		{
+			name:   "an untyped nil satisfies nothing",
+			check:  func() (any, bool) { return Satisfies[fixtures.Language](nil) },
+			want:   nil,
+			wantOK: false,
+		},
+		{
+			name:   "any is satisfied by whatever is handed over",
+			check:  func() (any, bool) { return Satisfies[any]("gopher") },
+			want:   "gopher",
+			wantOK: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testCase := testCase // go.mod pins 1.20: loop vars are still shared
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, ok := testCase.check()
+			if ok != testCase.wantOK {
+				t.Fatalf("ok = %v, want %v", ok, testCase.wantOK)
+			}
+			if got != testCase.want {
+				t.Fatalf("value = %#v, want %#v", got, testCase.want)
 			}
 		})
 	}
