@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 )
@@ -55,6 +56,15 @@ func debugBindKey(value types.BindKey) (keyVal string) {
 
 	keyVal = reflect.TypeOf(value).String()
 	return " " + keyVal
+}
+
+func writePathEntry(builder *strings.Builder, entry PathEntry) {
+	builder.WriteString(debugBindKey(entry.Key))
+	if entry.Tag != "" {
+		builder.WriteString(` (tag "`)
+		builder.WriteString(entry.Tag)
+		builder.WriteString(`")`)
+	}
 }
 
 type errorInterface[T any] interface {

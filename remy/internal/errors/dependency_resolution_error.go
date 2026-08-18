@@ -69,13 +69,7 @@ func (e *ErrDependencyResolution) Error() string {
 	// stored innermost-first; render outermost-first so it reads A -> B -> C
 	path := e.Path()
 	for index := len(path) - 1; index >= 0; index-- {
-		entry := path[index]
-		builder.WriteString(debugBindKey(entry.Key))
-		if entry.Tag != "" {
-			builder.WriteString(` (tag "`)
-			builder.WriteString(entry.Tag)
-			builder.WriteString(`")`)
-		}
+		writePathEntry(&builder, path[index])
 		if index > 0 {
 			builder.WriteString(" ->")
 		}

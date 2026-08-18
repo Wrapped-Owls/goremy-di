@@ -6,3 +6,12 @@ type PathEntry struct {
 	Key BindKey
 	Tag string
 }
+
+// GraphNode identifies one dependency in a resolution graph; it is the same
+// (key, tag) pair a failed resolution records as its path
+type GraphNode = PathEntry
+
+// GraphEdge records that From requested To during a dependency resolution.
+type GraphEdge struct {
+	From, To GraphNode
+}

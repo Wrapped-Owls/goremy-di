@@ -180,8 +180,9 @@ func GetWithPairs[T any](
 	defer recoverInjectorPanic(&err)
 
 	tag := string(firstOrDefault(optTag...))
+	retriever := retrieverOrGlobal(i)
 	result, err = injcontainer.GetWithPairs[T](
-		retrieverOrGlobal(i), tag, injcontainer.StandardScope, elements...,
+		retriever, tag, scopeFactoryFor(retriever), elements...,
 	)
 	return result, err
 }
@@ -221,7 +222,8 @@ func GetWith[T any](
 	defer recoverInjectorPanic(&err)
 
 	tag := string(firstOrDefault(optTag...))
-	result, err = injcontainer.GetWith[T](retrieverOrGlobal(i), tag, injcontainer.StandardScope, binder)
+	retriever := retrieverOrGlobal(i)
+	result, err = injcontainer.GetWith[T](retriever, tag, scopeFactoryFor(retriever), binder)
 	return result, err
 }
 

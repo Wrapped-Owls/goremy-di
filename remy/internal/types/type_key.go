@@ -9,12 +9,6 @@ type (
 		ID() uint64
 	}
 
-	BindDependencies[T any] map[BindKey]T
-	DependencyGraph         struct {
-		UnnamedDependency BindDependencies[bool]
-		NamedDependency   BindDependencies[map[string]bool]
-	}
-
 	KeyElem[T any] struct{}
 )
 

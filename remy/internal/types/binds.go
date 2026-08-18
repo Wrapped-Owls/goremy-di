@@ -13,6 +13,12 @@ type (
 		GenAsAny(retriever DependencyRetriever) (any, error)
 	}
 
+	// AnyBind is the type-erased view of a stored bind
+	AnyBind interface {
+		ElementKey() BindKey
+		AnyGenerator
+	}
+
 	// GuessableBind tells whether a bind satisfies an interface before generating it
 	GuessableBind interface {
 		PointerValue() any

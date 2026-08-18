@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	remyErrs "github.com/wrapped-owls/goremy-di/remy/internal/errors"
+	"github.com/wrapped-owls/goremy-di/remy/internal/injcontainer"
 	"github.com/wrapped-owls/goremy-di/remy/internal/injcontainer/stdinj"
 	"github.com/wrapped-owls/goremy-di/remy/internal/types"
 	"github.com/wrapped-owls/goremy-di/remy/pkg/injopts"
@@ -46,6 +47,14 @@ func newBaseInjector(conf Config) types.Injector {
 	}
 
 	return stdinj.New(opts)
+}
+
+func scopeFactoryFor(retriever DependencyRetriever) types.ScopeFactory {
+	if decorator, ok := retriever.(types.ScopeDecorator); ok {
+		return decorator.WrapScopeFactory(injcontainer.StandardScope)
+	}
+
+	return injcontainer.StandardScope
 }
 
 func recoverInjectorPanic(err *error) {

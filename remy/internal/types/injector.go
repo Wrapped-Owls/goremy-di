@@ -35,6 +35,17 @@ type (
 
 	// ScopeFactory builds the temporary scope a GetWith call resolves through
 	ScopeFactory func(parent DependencyRetriever, storage Storage[BindKey]) Injector
+
+	// BindEnumerator lists the binds an injector owns, excluding inherited ones
+	BindEnumerator interface {
+		ForEachBind(visit func(tag string, value any) bool)
+	}
+
+	// ScopeDecorator wraps a ScopeFactory so a decorated injector keeps tracking across
+	// a temporary scope, where a cycle would otherwise recurse until the stack dies
+	ScopeDecorator interface {
+		WrapScopeFactory(base ScopeFactory) ScopeFactory
+	}
 )
 
 // ResolveOptionsOf returns the options the given injector resolves with, and

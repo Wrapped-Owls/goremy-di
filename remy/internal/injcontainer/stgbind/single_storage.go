@@ -76,3 +76,10 @@ func (s *SingleStorage[T]) GetAll(keyTag string) (resultList []any, err error) {
 	}
 	return nil, nil
 }
+
+func (s *SingleStorage[T]) ForEach(visit func(tag string, value any) bool) {
+	if s.hasValue {
+		// there is nothing left to stop, so the visitor answer carries no meaning
+		_ = visit(s.name, s.value)
+	}
+}
