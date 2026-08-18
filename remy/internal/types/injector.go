@@ -51,7 +51,8 @@ type (
 // ResolveOptionsOf returns the options the given injector resolves with, and
 // whether it exposes them at all.
 func ResolveOptionsOf(value any) (opts injopts.ResolveConfOption, ok bool) {
-	holder, ok := value.(ResolveOptionsHolder)
+	var holder ResolveOptionsHolder
+	holder, ok = value.(ResolveOptionsHolder)
 	if !ok {
 		return injopts.ResolveOptNone, false
 	}
