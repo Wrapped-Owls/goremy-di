@@ -15,7 +15,7 @@ type sliceEntry struct {
 // SliceStorage is a flat-slice Storage optimized for a small, constant
 // number of entries. It is intended for ephemeral sub-injectors (e.g., those
 // created by GetWithPairs / GetWith) where the total element count is known
-// up-front and is typically 1–8.
+// up-front and is typically 1-8.
 type SliceStorage[T stgKey] struct {
 	entries []sliceEntry
 	baseStorage[T]

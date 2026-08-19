@@ -73,7 +73,7 @@ When `DuckTypeElements` is enabled:
 
 ## Accept Interfaces, Return Structs --- and Register Structs
 
-The Go proverb _"Accept interfaces, return structs"_ also applies to Remy’s dependency registration:
+The Go proverb _"Accept interfaces, return structs"_ also applies to Remy's dependency registration:
 
 - **Register concrete types (structs).**
 - **Retrieve using interfaces.**

@@ -13,10 +13,10 @@ type (
 )
 
 // ID returns a stable, type-unique identifier for KeyElem[T].
-// It uses the classic “interface-header” technique:
+// It uses the classic "interface-header" technique:
 //
 //	Converting k to `any` produces an empty interface value whose
-//	first word is a pointer to T’s runtime type descriptor.
+//	first word is a pointer to T's runtime type descriptor.
 //	That pointer is unique per concrete type and constant for the
 //	lifetime of the program (within a single binary, no plugins).
 //
