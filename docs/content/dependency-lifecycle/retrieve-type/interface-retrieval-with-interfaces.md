@@ -44,9 +44,9 @@ func main() {
 	inj := remy.NewInjector(remy.Config{DuckTypeElements: true})
 
 	// Register the concrete type
-	remy.RegisterFactory(inj, remy.Singleton(func() (Citrine, error) {
+	remy.RegisterSingleton(inj, func(remy.DependencyRetriever) (Citrine, error) {
 		return Citrine{}, nil
-	}))
+	})
 
 	// Retrieve via the interface --- Remy "ducks" to Citrine
 	wf := remy.MustGet[Warframe](inj)
@@ -70,6 +70,38 @@ When `DuckTypeElements` is enabled:
 ---
 
 # Best Practices
+
+## Registering an Explicit Alias
+
+Duck typing costs a scan of every registered element on each `Get`. When you already know which implementation answers
+an interface, `RegisterAs` binds the interface directly, and the lookup stays a plain key resolution:
+
+```go
+inj := remy.NewInjector()
+
+// The concrete implementation registers as usual
+remy.RegisterSingleton(inj, func(remy.DependencyRetriever) (EnglishGreeter, error) {
+	return EnglishGreeter{}, nil
+})
+
+// Greeter becomes an alias to it
+remy.RegisterAs(
+	inj,
+	remy.Singleton[Greeter],
+	func(impl EnglishGreeter) Greeter { return impl },
+)
+
+greeter := remy.MustGet[Greeter](inj)
+```
+
+The `cast` is the identity conversion, and it is what makes the alias compile-time checked: `return impl` only compiles
+when the implementation really satisfies the interface. The `bindFunc` picks the alias lifecycle, so the alias can be a
+`Singleton`, a `LazySingleton` or a `Factory` independently of how the implementation was registered.
+
+> **INFO:** `RegisterAs` needs no `DuckTypeElements`, and it removes the ambiguity duck typing raises when two
+> implementations satisfy the same interface.
+
+---
 
 ## Accept Interfaces, Return Structs --- and Register Structs
 

@@ -29,7 +29,10 @@ weight: 99
     - [x] Compile-time checked through a caller-supplied identity conversion
     - [x] O(1) lookup, so duck typing is no longer needed for interface resolution
 - [x] Decouple the `GetAll` family from duck typing via `Config.MultiBinding` (v1.13.0)
-- [x] Add typed tags with `Tag` and collision-free `NewTag[Scope]` (v1.13.0)
+- [x] Add typed tags with `Tag` and collision-free `NewTag[Scope]` (v1.15.0)
+- [x] Wrap a registered bind with `Decorate` and `Decorator[T]` (v1.17.0)
+    - [x] The decoration folds into the bind generator, so it shares the bind lifecycle
+    - [x] Undecorated binds keep their previous cost
 
 ---
 
@@ -39,8 +42,8 @@ weight: 99
     - [x] Swap the error type to include more information about its origin (v1.9.0)
     - [x] Add dependency path traces (e.g., A → B → C failed) (v1.13.0)
         - Opt-in via `Config.TraceResolution`, so the default failure path keeps its cost
-    - [x] Render the cycle path in `ErrCycleDependencyDetected` (v1.13.0)
-- [x] Add dependency graph visualization (v1.13.0)
+    - [x] Render the cycle path in `ErrCycleDependencyDetected` (v1.16.0)
+- [x] Add dependency graph visualization (v1.16.0)
     - [x] Add API: `NewGraphInjector(Config) (Injector, Graph)`
         - An opt-in decorator over the existing `RetrieverFor` seam instead of a build tag,
           unified with the cycle detector: one ordered path both detects cycles and records edges
@@ -52,15 +55,19 @@ weight: 99
 
 ## Advanced Features & Lifecycle (Framework Layer)
 
+The `remychef` module is where this layer lives. It is a separate Go module with its own version line, so remy itself
+stays a container and nothing here changes remy's cost.
+
 - [ ] Add lifecycle hooks (via external wrapper)
     - [ ] `OnRegister`, `OnResolve` callbacks
     - [ ] Support hook chaining
-- [ ] Implement Graceful Shutdown management
-    - [ ] Health check probes for registered services
-    - [ ] Shutdown sequence management
+- [x] Implement Graceful Shutdown management (remychef, unreleased)
+    - [x] Health check probes for registered services, with bounded parallelism
+    - [x] Shutdown sequence management, in reverse construction order
+    - [x] Shut down on operating system signals
 - [ ] Provide a fluent builder API
     - [ ] Example: `CreateInjector().WithLogger(l).WithModules(m1, m2).Build()`
-- [x] Formalize Scoped Injectors (v1.13.0)
+- [x] Formalize Scoped Injectors (v1.14.0)
     - [x] Name a scope with `Config.ScopeName`; read it back with `Injector.ScopeName`/`Parent`
     - [x] `Config.Isolated` keeps a scope from falling back to its parent on lookups and `GetAll`
     - [ ] Ensure proper resource cleanup for scoped dependencies independent of the parent injector

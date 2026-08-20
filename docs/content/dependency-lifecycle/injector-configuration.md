@@ -185,6 +185,121 @@ remy.RegisterInstance(child, 42)
 - Testing with isolated dependency scopes
 - Plugin systems with base and extension dependencies
 
+### MultiBinding
+
+**Type:** `bool`  
+**Default:** `false`
+
+Enables the `GetAll` family on its own, without turning on duck typing. `GetAll[T]` lists every element registered under
+the requested tag that satisfies `T`, and `Get[T]` keeps resolving by exact key.
+
+Before this option existed, the only way to list several implementations was `DuckTypeElements`, which also made every
+single `Get` scan the whole registry. `MultiBinding` gives you the list without paying that cost on the hot path.
+
+```go
+injector := remy.NewInjector(remy.Config{
+    MultiBinding: true,
+})
+
+// Each implementation registers under its own concrete type, sharing one tag
+remy.RegisterInstance(injector, Base64Encoder{}, "encoders")
+remy.RegisterInstance(injector, HexEncoder{}, "encoders")
+
+encoders := remy.MustGetAll[Encoder](injector, "encoders")
+// len(encoders) is 2, and no Get paid for a registry scan
+```
+
+> **INFO:** Register each implementation under its own concrete type. Two binds sharing a key and a tag collide, the
+> same as anywhere else. `GetAll[T]` is what filters the tag down to the ones satisfying `T`.
+
+**Use cases:**
+
+- Plugin lists and handler chains, where every implementation is wanted
+- Value groups, when you register several binds under one tag on purpose
+
+### Isolated
+
+**Type:** `bool`  
+**Default:** `false`
+
+Stops a lookup miss from falling back to `ParentInjector`. An isolated scope resolves and lists only the binds it owns.
+
+```go
+parent := remy.NewInjector()
+remy.RegisterInstance(parent, "parent-value")
+
+isolated := remy.NewInjector(remy.Config{
+    ParentInjector: parent,
+    Isolated:       true,
+})
+
+// The parent is still reachable for anything the scope registers itself,
+// but a miss no longer walks up to it.
+_, err := remy.Get[string](isolated) // error: not registered
+```
+
+**Use cases:**
+
+- Test scopes that must not silently inherit a production bind
+- Plugin sandboxes that may only see what was handed to them
+
+### ScopeName
+
+**Type:** `string`  
+**Default:** `""` (anonymous)
+
+Labels the scope for diagnostics. It shows up when an error reports which scope failed to resolve, which matters once
+sub-injectors nest. Anonymous scopes stay the default and cost nothing.
+
+```go
+requestScope := remy.NewInjector(remy.Config{
+    ParentInjector: appInjector,
+    ScopeName:      "http-request",
+})
+```
+
+### TraceResolution
+
+**Type:** `bool`  
+**Default:** `false`
+
+Makes a failed resolution carry the dependency path that led to it, instead of naming only the type that was missing.
+
+It is opt-in because it costs one allocation per failed `Get`. A successful `Get` pays nothing.
+
+```go
+injector := remy.NewInjector(remy.Config{
+    TraceResolution: true,
+})
+
+// Handler needs Service, which needs Repository, which was never registered.
+_, err := remy.Get[Handler](injector)
+
+// The message already reads outermost first: Handler -> Service -> Repository
+log.Println(err)
+
+var traced *remy.DependencyResolutionError
+if errors.As(err, &traced) {
+    // Path walks innermost first, so Repository is the first entry.
+    // Key carries type identity, not a name, so compare it with NewBindKey.
+    for _, entry := range traced.Path() {
+        if entry.Key.ID() == remy.NewBindKey[Repository]().ID() {
+            log.Println("Repository is the step that failed, tag:", entry.Tag)
+        }
+    }
+}
+
+// The root cause survives the wrapping either way
+if errors.Is(err, remy.ErrElementNotRegistered) {
+    // ...
+}
+```
+
+**Use cases:**
+
+- Wiring a large graph, where "element not registered" alone does not say who asked for it
+- Test failures that must point at the bind actually missing
+
 ## Global Injector
 
 Remy provides a global injector that can be used without explicitly passing an injector instance. Pass `nil` as the
@@ -237,11 +352,15 @@ remy.Register(child, remy.Instance("child-value"))
 
 ## Configuration Comparison
 
-| Option             | Default | Performance Impact | Use Case                          |
-|--------------------|---------|--------------------|-----------------------------------|
-| `CanOverride`      | `false` | None               | Testing, development              |
-| `DuckTypeElements` | `false` | High               | Plugin systems, service discovery |
-| `ParentInjector`   | `nil`   | Low                | Scoped dependencies               |
+| Option             | Default | Performance Impact       | Use Case                          |
+|--------------------|---------|--------------------------|-----------------------------------|
+| `CanOverride`      | `false` | None                     | Testing, development              |
+| `DuckTypeElements` | `false` | High                     | Plugin systems, service discovery |
+| `MultiBinding`     | `false` | None on `Get`            | Plugin lists, value groups        |
+| `ParentInjector`   | `nil`   | Low                      | Scoped dependencies               |
+| `Isolated`         | `false` | None                     | Test scopes, plugin sandboxes     |
+| `ScopeName`        | `""`    | None                     | Diagnostics on nested scopes      |
+| `TraceResolution`  | `false` | One alloc per failed Get | Wiring a large graph              |
 
 > **ℹ️ INFO:** Remy uses zero-width generic types for bindings, providing compile-time type safety without requiring
 > reflection. The type key is automatically generated from the value's type when using `NewBindEntry` or

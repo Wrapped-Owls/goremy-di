@@ -14,10 +14,53 @@ useful when you have multiple bindings of the same type and need to distinguish 
 **Key Points:**
 
 - 🏷️ Multiple bindings of the same type with different tags
-- 📝 Tags are optional string identifiers
+- 📝 Tags are optional, and carry the `remy.Tag` type
 - 🔍 Use tags when retrieving to get the specific instance you need
 
 ---
+
+## The Tag type
+
+A tag is a `remy.Tag`, a defined string type, not a bare `string`. Untyped string constants satisfy it, so a call
+written as a literal needs nothing extra:
+
+```go
+remy.RegisterInstance(injector, "postgres://billing", "dsn")
+value := remy.MustGet[string](injector, "dsn")
+```
+
+A `string` **variable** does need the conversion, which is the compiler stopping an arbitrary string from drifting into
+a position that means something:
+
+```go
+fromConfig := loadDSNTag()
+remy.RegisterInstance(injector, dsn, remy.Tag(fromConfig))
+```
+
+## Scoping a tag with NewTag
+
+Plain tags share one flat namespace: two packages that both pick `"dsn"` overwrite each other. `NewTag[Scope]` anchors
+the name to a type, the way `context.WithValue` keys work, so a package that cannot name the anchor cannot forge the
+tag:
+
+```go
+type billing struct{}
+type shipping struct{}
+
+var (
+	billingDSN  = remy.NewTag[billing]("dsn")
+	shippingDSN = remy.NewTag[shipping]("dsn")
+)
+
+remy.RegisterInstance(injector, "postgres://billing", billingDSN)
+remy.RegisterInstance(injector, "postgres://shipping", shippingDSN)
+
+// Same name, different tags, no collision
+billingDSN != shippingDSN // true
+```
+
+> **CAUTION:** The suffix `NewTag` appends is an opaque per-process id. Never hardcode it, and never persist it or send
+> it across processes.
 
 ## Registering with Tags
 
@@ -127,6 +170,8 @@ hexEnc := remy.MustGet[Encoder](injector, "hex")
 
 - Tags are **case-sensitive** - `"environment"` and `"Environment"` are different tags
 - Tags are **optional** - if you don't provide a tag, the binding is registered without one
+- Tags carry the **`remy.Tag`** type: literals pass as they are, a `string` variable needs `remy.Tag(value)`
+- Use **`NewTag[Scope]`** when a name could collide with another package's tag
 - Retrieving without a tag will get the untagged binding (if it exists)
 - You can have both tagged and untagged bindings of the same type
 - Tags work with all bind types: `Instance`, `Factory`, `Singleton`, `LazySingleton`

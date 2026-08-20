@@ -17,6 +17,8 @@ the [examples directory](https://github.com/Wrapped-Owls/goremy-di/tree/main/exa
   constructor registration examples
 - **[guessing_types](https://github.com/Wrapped-Owls/goremy-di/tree/main/examples/guessing_types)** - Type guessing and
   interface examples
+- **[remychef](https://github.com/Wrapped-Owls/goremy-di/tree/main/examples/remychef)** - Application lifecycle on top
+  of remy: tracked services, health checks and shutdown in reverse construction order
 
 Each example is a complete, runnable Go program that demonstrates specific features of Remy DI.
 
@@ -35,7 +37,7 @@ import (
 var Injector = remy.NewInjector()
 
 func init() {
-	remy.RegisterSingleton(Injector, func() (string, error) {
+	remy.RegisterSingleton(Injector, func(remy.DependencyRetriever) (string, error) {
 		return "Hello from Remy!", nil
 	})
 }

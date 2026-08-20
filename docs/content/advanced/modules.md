@@ -63,16 +63,16 @@ constructor adapters are provided.
 
 ### Available Helpers
 
-- `WithInstance[T any](value T, optTag ...string)`
-- `WithBind[T any](bind remy.Bind[T], optTag ...string)`
-- `WithFactory[T any](binder types.Binder[T], optTag ...string)`
-- `WithSingleton[T any](binder types.Binder[T], optTag ...string)`
-- `WithLazySingleton[T any](binder types.Binder[T], optTag ...string)`
-- `WithConstructor[T any](Factory[T], func() (T, error), optTag ...string)`
-- `WithConstructor1[T, A any](Factory[T], func(A) (T, error), optTag ...string)`
-- `WithConstructor2[T, A, B any](Factory[T], func(A, B) (T, error), optTag ...string)`
-- `WithConstructor3[T, A, B, C any](Factory[T], func(A, B, C) (T, error), optTag ...string)`
-- `WithConstructor4[T, A, B, C, D any](Factory[T], func(A, B, C, D) (T, error), optTag ...string)`
+- `WithInstance[T any](value T, optTag ...Tag)`
+- `WithBind[T any](bind remy.Bind[T], optTag ...Tag)`
+- `WithFactory[T any](binder Binder[T], optTag ...Tag)`
+- `WithSingleton[T any](binder Binder[T], optTag ...Tag)`
+- `WithLazySingleton[T any](binder Binder[T], optTag ...Tag)`
+- `WithConstructor[T any](Factory[T], func() (T, error), optTag ...Tag)`
+- `WithConstructor1[T, A any](Factory[T], func(A) (T, error), optTag ...Tag)`
+- `WithConstructor2[T, A, B any](Factory[T], func(A, B) (T, error), optTag ...Tag)`
+- `WithConstructor3[T, A, B, C any](Factory[T], func(A, B, C) (T, error), optTag ...Tag)`
+- `WithConstructor4[T, A, B, C, D any](Factory[T], func(A, B, C, D) (T, error), optTag ...Tag)`
 
 > **ℹ️ INFO:** The preferred helpers are the `With*` functions, following Go's functional options style.
 

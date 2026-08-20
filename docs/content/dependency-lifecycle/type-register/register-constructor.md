@@ -50,17 +50,17 @@ Remy provides constructor registration functions for constructors with 0 to 4 ar
 // Without error
 remy.RegisterConstructor[T any](
 	i Injector,
-	bindFunc func(binder types.Binder[T]) Bind[T],
+	bindFunc func(binder Binder[T]) Bind[T],
 	constructor func() T,
-	optTag ...string,
+	optTag ...Tag,
 )
 
 // With error
 remy.RegisterConstructorErr[T any](
 	i Injector,
-	bindFunc func(binder types.Binder[T]) Bind[T],
+	bindFunc func(binder Binder[T]) Bind[T],
 	constructor func() (T, error),
-	optTag ...string,
+	optTag ...Tag,
 )
 ```
 
@@ -70,17 +70,17 @@ remy.RegisterConstructorErr[T any](
 // Without error
 remy.RegisterConstructorArgs1[T, A any](
 	i Injector,
-	bindFunc func(binder types.Binder[T]) Bind[T],
+	bindFunc func(binder Binder[T]) Bind[T],
 	constructor func(A) T,
-	optTag ...string,
+	optTag ...Tag,
 )
 
 // With error
 remy.RegisterConstructorArgs1Err[T, A any](
 	i Injector,
-	bindFunc func(binder types.Binder[T]) Bind[T],
+	bindFunc func(binder Binder[T]) Bind[T],
 	constructor func(A) (T, error),
-	optTag ...string,
+	optTag ...Tag,
 )
 ```
 

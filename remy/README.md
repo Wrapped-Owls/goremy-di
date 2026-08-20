@@ -29,6 +29,12 @@ attributes:
   declare an explicit alias with an O(1) lookup.
 - MultiBinding - Enables the `GetAll` family, which lists every element under the requested tag that satisfies the
   requested type, so `GetAll[Encoder](inj, "codecs")` collects the implementations registered under `codecs` alone.
+- Isolated - Stops a lookup miss from falling back to ParentInjector, so the scope resolves and lists only its own
+  binds.
+- ScopeName - Labels the scope for diagnostics, so a failure names which scope could not resolve. Anonymous scopes are
+  the default and cost nothing.
+- TraceResolution - Makes a failed resolution carry the dependency path that led to it (A -> B -> C), readable through
+  `DependencyResolutionError`. Opt-in: it costs one allocation per failed `Get`, nothing on success.
 
 ```go
 package core
@@ -316,14 +322,11 @@ bind request some other bind that depends on the first bind, this is a dependenc
 like this, is that is really hard to detect during code/compile time, and once the code is running, it can end in
 a `Stack Overflow`, which causes a panic to the program, and may be harm to it.
 
-So, to enable the possibility to test and detect for a _dependency-cycle_, you can use the `CycleDetectorInjector`,
-which can be called using the constructor **"NewCycleDetectorInjector"**. The main question during it's use is that it
-creates a wrap in the `StandardInjector`, and create an internal graph for each dependency that was requested to the
-injector. This functionality is much slower than using the `StandardInjector`, so it is only recommended to use it in
-test files, to make sure that no dependency cycle was created.
+To test for a _dependency-cycle_, use `NewCycleDetector`. It wraps a standard injector and records the chain it is
+walking, reporting the moment a key repeats inside it. It is much slower than the standard injector, so it belongs in
+test files, not in production wiring.
 
 ```go
-
 package main
 
 import (
@@ -337,17 +340,68 @@ func createInjections(injector remy.Injector) {
 }
 
 func TestCycles(t *testing.T) {
-	ij := remy.NewCycleDetectorInjector()
+	ij := remy.NewCycleDetector()
 	createInjections(ij)
 	if _, err := remy.Get[string](ij); err != nil {
 		t.Error(err)
 	}
 }
+```
+
+The error names the chain that closed the cycle:
 
 ```
+cycle dependency detected: types.KeyElem[main.Handler] -> types.KeyElem[main.Service] -> types.KeyElem[main.Handler]
+```
+
+Detection follows the resolution into temporary scopes, so a cycle that only closes inside a `GetWith` binder, or
+across a `SubInjector` created mid-resolution, is reported instead of hanging.
 
 #### Important Note
 
-When using the `CycleDetectorInjector` is important that in Binds, all _Get_ methods used call the
-given `DependencyRetriever`, if the same injector is used inside the function, as a clojure, it will not be able to
-detect cycles.
+When using a cycle detector it is important that, inside Binds, every _Get_ call uses the given `DependencyRetriever`.
+If a bind closes over the injector variable instead, that edge is invisible and the cycle will not be detected.
+
+#### Reading the graph back
+
+When you also want to know which bind asked for which, `NewGraphInjector` returns the injector together with a `Graph`
+view of what it recorded:
+
+```go
+injector, dependencies := remy.NewGraphInjector()
+createInjections(injector)
+
+_ = remy.MustGet[Handler](injector)
+
+for _, edge := range dependencies.Edges() {
+	log.Println(edge.From, "->", edge.To)
+}
+
+// Force every registered bind, listing the ones that could not be built
+failed, err := dependencies.ResolveAll()
+```
+
+`NewCycleDetectorInjector` still works, but it is deprecated in favour of these two.
+
+### Decorating a bind
+
+`Decorate` wraps a bind so a decorator runs over the value it produces, without touching the registration the bind came
+from. It is how you add auditing, tracing or retry around a dependency that knows nothing about them.
+
+```go
+func auditGreeter(retriever remy.DependencyRetriever, inner Greeter) (Greeter, error) {
+	audit, err := remy.Get[*AuditLog](retriever)
+	if err != nil {
+		return nil, err
+	}
+
+	return auditedGreeter{inner: inner, audit: audit}, nil
+}
+
+remy.Register(injector, remy.Decorate[Greeter](greeterBind(), auditGreeter))
+```
+
+The decorator receives the `DependencyRetriever`, so the wrapper can resolve its own collaborators from the container.
+The decoration is folded into the bind generator, so it shares the bind lifecycle: a `Factory` decorates every value it
+builds, while an `Instance`, a `Singleton` and a `LazySingleton` are each decorated once. Binds nobody decorates pay
+nothing.
